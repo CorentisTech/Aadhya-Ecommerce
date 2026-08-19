@@ -6,11 +6,11 @@ import { useApp } from '../../context/AppContext';
 import { Heart, Star, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export const NewArrivals: React.FC = () => {
+export const Bestsellers: React.FC = () => {
   const { toggleWishlist, isInWishlist, setSelectedProduct } = useApp();
   
-  // Filter new arrival fashion items (excluding the 4 main bestsellers to show variety)
-  const newArrivals = PRODUCTS.filter((p) => !p.bestseller && p.department === 'fashion');
+  // Filter bestseller fashion items
+  const bestsellerProducts = PRODUCTS.filter((p) => p.bestseller && p.department === 'fashion');
 
   const renderStars = (rating = 4) => {
     return (
@@ -26,26 +26,26 @@ export const NewArrivals: React.FC = () => {
   };
 
   return (
-    <section id="new-arrivals" className="w-full py-20 px-6 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40">
+    <section id="bestsellers" className="w-full py-20 px-6 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40">
       <div className="max-w-6xl mx-auto space-y-12">
         
         {/* Header Grid */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-brand-border/40">
           <div className="flex-grow text-center md:text-left space-y-2">
             <span className="text-[10px] text-brand-warmGray font-bold tracking-[0.2em] uppercase block">
-              NEW ARRIVALS
+              BESTSELLERS
             </span>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-brand-espresso tracking-tight">
-              Fresh From the Atelier
+              Our Most Loved Styles
             </h2>
             <p className="text-xs text-brand-warmGray font-medium">
-              Discover the latest additions to our design curation.
+              Customer favorites you'll fall in love with.
             </p>
           </div>
           
           <div className="flex justify-center md:justify-end flex-shrink-0">
             <button 
-              onClick={() => setSelectedProduct(newArrivals[0])}
+              onClick={() => setSelectedProduct(bestsellerProducts[0])}
               className="px-5 py-2.5 border border-brand-border rounded-full text-xs font-bold tracking-widest text-brand-espresso hover:bg-brand-softBeige/40 transition-colors flex items-center space-x-1.5"
             >
               <span>VIEW ALL</span>
@@ -54,9 +54,9 @@ export const NewArrivals: React.FC = () => {
           </div>
         </div>
 
-        {/* Horizontal scroll grid on mobile/tablet, 4 columns on desktop */}
-        <div className="flex overflow-x-auto pb-4 gap-6 md:grid md:grid-cols-4 md:overflow-x-visible md:pb-0 scrollbar-none snap-x">
-          {newArrivals.slice(0, 4).map((product, index) => {
+        {/* 4 Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          {bestsellerProducts.slice(0, 4).map((product, index) => {
             const inWishlist = isInWishlist(product.id);
 
             return (
@@ -66,10 +66,10 @@ export const NewArrivals: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.06 }}
-                className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-3 hover:shadow-md transition-shadow relative flex-shrink-0 w-[260px] sm:w-[280px] md:w-auto snap-start"
+                className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-3 hover:shadow-md transition-shadow relative"
                 onClick={() => setSelectedProduct(product)}
               >
-                {/* Image panel */}
+                {/* Image panel (clean, mix-blend white studio images) */}
                 <div className="w-full aspect-[4/5] bg-brand-softBeige/15 rounded-lg overflow-hidden relative flex items-center justify-center">
                   <img
                     src={product.image}
@@ -80,12 +80,12 @@ export const NewArrivals: React.FC = () => {
 
                   {/* Top left badge */}
                   <div className="absolute top-2.5 left-2.5">
-                    <span className="text-[7px] bg-brand-sale text-brand-white font-extrabold tracking-widest px-2.5 py-0.5 rounded shadow-sm uppercase">
-                      NEW ENTRY
+                    <span className="text-[7px] bg-brand-white/95 border border-brand-border/60 text-brand-espresso font-extrabold tracking-widest px-2 py-0.5 rounded shadow-sm">
+                      BEST SELLER
                     </span>
                   </div>
 
-                  {/* Wishlist heart */}
+                  {/* Wishlist button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -111,11 +111,11 @@ export const NewArrivals: React.FC = () => {
                   <div className="flex items-center space-x-1.5">
                     {renderStars(product.rating)}
                     <span className="text-[8px] text-brand-warmGray font-bold">
-                      ({product.reviewsCount || 60})
+                      ({product.reviewsCount || 100})
                     </span>
                   </div>
 
-                  {/* Pricing with strikethrough */}
+                  {/* Pricing */}
                   <div className="flex items-baseline justify-between border-t border-brand-border/20 pt-2">
                     <div className="flex items-baseline space-x-2">
                       <span className="text-xs font-extrabold text-brand-espresso">

@@ -107,7 +107,7 @@ export const CATEGORIES: Category[] = [
 ];
 
 export const PRODUCTS: Product[] = [
-  // Fashion Products (Strict 4 from reference grid - All Premium Womenswear)
+  // Fashion Products (Strict 4 from reference grid - All Premium Womenswear on solid white studio backgrounds)
   {
     id: 'f-prod-1',
     name: 'Floral Midi Dress',
@@ -116,7 +116,7 @@ export const PRODUCTS: Product[] = [
     mrp: 4499,
     discount: 33,
     description: 'A beautiful light floral print georgette midi dress with tiered ruffle detailing and an elegant waist sash.',
-    image: 'https://images.unsplash.com/photo-1612336307429-8a898d10e223?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=600&auto=format&fit=crop',
     visualType: 'dress',
     visualColor: '#F3DFDF',
     visualPattern: 'floral-embroidery',
@@ -173,7 +173,7 @@ export const PRODUCTS: Product[] = [
     mrp: 5999,
     discount: 33,
     description: 'Premium dusk-rose utility linen matching blouse and trouser set, delivering a polished modern structural silhouette.',
-    image: 'https://images.unsplash.com/photo-1609505848912-b7c3bc8b3d06?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop',
     visualType: 'bodycon',
     visualColor: '#2C2522',
     visualPattern: 'plain',
@@ -185,7 +185,7 @@ export const PRODUCTS: Product[] = [
     reviewsCount: 221
   },
 
-  // Supporting Editorial Fashion Items (All Premium Womenswear)
+  // Supporting Editorial Fashion Items (All Premium Womenswear on solid white studio backgrounds)
   {
     id: 'f-prod-5',
     name: 'Sage Linen Kurti',
@@ -194,7 +194,7 @@ export const PRODUCTS: Product[] = [
     mrp: 2299,
     discount: 30,
     description: 'Sophisticated sage green organic linen daily wear kurti with clean Mandarin collar and handwoven silver pin-stripes.',
-    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1561414927-6d86591d0c4f?q=80&w=600&auto=format&fit=crop',
     visualType: 'ethnic',
     visualColor: '#71836C',
     visualPattern: 'plain',
@@ -212,7 +212,7 @@ export const PRODUCTS: Product[] = [
     mrp: 2699,
     discount: 29,
     description: 'High-waisted wide-leg tailored trousers in deep espresso, complete with double front pleats and side slip pockets.',
-    image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop',
     visualType: 'bodycon',
     visualColor: '#2C2522',
     colors: ['#2C2522'],
@@ -229,7 +229,7 @@ export const PRODUCTS: Product[] = [
     mrp: 4499,
     discount: 33,
     description: 'A classic heritage Kanjivaram rose pink silk saree with dense gold zari handwoven checks and a solid matching border.',
-    image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1610030470224-3467b4a47530?q=80&w=600&auto=format&fit=crop',
     visualType: 'saree',
     visualColor: '#C98F91',
     visualPattern: 'floral-embroidery',

@@ -93,13 +93,9 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      {/* Navbar Container */}
+      {/* Navbar Container - Fixed Height (68px) and Constant Spacing */}
       <header 
-        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-[#FCFAF7]/85 backdrop-blur-lg border-b border-[#E8E1DA]/60 py-3.5' 
-            : 'bg-[#FCFAF7] border-b border-[#E8E1DA]/20 py-5.5'
-        } px-6 md:px-12 flex items-center justify-between`}
+        className="sticky top-0 z-40 w-full h-[68px] bg-[#FCFAF7]/94 backdrop-blur-[14px] border-b border-[#E8E1DA] px-6 md:px-12 flex items-center justify-between"
       >
         {/* Left: Splitting Burger Trigger + Brand Logo Wordmark */}
         <div className="flex items-center space-x-5">
