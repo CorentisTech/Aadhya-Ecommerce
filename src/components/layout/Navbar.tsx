@@ -2,7 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Search, Heart, User, ShoppingBag, Menu, X, ArrowRight } from 'lucide-react';
+import { 
+  Search, 
+  Heart, 
+  User, 
+  ShoppingBag, 
+  X, 
+  ArrowRight,
+  Home,
+  Sparkles,
+  Compass,
+  Grid,
+  Info,
+  Package,
+  HelpCircle
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const Navbar: React.FC = () => {
@@ -57,24 +71,24 @@ export const Navbar: React.FC = () => {
   const sidebarVariants = {
     closed: { 
       x: '-100%', 
-      transition: { type: 'spring', damping: 25, stiffness: 200 } 
+      transition: { type: 'spring', damping: 26, stiffness: 220 } 
     },
     open: { 
       x: 0, 
-      transition: { type: 'spring', damping: 25, stiffness: 200 } 
+      transition: { type: 'spring', damping: 26, stiffness: 220 } 
     }
   };
 
   const listVariants = {
     closed: {},
     open: {
-      transition: { staggerChildren: 0.06 }
+      transition: { staggerChildren: 0.05 }
     }
   };
 
   const itemVariants = {
-    closed: { opacity: 0, x: -20 },
-    open: { opacity: 1, x: 0, transition: { duration: 0.4, ease: 'easeOut' } }
+    closed: { opacity: 0, x: -15 },
+    open: { opacity: 1, x: 0, transition: { duration: 0.35, ease: 'easeOut' } }
   };
 
   return (
@@ -83,12 +97,35 @@ export const Navbar: React.FC = () => {
       <header 
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           isScrolled 
-            ? 'bg-brand-warmWhite/85 backdrop-blur-lg border-b border-brand-border/60 py-3' 
-            : 'bg-brand-warmWhite border-b border-brand-border/20 py-5'
+            ? 'bg-[#FCFAF7]/85 backdrop-blur-lg border-b border-[#E8E1DA]/60 py-3.5' 
+            : 'bg-[#FCFAF7] border-b border-[#E8E1DA]/20 py-5.5'
         } px-6 md:px-12 flex items-center justify-between`}
       >
-        {/* Left: Brand Logo Wordmark */}
-        <div className="flex items-center">
+        {/* Left: Splitting Burger Trigger + Brand Logo Wordmark */}
+        <div className="flex items-center space-x-5">
+          {/* Framer Motion Morphing Burger Button */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="flex flex-col justify-center items-center w-6 h-6 focus:outline-none relative z-50 cursor-pointer space-y-1"
+            aria-label="Toggle Navigation Drawer"
+          >
+            <motion.span
+              animate={sidebarOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="w-5 h-0.5 bg-brand-espresso rounded-full block"
+            />
+            <motion.span
+              animate={sidebarOpen ? { opacity: 0, scale: 0 } : { opacity: 1, scale: 1 }}
+              transition={{ duration: 0.2 }}
+              className="w-5 h-0.5 bg-brand-espresso rounded-full block"
+            />
+            <motion.span
+              animate={sidebarOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="w-5 h-0.5 bg-brand-espresso rounded-full block"
+            />
+          </button>
+
           <button
             onClick={() => setPage('home')}
             className="font-display text-xl md:text-2xl font-bold tracking-[0.25em] text-brand-espresso hover:opacity-85 transition-opacity"
@@ -121,7 +158,7 @@ export const Navbar: React.FC = () => {
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-dustyRose transition-all duration-300 group-hover:w-full" />
           </button>
           <button
-            onClick={() => handleNavClick('categories')} // Curations
+            onClick={() => handleNavClick('categories')}
             className="hover:text-brand-dustyRose transition-colors relative py-1 group"
           >
             ABOUT US
@@ -142,20 +179,20 @@ export const Navbar: React.FC = () => {
                   : 'border-brand-border/80 text-brand-warmGray'
               }`}
             >
-              {/* Spinning Coin */}
-              <div className="relative w-4 h-4 perspective-1000 preserve-3d">
-                <motion.div
-                  className="w-full h-full rounded-full bg-brand-gold border border-brand-antiqueBronze/40 flex items-center justify-center text-[7px] font-bold text-brand-espresso"
+              {/* Rotating Coin using User-provided 1957 Coin image */}
+              <div className="relative w-4 h-4 rounded-full overflow-hidden border border-brand-antiqueBronze/40 shadow-sm flex items-center justify-center bg-brand-gold">
+                <motion.img
+                  src="/coin_image.jpg"
+                  alt="Coin"
+                  className="w-full h-full object-cover"
                   animate={{ rotateY: 360 }}
                   transition={{
                     repeat: Infinity,
-                    duration: numismaticsHovered ? 2.5 : 7,
+                    duration: numismaticsHovered ? 2 : 6,
                     ease: 'linear',
                   }}
                   style={{ backfaceVisibility: 'hidden' }}
-                >
-                  🪙
-                </motion.div>
+                />
               </div>
               <span className="tracking-[0.2em] font-extrabold text-[9px] uppercase">NUMISMATICS</span>
             </button>
@@ -171,7 +208,7 @@ export const Navbar: React.FC = () => {
                   className="absolute left-1/2 -translate-x-1/2 mt-2.5 w-52 bg-brand-espresso text-brand-warmWhite text-[9px] tracking-[0.12em] font-bold py-3.5 px-4 text-center rounded-2xl shadow-xl z-50 border border-brand-gold/30"
                 >
                   <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-brand-espresso rotate-45 border-t border-l border-brand-gold/30" />
-                  <p className="mb-2 text-brand-softBeige">Explore Coins & Currency</p>
+                  <p className="mb-2 text-brand-softBeige font-extrabold">Explore Coins & Currency</p>
                   <div className="flex items-center justify-center gap-1 text-brand-gold hover:text-brand-white transition-colors cursor-pointer text-[8px] tracking-[0.2em] uppercase font-extrabold">
                     <span>EXPLORE</span>
                     <ArrowRight className="w-2.5 h-2.5" />
@@ -225,167 +262,192 @@ export const Navbar: React.FC = () => {
               </span>
             )}
           </button>
-
-          {/* Desktop & Mobile General Menu Icon (Opens left side panel) */}
-          <button
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Menu"
-            className="p-1 hover:text-brand-dustyRose transition-colors border-l border-brand-border/60 pl-3 ml-1"
-          >
-            <Menu className="w-5 h-5 stroke-[2]" />
-          </button>
         </div>
       </header>
 
-      {/* Modern Glassy Navigation Drawer (opens from Left) */}
+      {/* Glossy Translucent Left Sidebar Menu (YouTube Studio Theme Style) */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
-            {/* Dark background overlay */}
+            {/* Dark blur background overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSidebarOpen(false)}
-              className="fixed inset-0 z-50 bg-brand-espresso/35 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-brand-espresso/30 backdrop-blur-sm"
             />
 
-            {/* Glassy Sidebar panel (opens from left) */}
+            {/* Translucent white sidebar panel (opens from left) */}
             <motion.div
               variants={sidebarVariants}
               initial="closed"
               animate="open"
               exit="closed"
-              className="fixed left-0 top-0 bottom-0 z-50 w-full max-w-sm bg-[#FCFAF7]/75 backdrop-blur-xl border-r border-[#E8E1DA]/80 shadow-2xl p-8 flex flex-col justify-between"
+              className="fixed left-0 top-0 bottom-0 z-50 w-full max-w-xs bg-brand-warmWhite/75 backdrop-blur-2xl border-r border-brand-border/60 shadow-2xl p-6 flex flex-col justify-between"
             >
-              {/* Close Head block */}
-              <div className="flex items-center justify-between border-b border-brand-border pb-4">
-                <span className="font-display font-bold tracking-[0.25em] text-brand-espresso">AADHYA</span>
+              {/* Close Header */}
+              <div className="flex items-center justify-between border-b border-brand-border/60 pb-4">
+                <span className="font-display font-extrabold tracking-[0.25em] text-brand-espresso text-sm">AADHYA</span>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="p-1.5 hover:bg-brand-softBeige/60 rounded-full transition-colors"
+                  className="p-1.5 hover:bg-brand-softBeige/65 rounded-full transition-colors"
                 >
-                  <X className="w-5 h-5 text-brand-warmGray" />
+                  <X className="w-4.5 h-4.5 text-brand-warmGray" />
                 </button>
               </div>
 
-              {/* Staggered Links Container */}
+              {/* Glossy Link Items (Staggered inputs with icons) */}
               <motion.div 
                 variants={listVariants}
-                className="flex-grow py-8 space-y-8 overflow-y-auto"
+                className="flex-grow py-6 space-y-6 overflow-y-auto"
               >
-                <div className="space-y-4 text-left">
-                  <span className="text-[9px] tracking-[0.25em] font-extrabold text-brand-warmGray block">
-                    DEPARTMENTS
+                <div className="space-y-2 text-left">
+                  <span className="text-[8px] tracking-[0.25em] font-extrabold text-brand-warmGray block px-3">
+                    FASHION EDITORIAL
                   </span>
                   
-                  <nav className="flex flex-col space-y-3.5 font-display text-xl font-bold tracking-wide text-brand-espresso">
+                  <nav className="flex flex-col space-y-1 font-sans text-xs font-bold tracking-widest text-brand-espresso">
+                    {/* Home Link */}
                     <motion.button
                       variants={itemVariants}
                       onClick={() => { setPage('home'); setSidebarOpen(false); }}
-                      className="text-left hover:text-brand-dustyRose transition-colors"
+                      className={`flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full transition-all relative ${
+                        activePage === 'home' 
+                          ? 'bg-brand-softBeige text-brand-espresso font-extrabold shadow-sm' 
+                          : 'hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso'
+                      }`}
                     >
-                      HOME
+                      {activePage === 'home' && (
+                        <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-brand-dustyRose rounded-r-md" />
+                      )}
+                      <Home className="w-4 h-4 stroke-[2]" />
+                      <span>HOME</span>
                     </motion.button>
                     
+                    {/* Bestsellers Link */}
                     <motion.button
                       variants={itemVariants}
                       onClick={() => handleNavClick('bestsellers')}
-                      className="text-left hover:text-brand-dustyRose transition-colors"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
                     >
-                      BEST SELLERS
+                      <Sparkles className="w-4 h-4 stroke-[2]" />
+                      <span>BEST SELLERS</span>
                     </motion.button>
                     
+                    {/* New Arrivals Link */}
                     <motion.button
                       variants={itemVariants}
                       onClick={() => handleNavClick('new-arrivals')}
-                      className="text-left hover:text-brand-dustyRose transition-colors"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
                     >
-                      NEW ARRIVALS
+                      <Compass className="w-4 h-4 stroke-[2]" />
+                      <span>NEW ARRIVALS</span>
                     </motion.button>
                     
+                    {/* Categories Link */}
                     <motion.button
                       variants={itemVariants}
                       onClick={() => handleNavClick('categories')}
-                      className="text-left hover:text-brand-dustyRose transition-colors"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
                     >
-                      CATEGORIES
+                      <Grid className="w-4 h-4 stroke-[2]" />
+                      <span>CATEGORIES</span>
                     </motion.button>
 
+                    {/* Shop Link */}
                     <motion.button
                       variants={itemVariants}
                       onClick={() => { setPage('home'); setSidebarOpen(false); }}
-                      className="text-left hover:text-brand-dustyRose transition-colors"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
                     >
-                      SHOP
+                      <ShoppingBag className="w-4 h-4 stroke-[2]" />
+                      <span>SHOP COLLECTION</span>
                     </motion.button>
 
+                    {/* About Link */}
                     <motion.button
                       variants={itemVariants}
-                      onClick={() => handleNavClick('categories')} // About
-                      className="text-left hover:text-brand-dustyRose transition-colors"
+                      onClick={() => handleNavClick('categories')}
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
                     >
-                      ABOUT US
+                      <Info className="w-4 h-4 stroke-[2]" />
+                      <span>ABOUT US</span>
                     </motion.button>
                   </nav>
                 </div>
 
-                {/* Separator line */}
-                <div className="w-full h-px bg-brand-border" />
+                <div className="w-full h-px bg-brand-border/60" />
 
-                {/* Coin Special Item */}
-                <motion.div variants={itemVariants} className="space-y-4 text-left">
+                {/* Coin Special Drawer Link */}
+                <motion.div variants={itemVariants} className="px-3">
                   <button
                     onClick={() => {
                       setPage('numismatics');
                       setSidebarOpen(false);
                     }}
-                    className="flex items-center space-x-3.5 px-4 py-3 bg-brand-softBeige border border-brand-antiqueBronze/20 rounded-2xl text-brand-antiqueBronze text-left font-display text-lg w-full shadow-sm hover:bg-brand-softBeige/70 transition-colors"
+                    className={`flex items-center justify-between px-4 py-3 bg-brand-softBeige border border-brand-antiqueBronze/20 rounded-2xl text-brand-antiqueBronze text-left font-sans text-[11px] font-extrabold w-full shadow-sm hover:bg-brand-softBeige/70 transition-all ${
+                      activePage === 'numismatics' ? 'ring-2 ring-brand-antiqueBronze/40' : ''
+                    }`}
                   >
-                    <span className="w-6 h-6 animate-spin-coin flex items-center justify-center bg-brand-gold rounded-full border border-brand-antiqueBronze text-xs">
-                      🪙
-                    </span>
-                    <span className="font-extrabold tracking-[0.1em] text-sm">NUMISMATICS</span>
+                    <div className="flex items-center space-x-3">
+                      {/* Spinning coin */}
+                      <div className="w-5 h-5 rounded-full overflow-hidden border border-brand-antiqueBronze/40 flex items-center justify-center bg-brand-gold">
+                        <img
+                          src="/coin_image.jpg"
+                          alt="Coin"
+                          className="w-full h-full object-cover animate-spin-coin"
+                        />
+                      </div>
+                      <span className="tracking-widest">🪙 NUMISMATICS</span>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </motion.div>
 
-                {/* Separator line */}
-                <div className="w-full h-px bg-brand-border" />
+                <div className="w-full h-px bg-brand-border/60" />
 
-                {/* Sub links */}
+                {/* Account details links */}
                 <motion.div 
                   variants={itemVariants}
-                  className="flex flex-col space-y-3 text-[11px] font-bold tracking-widest text-brand-warmGray text-left"
+                  className="flex flex-col space-y-1 font-sans text-xs font-bold tracking-widest text-brand-espresso"
                 >
                   <button
                     onClick={() => { setAccountOpen(true); setSidebarOpen(false); }}
-                    className="text-left hover:text-brand-espresso transition-colors"
+                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
                   >
-                    ACCOUNT
+                    <User className="w-4 h-4 stroke-[2]" />
+                    <span>ACCOUNT</span>
                   </button>
+                  
                   <button
                     onClick={() => { setPage('wishlist'); setSidebarOpen(false); }}
-                    className="text-left hover:text-brand-espresso transition-colors"
+                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
                   >
-                    WISHLIST
+                    <Heart className="w-4 h-4 stroke-[2]" />
+                    <span>WISHLIST</span>
                   </button>
+
                   <button
                     onClick={() => { setAccountOpen(true); setSidebarOpen(false); }}
-                    className="text-left hover:text-brand-espresso transition-colors"
+                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
                   >
-                    ORDERS
+                    <Package className="w-4 h-4 stroke-[2]" />
+                    <span>ORDERS</span>
                   </button>
+
                   <button
                     onClick={() => setSidebarOpen(false)}
-                    className="text-left hover:text-brand-espresso transition-colors"
+                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
                   >
-                    HELP & SUPPORT
+                    <HelpCircle className="w-4 h-4 stroke-[2]" />
+                    <span>HELP & SUPPORT</span>
                   </button>
                 </motion.div>
               </motion.div>
 
-              {/* Sidebar Footer info */}
-              <div className="border-t border-brand-border pt-4 text-[9px] text-brand-warmGray font-bold tracking-wider text-left">
+              {/* Footer details */}
+              <div className="border-t border-brand-border/60 pt-4 text-[9px] text-brand-warmGray font-extrabold tracking-widest text-left uppercase">
                 © 2026 AADHYA. All Rights Reserved.
               </div>
             </motion.div>

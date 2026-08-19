@@ -15,6 +15,22 @@ export const ProductVisual: React.FC<ProductVisualProps> = ({
   className = '',
   isRotating = false,
 }) => {
+  if (type === 'coin') {
+    return (
+      <div className={`relative flex items-center justify-center ${className}`}>
+        <div className="absolute w-[70%] h-[8px] bg-brand-espresso/15 blur-sm rounded-full bottom-2" />
+        <img
+          src="/coin_image.jpg"
+          alt="1957 Indian 1 Rupee Coin"
+          className={`w-4/5 h-4/5 object-contain rounded-full shadow-md border border-brand-border/60 ${
+            isRotating ? 'animate-spin-coin' : ''
+          }`}
+          style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
+        />
+      </div>
+    );
+  }
+
   // Pattern gradients and overlays
   const renderPattern = () => {
     switch (pattern) {
@@ -329,56 +345,7 @@ export const ProductVisual: React.FC<ProductVisualProps> = ({
           </g>
         )}
 
-        {/* 8. Antique Physical Coin */}
-        {type === 'coin' && (
-          <g>
-            {/* Shadow */}
-            <ellipse cx="100" cy="190" rx="60" ry="12" fill="#2C2522" opacity="0.08" />
 
-            {/* Main Coin Canvas */}
-            <circle cx="100" cy="125" r="70" fill={fillStyle()} />
-            <circle cx="100" cy="125" r="70" fill="url(#metallicHighlight)" />
-
-            {/* Inner Border Ring */}
-            <circle cx="100" cy="125" r="64" fill="none" stroke="#2C2522" strokeWidth="0.5" opacity="0.25" />
-            <circle cx="100" cy="125" r="62" fill="none" stroke="#B89A67" strokeWidth="1" strokeDasharray="3, 3" opacity="0.5" />
-
-            {/* Historic Emblem: Stylized Ashoka Pillar Lion or Crown */}
-            <g transform="translate(75, 95) scale(0.5)" opacity="0.6">
-              {/* Pedestal */}
-              <path d="M 20,95 L 80,95 L 75,85 L 25,85 Z" fill="#2C2522" />
-              {/* Lion Center */}
-              <path d="M 40,85 L 60,85 L 58,40 L 42,40 Z" fill="#2C2522" />
-              {/* Left Lion */}
-              <path d="M 38,70 C 30,70 30,55 38,50 Z" fill="#2C2522" />
-              {/* Right Lion */}
-              <path d="M 62,70 C 70,70 70,55 62,50 Z" fill="#2C2522" />
-              {/* Center Lion Head */}
-              <circle cx="50" cy="35" r="10" fill="#2C2522" />
-              <path d="M 45,35 L 55,35 L 50,45 Z" fill="#2C2522" />
-            </g>
-
-            {/* Historical Text Inscriptions */}
-            <path id="coinTextPath" d="M 42,67 A 58,58 0 0,1 158,67" fill="none" stroke="none" />
-            <text fill="#2C2522" fontSize="6.5" fontWeight="bold" letterSpacing="2" opacity="0.45">
-              <textPath href="#coinTextPath" startOffset="50%" textAnchor="middle">
-                BRITISH INDIA • 1940
-              </textPath>
-            </text>
-
-            <path id="coinTextPathBottom" d="M 158,183 A 58,58 0 0,1 42,183" fill="none" stroke="none" />
-            <text fill="#2C2522" fontSize="6.5" fontWeight="bold" letterSpacing="2" opacity="0.45">
-              <textPath href="#coinTextPathBottom" startOffset="50%" textAnchor="middle">
-                ONE RUPEE • TRADITION
-              </textPath>
-            </text>
-
-            {/* Center Value */}
-            <text x="100" y="152" fill="#2C2522" fontSize="14" fontFamily="serif" fontWeight="bold" textAnchor="middle" opacity="0.6">
-              ₹1
-            </text>
-          </g>
-        )}
 
         {/* 9. Historic Currency Note */}
         {type === 'note' && (

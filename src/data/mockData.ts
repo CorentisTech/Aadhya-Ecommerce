@@ -58,7 +58,7 @@ export const CATEGORIES: Category[] = [
     description: 'Exquisitely tailored shirts, overlays and blouses.',
     visualType: 'blouse',
     visualColor: '#F3DFDF',
-    image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?q=80&w=600&auto=format&fit=crop',
     department: 'fashion'
   },
   {
@@ -67,7 +67,7 @@ export const CATEGORIES: Category[] = [
     description: 'Cozy woolens, cardigans and ribbed sweaters.',
     visualType: 'kurti',
     visualColor: '#756E69',
-    image: 'https://images.unsplash.com/photo-1574169208507-84376144848b?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1620799139834-6b8f844fbe61?q=80&w=600&auto=format&fit=crop',
     department: 'fashion'
   },
   {
@@ -76,7 +76,7 @@ export const CATEGORIES: Category[] = [
     description: 'Sophisticated tailored trousers and casual pants.',
     visualType: 'bodycon',
     visualColor: '#2C2522',
-    image: 'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=600&auto=format&fit=crop',
     department: 'fashion'
   },
   {
@@ -107,7 +107,7 @@ export const CATEGORIES: Category[] = [
 ];
 
 export const PRODUCTS: Product[] = [
-  // Fashion Products (Strict 4 from reference grid)
+  // Fashion Products (Strict 4 from reference grid - All Premium Womenswear)
   {
     id: 'f-prod-1',
     name: 'Floral Midi Dress',
@@ -116,7 +116,7 @@ export const PRODUCTS: Product[] = [
     mrp: 4499,
     discount: 33,
     description: 'A beautiful light floral print georgette midi dress with tiered ruffle detailing and an elegant waist sash.',
-    image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1612336307429-8a898d10e223?q=80&w=600&auto=format&fit=crop',
     visualType: 'dress',
     visualColor: '#F3DFDF',
     visualPattern: 'floral-embroidery',
@@ -135,7 +135,7 @@ export const PRODUCTS: Product[] = [
     mrp: 3499,
     discount: 28,
     description: 'Tailored ivory cotton shirt featuring structural balloon puff sleeves, front mother-of-pearl buttons and clean cuffs.',
-    image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?q=80&w=600&auto=format&fit=crop',
     visualType: 'blouse',
     visualColor: '#FFFFFF',
     visualPattern: 'plain',
@@ -154,7 +154,7 @@ export const PRODUCTS: Product[] = [
     mrp: 3999,
     discount: 25,
     description: 'Cozy neutral beige cropped knit pullover styled with vertical ribbing, a relaxed crewneck, and soft drop shoulders.',
-    image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1620799139834-6b8f844fbe61?q=80&w=600&auto=format&fit=crop',
     visualType: 'kurti',
     visualColor: '#756E69',
     visualPattern: 'plain',
@@ -173,7 +173,7 @@ export const PRODUCTS: Product[] = [
     mrp: 5999,
     discount: 33,
     description: 'Premium dusk-rose utility linen matching blouse and trouser set, delivering a polished modern structural silhouette.',
-    image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1609505848912-b7c3bc8b3d06?q=80&w=600&auto=format&fit=crop',
     visualType: 'bodycon',
     visualColor: '#2C2522',
     visualPattern: 'plain',
@@ -185,7 +185,7 @@ export const PRODUCTS: Product[] = [
     reviewsCount: 221
   },
 
-  // Supporting Editorial Fashion Items
+  // Supporting Editorial Fashion Items (All Premium Womenswear)
   {
     id: 'f-prod-5',
     name: 'Sage Linen Kurti',
@@ -212,7 +212,7 @@ export const PRODUCTS: Product[] = [
     mrp: 2699,
     discount: 29,
     description: 'High-waisted wide-leg tailored trousers in deep espresso, complete with double front pleats and side slip pockets.',
-    image: 'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=600&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=600&auto=format&fit=crop',
     visualType: 'bodycon',
     visualColor: '#2C2522',
     colors: ['#2C2522'],
@@ -411,7 +411,7 @@ export const REVIEWS: Review[] = [
   {
     id: 'rev-5',
     rating: 5,
-    text: "I ordered the Scarlet Velvet Lehenga for a festive evening. Fits like a glove. The hand embroidery is dense, rich, and retains a beautiful heritage charm.",
+    text: "I ordered the Scarlet Velvet Lehenga for a festive evening. Fits like a glove. The hand embroidery is dense, rich, and retains a heritage charm.",
     author: "Kavita Nair",
     verified: true,
     productName: "Scarlet Velvet Lehenga",

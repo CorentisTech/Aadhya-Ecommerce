@@ -13,16 +13,28 @@ export const Hero: React.FC = () => {
   const bestsellers = PRODUCTS.filter((p) => p.bestseller && p.department === 'fashion');
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Auto-play slideshow (transitions every 6 seconds)
+  // States for interactive selection in the Hero
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+
+  // Auto-play slideshow (transitions every 7 seconds)
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % bestsellers.length);
-    }, 6000);
+    }, 7000);
     return () => clearInterval(timer);
   }, [bestsellers.length]);
 
   const currentProduct = bestsellers[activeIndex];
   const inWishlist = isInWishlist(currentProduct.id);
+
+  // Set default selection values once product is loaded
+  useEffect(() => {
+    if (currentProduct) {
+      setSelectedSize(currentProduct.sizes && currentProduct.sizes.length > 0 ? currentProduct.sizes[0] : '');
+      setSelectedColor(currentProduct.colors && currentProduct.colors.length > 0 ? currentProduct.colors[0] : '');
+    }
+  }, [currentProduct]);
 
   // Transition variants for stable layout changes
   const slideTextVariants = {
@@ -32,18 +44,18 @@ export const Hero: React.FC = () => {
   };
 
   const modelVariants = {
-    initial: { opacity: 0, scale: 0.95, rotateY: -15 },
-    animate: { opacity: 1, scale: 1, rotateY: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
-    exit: { opacity: 0, scale: 0.98, rotateY: 15, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
+    initial: { opacity: 0, scale: 0.95, y: 10 },
+    animate: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
+    exit: { opacity: 0, scale: 0.98, y: -10, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
   };
 
   return (
     <section className="w-full min-h-[85vh] bg-brand-warmWhite flex items-center justify-center py-12 px-6 md:px-12 lg:px-24 overflow-hidden relative border-b border-brand-border/40">
       
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10 relative">
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center z-10 relative">
         
-        {/* Left Column: Product Information (35% of space / 5 cols) */}
-        <div className="lg:col-span-5 flex flex-col justify-center space-y-6 select-none">
+        {/* Left Column: Product Information & Variable Selectors (6 cols / 50% width) */}
+        <div className="lg:col-span-6 flex flex-col justify-center space-y-6 select-none">
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-brand-sale tracking-[0.25em] uppercase border-b border-brand-sale/20 pb-1">
               ★ BESTSELLER SHOWCASE
@@ -57,13 +69,14 @@ export const Hero: React.FC = () => {
               initial="initial"
               animate="animate"
               exit="exit"
-              className="space-y-4 text-left"
+              className="space-y-5 text-left"
             >
-              {/* Refinement: Editorial heading typography */}
+              {/* Product Title */}
               <h1 className="font-display font-bold text-brand-espresso tracking-tight text-4xl md:text-5xl lg:text-6xl leading-[1.1] uppercase">
                 {currentProduct.name}
               </h1>
               
+              {/* Description */}
               <p className="text-xs text-brand-warmGray tracking-wide font-semibold max-w-sm leading-relaxed">
                 {currentProduct.description}
               </p>
@@ -80,13 +93,64 @@ export const Hero: React.FC = () => {
                   {currentProduct.discount}% OFF
                 </span>
               </div>
+
+              {/* Added interactive selectors to avoid blank space and improve UX */}
+              <div className="space-y-4 pt-3 border-t border-brand-border/40 max-w-xs">
+                {/* Size options */}
+                {currentProduct.sizes && currentProduct.sizes.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-bold text-brand-warmGray tracking-widest block uppercase">
+                      SELECT SIZE:
+                    </span>
+                    <div className="flex gap-2">
+                      {currentProduct.sizes.map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => setSelectedSize(s)}
+                          className={`px-3 py-1 border text-[10px] font-bold rounded-md transition-all ${
+                            selectedSize === s
+                              ? 'border-brand-espresso bg-brand-espresso text-brand-white'
+                              : 'border-brand-border text-brand-warmGray hover:bg-brand-softBeige/30'
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Color options */}
+                {currentProduct.colors && currentProduct.colors.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-bold text-brand-warmGray tracking-widest block uppercase">
+                      SELECT COLOR SHADE:
+                    </span>
+                    <div className="flex gap-2">
+                      {currentProduct.colors.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => setSelectedColor(c)}
+                          className={`w-5 h-5 rounded-full border transition-all ${
+                            selectedColor === c
+                              ? 'scale-110 border-brand-espresso ring-2 ring-brand-blush'
+                              : 'border-brand-border hover:opacity-85'
+                          }`}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </motion.div>
           </AnimatePresence>
 
           {/* Action Row */}
           <div className="flex items-center gap-3 pt-4">
             <button
-              onClick={() => addToCart(currentProduct, 1, 'Free Size')}
+              onClick={() => addToCart(currentProduct, 1, selectedSize, selectedColor)}
               className="py-3 px-6 bg-brand-espresso text-brand-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-brand-espresso/90 transition-colors shadow-md rounded-xl"
             >
               ADD TO BAG
@@ -128,13 +192,13 @@ export const Hero: React.FC = () => {
           </div>
         </div>
 
-        {/* Center/Right Column: Large Isolated Fashion Model (4 cols) */}
-        <div className="lg:col-span-4 flex justify-center items-center relative min-h-[380px] lg:min-h-[440px]">
-          <div className="w-full max-w-[320px] aspect-square lg:aspect-[4/5] flex items-center justify-center relative">
+        {/* Right Column: Large Isolated Model Visual (6 cols / 50% width) */}
+        <div className="lg:col-span-6 flex justify-center items-center relative min-h-[420px] lg:min-h-[480px]">
+          <div className="w-full max-w-[420px] aspect-[4/5] flex items-center justify-center relative">
             
             {/* Subtle background circles for depth */}
-            <div className="absolute w-[80%] h-[80%] rounded-full border border-brand-border/60 pointer-events-none z-0" />
-            <div className="absolute w-[95%] h-[95%] rounded-full border border-brand-border/20 pointer-events-none z-0 animate-spin-slow" />
+            <div className="absolute w-[80%] h-[80%] rounded-full border border-brand-border/40 pointer-events-none z-0" />
+            <div className="absolute w-[95%] h-[95%] rounded-full border border-brand-border/10 pointer-events-none z-0 animate-spin-slow" />
 
             <AnimatePresence mode="wait">
               <motion.div
@@ -146,72 +210,19 @@ export const Hero: React.FC = () => {
                 className="w-full h-full z-10 flex items-center justify-center cursor-pointer"
                 onClick={() => setSelectedProduct(currentProduct)}
               >
-                {/* Visual cutout rendering: mix-blend-multiply isolates the model on warm-white */}
-                <div className="relative w-full h-[360px] lg:h-[440px] flex items-center justify-center">
+                {/* Visual cutout rendering: max size and blend overlay to blend white borders */}
+                <div className="relative w-full h-[400px] lg:h-[480px] flex items-center justify-center">
                   <motion.img
                     src={currentProduct.image}
                     alt={currentProduct.name}
-                    className="max-h-[340px] lg:max-h-[420px] object-contain mix-blend-multiply pointer-events-none"
-                    animate={{ y: [0, -8, 0] }}
+                    className="max-h-[380px] lg:max-h-[460px] w-full object-contain mix-blend-multiply pointer-events-none"
+                    animate={{ y: [0, -10, 0] }}
                     transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
                   />
                 </div>
               </motion.div>
             </AnimatePresence>
           </div>
-        </div>
-
-        {/* Right Column: Small Floating Detail Panels (3 cols) */}
-        <div className="lg:col-span-3 hidden lg:flex flex-col space-y-6 items-end">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentProduct.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.6 }}
-              className="space-y-6"
-            >
-              {/* Card 1: Fabric details overlay */}
-              <div className="bg-brand-white border border-brand-border/80 rounded-2xl p-4 shadow-sm max-w-[180px] animate-float-slow">
-                <span className="text-[8px] font-bold text-brand-warmGray tracking-widest block mb-2 uppercase">
-                  FABRIC CLOSE-UP
-                </span>
-                <div className="w-full h-24 bg-brand-warmWhite rounded-lg overflow-hidden flex items-center justify-center p-1.5">
-                  <div
-                    className="w-full h-full rounded border border-brand-border/40 flex items-center justify-center"
-                    style={{ backgroundColor: currentProduct.visualColor, opacity: 0.8 }}
-                  >
-                    <span className="text-[8px] font-bold text-brand-white tracking-widest uppercase">
-                      {currentProduct.visualPattern?.replace('-', ' ')}
-                    </span>
-                  </div>
-                </div>
-                <p className="text-[9px] text-brand-warmGray font-semibold leading-normal mt-2">
-                  Premium {currentProduct.visualPattern === 'gold-brocade' ? 'Zari' : 'Thread'} details.
-                </p>
-              </div>
-
-              {/* Card 2: Shading variants */}
-              <div className="bg-brand-white border border-brand-border/80 rounded-2xl p-4 shadow-sm max-w-[180px] animate-float-delayed">
-                <span className="text-[8px] font-bold text-brand-warmGray tracking-widest block mb-2 uppercase">
-                  DESIGN EDIT
-                </span>
-                <div className="flex gap-2">
-                  {currentProduct.colors?.map((c, i) => (
-                    <span
-                      key={i}
-                      className="w-4 h-4 rounded-full border border-brand-border/60"
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
-                </div>
-                <p className="text-[9px] text-brand-warmGray font-semibold leading-normal mt-2">
-                  Available in multiple curation shades.
-                </p>
-              </div>
-            </motion.div>
-          </AnimatePresence>
         </div>
 
       </div>
