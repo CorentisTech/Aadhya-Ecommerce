@@ -189,8 +189,8 @@ export default function AdminDashboard() {
 
         {/* Content Area */}
         <div className="p-6 md:p-8 space-y-8 overflow-y-auto flex-grow">
-          {/* Key Metrics Widgets */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Key Metrics Widgets (2-column layout on mobile) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {/* Metric 1 */}
             <div className="bg-brand-white border border-brand-border/60 p-5 rounded-2xl shadow-sm space-y-2 relative overflow-hidden">
               <span className="text-[9px] font-bold text-brand-warmGray tracking-widest uppercase block">
