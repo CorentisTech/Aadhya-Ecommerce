@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { PRODUCTS } from '../../data/mockData';
 import { ProductVisual } from '../ui/ProductVisual';

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Search, Heart, User, ShoppingBag, Menu, X } from 'lucide-react';

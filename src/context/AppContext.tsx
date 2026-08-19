@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product } from '../data/mockData';
 
@@ -40,16 +42,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activePage, setPageInternal] = useState<PageType>('home');
 
   // Shopping Cart State
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const local = localStorage.getItem('aadhya_cart');
-    return local ? JSON.parse(local) : [];
-  });
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   // Wishlist State
-  const [wishlist, setWishlist] = useState<Product[]>(() => {
-    const local = localStorage.getItem('aadhya_wishlist');
-    return local ? JSON.parse(local) : [];
-  });
+  const [wishlist, setWishlist] = useState<Product[]>([]);
 
   // UI Drawer / Modal States
   const [isCartOpen, setCartOpen] = useState(false);
@@ -59,15 +55,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load from localStorage on mount (client-side only)
+  useEffect(() => {
+    const localCart = localStorage.getItem('aadhya_cart');
+    if (localCart) setCart(JSON.parse(localCart));
+    const localWishlist = localStorage.getItem('aadhya_wishlist');
+    if (localWishlist) setWishlist(JSON.parse(localWishlist));
+    setIsLoaded(true);
+  }, []);
 
   // Persist State
   useEffect(() => {
-    localStorage.setItem('aadhya_cart', JSON.stringify(cart));
-  }, [cart]);
+    if (isLoaded) {
+      localStorage.setItem('aadhya_cart', JSON.stringify(cart));
+    }
+  }, [cart, isLoaded]);
 
   useEffect(() => {
-    localStorage.setItem('aadhya_wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
+    if (isLoaded) {
+      localStorage.setItem('aadhya_wishlist', JSON.stringify(wishlist));
+    }
+  }, [wishlist, isLoaded]);
 
   // Smooth scroll to top on page change
   const setPage = (page: PageType) => {

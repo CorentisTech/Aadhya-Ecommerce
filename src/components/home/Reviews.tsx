@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { REVIEWS } from '../../data/mockData';
 import { ArrowLeft, ArrowRight, Star, Quote } from 'lucide-react';

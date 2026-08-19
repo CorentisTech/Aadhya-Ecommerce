@@ -1,19 +1,16 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useApp } from '../../context/AppContext';
-import { X, User, ShoppingBag, MapPin, Truck, LogOut } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { User, ShoppingBag, MapPin, Truck, LogOut, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-type TabType = 'profile' | 'orders' | 'addresses' | 'track' | 'coupons';
+type TabType = 'profile' | 'orders' | 'addresses' | 'track';
 
-export const AccountPage: React.FC = () => {
-  const { isAccountOpen, setAccountOpen } = useApp();
+export default function AccountRoute() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [trackId, setTrackId] = useState('');
   const [trackStatus, setTrackStatus] = useState<string | null>(null);
-
-  if (!isAccountOpen) return null;
 
   const handleTrackSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,31 +25,23 @@ export const AccountPage: React.FC = () => {
   ];
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={() => setAccountOpen(false)}
-        className="fixed inset-0 z-50 bg-brand-espresso/50 backdrop-blur-sm flex items-center justify-center p-4 md:p-6"
-      >
-        <motion.div
-          initial={{ scale: 0.96, y: 10 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.96, y: 10 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-          onClick={(e) => e.stopPropagation()}
-          className="bg-brand-warmWhite w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row relative border border-brand-border h-[500px]"
-        >
-          {/* Close button */}
+    <div className="w-full min-h-screen bg-brand-warmWhite py-16 px-6 md:px-12 lg:px-24 text-brand-espresso">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header Back Button */}
+        <div className="flex items-center justify-between border-b border-brand-border pb-4">
           <button
-            onClick={() => setAccountOpen(false)}
-            className="absolute top-4 right-4 z-10 p-2 text-brand-espresso hover:text-brand-dustyRose bg-brand-white/80 border border-brand-border/60 rounded-full transition-colors"
+            onClick={() => router.push('/')}
+            className="flex items-center gap-1.5 text-xs font-bold tracking-widest text-brand-warmGray hover:text-brand-espresso transition-colors"
           >
-            <X className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" />
+            <span>BACK TO HOME</span>
           </button>
+          <span className="font-display font-extrabold text-sm tracking-[0.25em]">MY ACCOUNT</span>
+        </div>
 
-          {/* Left: Sidebar (3 cols relative) */}
+        {/* Content Container */}
+        <div className="bg-brand-white rounded-3xl overflow-hidden shadow-sm flex flex-col md:flex-row border border-brand-border min-h-[450px]">
+          {/* Left Sidebar */}
           <div className="w-full md:w-1/3 bg-brand-softBeige/40 border-b md:border-b-0 md:border-r border-brand-border/60 p-6 flex flex-col justify-between">
             <div className="space-y-6">
               <div className="flex items-center space-x-3 pb-4 border-b border-brand-border/60">
@@ -65,7 +54,6 @@ export const AccountPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Sidebar Tabs */}
               <nav className="flex md:flex-col overflow-x-auto md:overflow-x-visible space-x-4 md:space-x-0 md:space-y-1 text-xs font-bold tracking-widest text-brand-warmGray">
                 <button
                   onClick={() => setActiveTab('profile')}
@@ -105,13 +93,9 @@ export const AccountPage: React.FC = () => {
                 </button>
               </nav>
             </div>
-
-            {/* Logout button */}
+            
             <button
-              onClick={() => {
-                alert('Logging out of account...');
-                setAccountOpen(false);
-              }}
+              onClick={() => router.push('/')}
               className="hidden md:flex items-center space-x-2 text-xs font-bold tracking-widest text-brand-sale hover:opacity-85 transition-opacity pt-4 border-t border-brand-border/60"
             >
               <LogOut className="w-3.5 h-3.5" />
@@ -119,10 +103,8 @@ export const AccountPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Right: Content panel (2/3 cols relative) */}
-          <div className="flex-grow p-8 overflow-y-auto">
-            
-            {/* Tab: Profile */}
+          {/* Right Content Panel */}
+          <div className="flex-grow p-8">
             {activeTab === 'profile' && (
               <div className="space-y-6">
                 <h4 className="text-xs font-bold tracking-[0.2em] text-brand-espresso border-b border-brand-border pb-2">
@@ -141,15 +123,10 @@ export const AccountPage: React.FC = () => {
                     <span className="text-[10px] text-brand-warmGray block">EMAIL ADDRESS</span>
                     <span className="font-bold">member@aadhya.com</span>
                   </div>
-                  <div>
-                    <span className="text-[10px] text-brand-warmGray block">PHONE CONTACT</span>
-                    <span className="font-bold">+91 98765 43210</span>
-                  </div>
                 </div>
               </div>
             )}
 
-            {/* Tab: Orders */}
             {activeTab === 'orders' && (
               <div className="space-y-6">
                 <h4 className="text-xs font-bold tracking-[0.2em] text-brand-espresso border-b border-brand-border pb-2">
@@ -173,7 +150,6 @@ export const AccountPage: React.FC = () => {
               </div>
             )}
 
-            {/* Tab: Addresses */}
             {activeTab === 'addresses' && (
               <div className="space-y-6">
                 <h4 className="text-xs font-bold tracking-[0.2em] text-brand-espresso border-b border-brand-border pb-2">
@@ -194,7 +170,6 @@ export const AccountPage: React.FC = () => {
               </div>
             )}
 
-            {/* Tab: Track Order */}
             {activeTab === 'track' && (
               <div className="space-y-6">
                 <h4 className="text-xs font-bold tracking-[0.2em] text-brand-espresso border-b border-brand-border pb-2">
@@ -227,11 +202,9 @@ export const AccountPage: React.FC = () => {
                 )}
               </div>
             )}
-
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        </div>
+      </div>
+    </div>
   );
-};
-export default AccountPage;
+}
