@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-warm-white: #FCFAF7;
+    --brand-soft-beige: #F4EFE9;
+    --brand-espresso: #2C2522;
+    --brand-warm-gray: #756E69;
+    --brand-white: #FFFFFF;
+    --brand-dusty-rose: #C98F91;
+    --brand-blush: #F3DFDF;
+    --brand-border: #E8E1DA;
+    --brand-success: #71836C;
+    --brand-sale: #B96F72;
+    
+    --brand-antique-bronze: #9A7955;
+    --brand-gold: #B89A67;
+  }
+
+  body {
+    background-color: var(--brand-warm-white);
+    color: var(--brand-espresso);
+    font-family: 'Inter', 'Manrope', sans-serif;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--brand-warm-white);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--brand-border);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-warm-gray);
+  }
+}
+
+/* Perspective for 3D coin rotation */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Smooth page and element transitions */
+.page-transition {
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
