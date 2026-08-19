@@ -196,9 +196,7 @@ export const Hero: React.FC = () => {
         <div className="lg:col-span-6 flex justify-center items-center relative min-h-[420px] lg:min-h-[480px]">
           <div className="w-full max-w-[420px] aspect-[4/5] flex items-center justify-center relative">
             
-            {/* Subtle background circles for depth */}
-            <div className="absolute w-[80%] h-[80%] rounded-full border border-brand-border/40 pointer-events-none z-0" />
-            <div className="absolute w-[95%] h-[95%] rounded-full border border-brand-border/10 pointer-events-none z-0 animate-spin-slow" />
+            {/* Removed absolute background border circles to prevent framing and background borders */}
 
             <AnimatePresence mode="wait">
               <motion.div
@@ -210,7 +208,7 @@ export const Hero: React.FC = () => {
                 className="w-full h-full z-10 flex items-center justify-center cursor-pointer"
                 onClick={() => setSelectedProduct(currentProduct)}
               >
-                {/* Visual cutout rendering: max size and blend overlay to blend white borders */}
+                {/* Visual cutout rendering: mix-blend-multiply isolates the studio white backdrop completely */}
                 <div className="relative w-full h-[400px] lg:h-[480px] flex items-center justify-center">
                   <motion.img
                     src={currentProduct.image}
