@@ -100,10 +100,10 @@ export const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="mx-4 md:mx-10 bg-[#171311] text-[#FCFAF7] pt-12 pb-8 px-6 md:px-12 mt-20 relative overflow-hidden rounded-[4px] border border-brand-border/10 select-none">
+    <footer className="w-full bg-[#171311] text-[#FCFAF7] pt-16 pb-8 px-6 md:px-12 lg:px-24 mt-20 relative overflow-hidden select-none">
       
       {/* 1. TOP FOOTER NAVIGATION (Clean minimal row) */}
-      <div className="flex flex-col md:flex-row items-center justify-between border-b border-brand-border/10 pb-8 gap-6">
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between border-b border-brand-border/10 pb-8 gap-6">
         <button
           onClick={() => setPage('home')}
           className="font-display text-lg font-bold tracking-[0.25em] text-[#FCFAF7] hover:opacity-85 transition-opacity"
@@ -153,7 +153,7 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* 2. EDITORIAL INTRO COPY BLOCKS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-12 text-left items-center">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 py-12 text-left items-center">
         <div className="space-y-2">
           <h3 className="text-xs font-bold tracking-[0.2em] text-[#FCFAF7]/50 uppercase">
             CRAFTED FOR YOUR EVERYDAY.
@@ -187,7 +187,7 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* 3. GIGANTIC BRAND TYPOGRAPHY HEADER */}
-      <div className="w-full text-center relative pointer-events-none select-none z-10 overflow-hidden leading-none mt-4 mb-[-40px] md:mb-[-100px]">
+      <div className="max-w-6xl mx-auto w-full text-center relative pointer-events-none select-none z-10 overflow-hidden leading-none mt-4 mb-[-40px] md:mb-[-100px]">
         <motion.h2
           initial={{ opacity: 0, y: 70, scale: 0.96 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -201,13 +201,13 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* 4. VISUAL CARDS ROW (Horizontal scroll rail on mobile, col-5 grid on desktop) */}
-      <div className="w-full z-20 relative px-2 md:px-0">
+      <div className="max-w-6xl mx-auto w-full z-20 relative px-2 md:px-0">
         <div className="flex overflow-x-auto pb-4 gap-4 md:grid md:grid-cols-5 md:gap-5 md:pb-0 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
           {/* Card 1: Traditional Saree */}
           <motion.div 
             whileHover={{ scale: 1.03, y: -4 }}
             transition={{ duration: 0.4 }}
-            className="flex-shrink-0 w-[180px] md:w-auto aspect-[3/4] rounded-t-full overflow-hidden bg-brand-espresso/25 border border-brand-border/10 shadow-sm relative group snap-start cursor-pointer"
+            className="flex-shrink-0 w-[180px] md:w-auto aspect-[3/4] rounded-t-full overflow-hidden bg-[#2C2522] border border-brand-border/10 shadow-sm relative group snap-start cursor-pointer"
           >
             <img 
               src="https://images.unsplash.com/photo-1610030470224-3467b4a47530?q=80&w=400&auto=format&fit=crop" 
@@ -224,7 +224,7 @@ export const Footer: React.FC = () => {
           <motion.div 
             whileHover={{ scale: 1.03, y: -4 }}
             transition={{ duration: 0.4 }}
-            className="flex-shrink-0 w-[180px] md:w-auto aspect-[3/4] rounded-t-full overflow-hidden bg-brand-espresso/25 border border-brand-border/10 shadow-sm relative group snap-start cursor-pointer"
+            className="flex-shrink-0 w-[180px] md:w-auto aspect-[3/4] rounded-t-full overflow-hidden bg-[#2C2522] border border-brand-border/10 shadow-sm relative group snap-start cursor-pointer"
           >
             <img 
               src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=400&auto=format&fit=crop" 
@@ -257,7 +257,7 @@ export const Footer: React.FC = () => {
             className="flex-shrink-0 w-[180px] md:w-auto aspect-[3/4] rounded-t-full bg-brand-softBeige/5 border border-brand-border/15 shadow-sm relative snap-start flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-brand-softBeige/10 transition-all duration-300"
           >
             {/* Spinning Coin */}
-            <div className="relative w-20 h-20 rounded-full overflow-hidden border border-brand-gold shadow-lg flex items-center justify-center bg-brand-espresso">
+            <div className="relative w-20 h-20 rounded-full overflow-hidden border border-brand-gold shadow-lg flex items-center justify-center bg-[#171311]">
               <motion.img
                 src="/coin_image.jpg"
                 alt="Rotating Coin"
@@ -280,7 +280,7 @@ export const Footer: React.FC = () => {
           <motion.div 
             whileHover={{ scale: 1.03, y: -4 }}
             transition={{ duration: 0.4 }}
-            className="flex-shrink-0 w-[180px] md:w-auto aspect-[3/4] rounded-t-full overflow-hidden bg-brand-espresso/25 border border-brand-border/10 shadow-sm relative group snap-start cursor-pointer"
+            className="flex-shrink-0 w-[180px] md:w-auto aspect-[3/4] rounded-t-full overflow-hidden bg-[#2C2522] border border-brand-border/10 shadow-sm relative group snap-start cursor-pointer"
           >
             <img 
               src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=400&auto=format&fit=crop" 
