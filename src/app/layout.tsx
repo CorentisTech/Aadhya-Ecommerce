@@ -7,6 +7,7 @@ import { CartDrawer } from '@/components/layout/CartDrawer';
 import { SearchOverlay } from '@/components/layout/SearchOverlay';
 import { ProductModal } from '@/components/ui/ProductModal';
 import { AccountPage } from '@/components/ui/AccountPage';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 
 export const metadata: Metadata = {
   title: "Aadhya | Indian Women's Fashion & Numismatics",
@@ -38,6 +39,7 @@ export default function RootLayout({
           <SearchOverlay />
           <ProductModal />
           <AccountPage />
+          <MobileBottomNav />
         </AppProvider>
       </body>
     </html>

@@ -17,6 +17,8 @@ export interface Product {
   rarity?: 'Common' | 'Scarce' | 'Rare' | 'Very Rare' | 'Extremely Rare'; // For Numismatics
   era?: string; // For Numismatics e.g. "British India", "Mughal Empire"
   year?: string; // For Numismatics
+  rating?: number; // UI/UX star ratings (1-5)
+  reviewsCount?: number; // UI/UX reviews count
 }
 
 export interface Review {
@@ -35,165 +37,230 @@ export interface Category {
   description: string;
   visualType: string;
   visualColor: string;
+  image: string; // Curated Unsplash Campaign Shot
   department: 'fashion' | 'numismatics';
 }
 
 export const CATEGORIES: Category[] = [
-  // Fashion Categories
-  { id: 'sarees', name: 'SAREES', description: 'Timeless nine-yard drapes in silk and georgette.', visualType: 'saree', visualColor: '#C98F91', department: 'fashion' },
-  { id: 'dresses', name: 'DRESSES', description: 'Modern silhouettes designed for everyday elegance.', visualType: 'dress', visualColor: '#71836C', department: 'fashion' },
-  { id: 'bodycon', name: 'BODYCON', description: 'Sculpting fits that make a bold statement.', visualType: 'bodycon', visualColor: '#2C2522', department: 'fashion' },
-  { id: 'ethnic-wear', name: 'ETHNIC WEAR', description: 'Traditional craftsmanship meets modern cuts.', visualType: 'ethnic', visualColor: '#B96F72', department: 'fashion' },
-  { id: 'blouses', name: 'BLOUSES', description: 'Exquisitely tailored overlays and corset styles.', visualType: 'blouse', visualColor: '#F3DFDF', department: 'fashion' },
-  { id: 'kurtis', name: 'KURTIS', description: 'Lightweight linen and cotton essential wear.', visualType: 'kurti', visualColor: '#756E69', department: 'fashion' },
-  { id: 'lehengas', name: 'LEHENGAS', description: 'Oversized skirts crafted for grand Indian festivities.', visualType: 'lehenga', visualColor: '#B89A67', department: 'fashion' },
+  // Fashion Categories (Strict 6 from Reference)
+  {
+    id: 'dresses',
+    name: 'Dresses',
+    description: 'Modern silhouettes designed for everyday elegance.',
+    visualType: 'dress',
+    visualColor: '#71836C',
+    image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop',
+    department: 'fashion'
+  },
+  {
+    id: 'tops-blouses',
+    name: 'Tops & Blouses',
+    description: 'Exquisitely tailored shirts, overlays and blouses.',
+    visualType: 'blouse',
+    visualColor: '#F3DFDF',
+    image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=600&auto=format&fit=crop',
+    department: 'fashion'
+  },
+  {
+    id: 'sweaters',
+    name: 'Sweaters',
+    description: 'Cozy woolens, cardigans and ribbed sweaters.',
+    visualType: 'kurti',
+    visualColor: '#756E69',
+    image: 'https://images.unsplash.com/photo-1574169208507-84376144848b?q=80&w=600&auto=format&fit=crop',
+    department: 'fashion'
+  },
+  {
+    id: 'pants',
+    name: 'Pants',
+    description: 'Sophisticated tailored trousers and casual pants.',
+    visualType: 'bodycon',
+    visualColor: '#2C2522',
+    image: 'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=600&auto=format&fit=crop',
+    department: 'fashion'
+  },
+  {
+    id: 'coord-sets',
+    name: 'Co-ord Sets',
+    description: 'Effortless matching tops and pants ensembles.',
+    visualType: 'bodycon',
+    visualColor: '#2C2522',
+    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop',
+    department: 'fashion'
+  },
+  {
+    id: 'occasion-wear',
+    name: 'Occasion Wear',
+    description: 'Heritage sarees, lehengas and festival coordinates.',
+    visualType: 'saree',
+    visualColor: '#C98F91',
+    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600&auto=format&fit=crop',
+    department: 'fashion'
+  },
 
-  // Numismatics Categories
-  { id: 'indian-coins', name: 'INDIAN COINS', description: 'Historic Indian coinage from ancient to modern eras.', visualType: 'coin', visualColor: '#9A7955', department: 'numismatics' },
-  { id: 'rare-coins', name: 'RARE COINS', description: 'Exceedingly scarce mintages with historical provenance.', visualType: 'coin', visualColor: '#B89A67', department: 'numismatics' },
-  { id: 'commemorative', name: 'COMMEMORATIVE COINS', description: 'Special issue coinage celebrating pivotal milestones.', visualType: 'coin', visualColor: '#756E69', department: 'numismatics' },
-  { id: 'currency-notes', name: 'CURRENCY NOTES', description: 'Paper currency notes from British India and RBI.', visualType: 'note', visualColor: '#71836C', department: 'numismatics' },
-  { id: 'collectors-picks', name: 'COLLECTOR\'S PICKS', description: 'Curated sets and graded numismatic treasures.', visualType: 'coin', visualColor: '#2C2522', department: 'numismatics' }
+  // Numismatics Categories (Curated)
+  { id: 'indian-coins', name: 'INDIAN COINS', description: 'Historic Indian coinage from ancient to modern eras.', visualType: 'coin', visualColor: '#9A7955', image: '/coin_image.jpg', department: 'numismatics' },
+  { id: 'rare-coins', name: 'RARE COINS', description: 'Exceedingly scarce mintages with historical provenance.', visualType: 'coin', visualColor: '#B89A67', image: '/coin_image.jpg', department: 'numismatics' },
+  { id: 'commemorative', name: 'COMMEMORATIVE COINS', description: 'Special issue coinage celebrating pivotal milestones.', visualType: 'coin', visualColor: '#756E69', image: '/coin_image.jpg', department: 'numismatics' },
+  { id: 'currency-notes', name: 'CURRENCY NOTES', description: 'Paper currency notes from British India and RBI.', visualType: 'note', visualColor: '#71836C', image: '/coin_image.jpg', department: 'numismatics' },
+  { id: 'collectors-picks', name: 'COLLECTOR\'S PICKS', description: 'Curated sets and graded numismatic treasures.', visualType: 'coin', visualColor: '#2C2522', image: '/coin_image.jpg', department: 'numismatics' }
 ];
 
 export const PRODUCTS: Product[] = [
-  // Fashion Bestsellers
+  // Fashion Products (Strict 4 from reference grid)
   {
-    id: 'f-best-1',
-    name: 'THE ROSE SILK SAREE',
-    category: 'SAREES',
+    id: 'f-prod-1',
+    name: 'Floral Midi Dress',
+    category: 'Dresses',
     price: 2999,
     mrp: 4499,
     discount: 33,
-    description: 'Elegant handcrafted Kanjivaram silk saree with intricate floral-embellished borders, designed for modern celebrations and heirlooms.',
-    image: 'saree_rose.jpg',
-    visualType: 'saree',
-    visualColor: '#C98F91',
-    visualPattern: 'floral-embroidery',
-    colors: ['#C98F91', '#F3DFDF', '#2C2522'],
-    sizes: ['Free Size'],
-    bestseller: true,
-    department: 'fashion'
-  },
-  {
-    id: 'f-best-2',
-    name: 'AURUM BANARASI DRAPE',
-    category: 'SAREES',
-    price: 4500,
-    mrp: 5999,
-    discount: 25,
-    description: 'Rich metallic gold weave Banarasi saree featuring heritage motifs woven by master artisans on fine mulberry silk.',
-    image: 'saree_aurum.jpg',
-    visualType: 'saree',
-    visualColor: '#B89A67',
-    visualPattern: 'gold-brocade',
-    colors: ['#B89A67', '#2C2522'],
-    sizes: ['Free Size'],
-    bestseller: true,
-    department: 'fashion'
-  },
-  {
-    id: 'f-best-3',
-    name: 'IVORY GEORGETTE DRAPE',
-    category: 'DRESSES',
-    price: 3200,
-    mrp: 4799,
-    discount: 33,
-    description: 'Asymmetric ivory georgette cocktail dress with layered fluid drapes and a structured single-shoulder neckline.',
-    image: 'dress_ivory.jpg',
+    description: 'A beautiful light floral print georgette midi dress with tiered ruffle detailing and an elegant waist sash.',
+    image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=600&auto=format&fit=crop',
     visualType: 'dress',
-    visualColor: '#F4EFE9',
-    visualPattern: 'silk-sheen',
-    colors: ['#F4EFE9', '#F3DFDF', '#756E69'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    bestseller: true,
-    department: 'fashion'
-  },
-  {
-    id: 'f-best-4',
-    name: 'SCARLET VELVET LEHENGA',
-    category: 'LEHENGAS',
-    price: 7999,
-    mrp: 11999,
-    discount: 33,
-    description: 'A striking scarlet velvet panelled lehenga skirt combined with a heavily hand-embroidered floral choli and organza dupatta.',
-    image: 'lehenga_scarlet.jpg',
-    visualType: 'lehenga',
-    visualColor: '#B96F72',
+    visualColor: '#F3DFDF',
     visualPattern: 'floral-embroidery',
-    colors: ['#B96F72', '#2C2522'],
-    sizes: ['S', 'M', 'L'],
+    colors: ['#F3DFDF', '#C98F91'],
+    sizes: ['S', 'M', 'L', 'XL'],
     bestseller: true,
-    department: 'fashion'
+    department: 'fashion',
+    rating: 4,
+    reviewsCount: 128
   },
-
-  // Fashion New Arrivals & General Products
   {
-    id: 'f-prod-5',
-    name: 'MIDNIGHT CO-ORD SET',
-    category: 'CO-ORD SETS',
+    id: 'f-prod-2',
+    name: 'Elegant Puff Sleeve Top',
+    category: 'Tops & Blouses',
     price: 2499,
     mrp: 3499,
     discount: 28,
-    description: 'Sophisticated midnight espresso silk co-ord set with relaxed trousers and an asymmetric buttoned tunic blouse.',
-    image: 'coord_midnight.jpg',
+    description: 'Tailored ivory cotton shirt featuring structural balloon puff sleeves, front mother-of-pearl buttons and clean cuffs.',
+    image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop',
+    visualType: 'blouse',
+    visualColor: '#FFFFFF',
+    visualPattern: 'plain',
+    colors: ['#FFFFFF', '#FCFAF7'],
+    sizes: ['XS', 'S', 'M', 'L'],
+    bestseller: true,
+    department: 'fashion',
+    rating: 4,
+    reviewsCount: 256
+  },
+  {
+    id: 'f-prod-3',
+    name: 'Ribbed Knit Sweater',
+    category: 'Sweaters',
+    price: 2999,
+    mrp: 3999,
+    discount: 25,
+    description: 'Cozy neutral beige cropped knit pullover styled with vertical ribbing, a relaxed crewneck, and soft drop shoulders.',
+    image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=600&auto=format&fit=crop',
+    visualType: 'kurti',
+    visualColor: '#756E69',
+    visualPattern: 'plain',
+    colors: ['#756E69', '#2C2522'],
+    sizes: ['S', 'M', 'L', 'XL'],
+    bestseller: true,
+    department: 'fashion',
+    rating: 4,
+    reviewsCount: 174
+  },
+  {
+    id: 'f-prod-4',
+    name: 'Chic Co-ord Set',
+    category: 'Co-ord Sets',
+    price: 3999,
+    mrp: 5999,
+    discount: 33,
+    description: 'Premium dusk-rose utility linen matching blouse and trouser set, delivering a polished modern structural silhouette.',
+    image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=600&auto=format&fit=crop',
     visualType: 'bodycon',
     visualColor: '#2C2522',
     visualPattern: 'plain',
     colors: ['#2C2522', '#756E69'],
     sizes: ['XS', 'S', 'M', 'L'],
-    department: 'fashion'
+    bestseller: true,
+    department: 'fashion',
+    rating: 4,
+    reviewsCount: 221
   },
+
+  // Supporting Editorial Fashion Items
   {
-    id: 'f-prod-6',
-    name: 'BLUSH CORSET BLOUSE',
-    category: 'BLOUSES',
-    price: 1899,
-    mrp: 2699,
-    discount: 29,
-    description: 'Tailored blush pink corset style crop blouse with padded structure, featuring a gold hook enclosure at the back.',
-    image: 'blouse_blush.jpg',
-    visualType: 'blouse',
-    visualColor: '#F3DFDF',
-    visualPattern: 'silk-sheen',
-    colors: ['#F3DFDF', '#C98F91', '#FFFFFF'],
-    sizes: ['XS', 'S', 'M', 'L'],
-    department: 'fashion'
-  },
-  {
-    id: 'f-prod-7',
-    name: 'SAGE LINEN KURTI',
-    category: 'KURTIS',
+    id: 'f-prod-5',
+    name: 'Sage Linen Kurti',
+    category: 'Occasion Wear',
     price: 1599,
     mrp: 2299,
     discount: 30,
-    description: 'Breathable organic linen kurti in sage green, featuring hand-embroidered French knots around the Mandarin collar.',
-    image: 'kurti_sage.jpg',
-    visualType: 'kurti',
+    description: 'Sophisticated sage green organic linen daily wear kurti with clean Mandarin collar and handwoven silver pin-stripes.',
+    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600&auto=format&fit=crop',
+    visualType: 'ethnic',
     visualColor: '#71836C',
     visualPattern: 'plain',
     colors: ['#71836C', '#F4EFE9'],
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    department: 'fashion'
+    sizes: ['S', 'M', 'L', 'XL'],
+    department: 'fashion',
+    rating: 4,
+    reviewsCount: 95
+  },
+  {
+    id: 'f-prod-6',
+    name: 'Midnight Wide Trousers',
+    category: 'Pants',
+    price: 1899,
+    mrp: 2699,
+    discount: 29,
+    description: 'High-waisted wide-leg tailored trousers in deep espresso, complete with double front pleats and side slip pockets.',
+    image: 'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=600&auto=format&fit=crop',
+    visualType: 'bodycon',
+    visualColor: '#2C2522',
+    colors: ['#2C2522'],
+    sizes: ['XS', 'S', 'M', 'L'],
+    department: 'fashion',
+    rating: 4,
+    reviewsCount: 45
+  },
+  {
+    id: 'f-prod-7',
+    name: 'The Rose Silk Saree',
+    category: 'Occasion Wear',
+    price: 2999,
+    mrp: 4499,
+    discount: 33,
+    description: 'A classic heritage Kanjivaram rose pink silk saree with dense gold zari handwoven checks and a solid matching border.',
+    image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600&auto=format&fit=crop',
+    visualType: 'saree',
+    visualColor: '#C98F91',
+    visualPattern: 'floral-embroidery',
+    colors: ['#C98F91', '#FFFFFF'],
+    sizes: ['Free Size'],
+    bestseller: true,
+    department: 'fashion',
+    rating: 5,
+    reviewsCount: 198
   },
   {
     id: 'f-prod-8',
-    name: 'DUSK EMBROIDERED SAREE',
-    category: 'SAREES',
-    price: 3499,
-    mrp: 4999,
-    discount: 30,
-    description: 'Delicate charcoal gray organza saree adorned with detailed silver metallic threadwork vine motifs along the borders.',
-    image: 'saree_dusk.jpg',
-    visualType: 'saree',
-    visualColor: '#756E69',
-    visualPattern: 'floral-embroidery',
-    colors: ['#756E69', '#2C2522'],
-    sizes: ['Free Size'],
-    department: 'fashion'
+    name: 'Ivory Georgette Drape',
+    category: 'Dresses',
+    price: 3200,
+    mrp: 4799,
+    discount: 33,
+    description: 'Layered fluid ivory georgette dress with a structured single shoulder strap and modern asymmetrical drapes.',
+    image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop',
+    visualType: 'dress',
+    visualColor: '#F4EFE9',
+    visualPattern: 'silk-sheen',
+    colors: ['#F4EFE9'],
+    sizes: ['S', 'M', 'L'],
+    bestseller: true,
+    department: 'fashion',
+    rating: 5,
+    reviewsCount: 88
   },
 
-  // Numismatics Products (Coins & notes)
+  // Numismatics Products (Coins & notes - Preserved exact business fields)
   {
     id: 'n-prod-1',
     name: 'KING GEORGE VI SILVER RUPEE',
@@ -202,7 +269,7 @@ export const PRODUCTS: Product[] = [
     mrp: 4500,
     discount: 22,
     description: 'British India King George VI Silver One Rupee coin. Beautiful original luster, minted in Bombay in 1940. A historic silver collector\'s treasure.',
-    image: 'coin_george.jpg',
+    image: '/coin_image.jpg',
     visualType: 'coin',
     visualColor: '#9A7955',
     visualPattern: 'antique-metallic',
@@ -220,7 +287,7 @@ export const PRODUCTS: Product[] = [
     mrp: 12000,
     discount: 29,
     description: 'Queen Victoria Empress silver Two Annas coin dated 1885. Exceedingly sharp details with fine toning. Highly sought after by advanced numismatists.',
-    image: 'coin_victoria.jpg',
+    image: '/coin_image.jpg',
     visualType: 'coin',
     visualColor: '#B89A67',
     visualPattern: 'antique-metallic',
@@ -238,7 +305,7 @@ export const PRODUCTS: Product[] = [
     mrp: 15000,
     discount: 16,
     description: 'Mughal Empire Shah Alam II Silver Rupee coin, minted at Murshidabad, RY 19. Complete inscriptions in Persian, high grading status.',
-    image: 'coin_mughal.jpg',
+    image: '/coin_image.jpg',
     visualType: 'coin',
     visualColor: '#9A7955',
     visualPattern: 'antique-metallic',
@@ -274,7 +341,7 @@ export const PRODUCTS: Product[] = [
     mrp: 6500,
     discount: 23,
     description: 'Republic of India 1950 First Coinage Set. Features the iconic Ashoka Lion capital emblem on 7 original coins. Housed in a custom velvet display booklet.',
-    image: 'coin_set_1950.jpg',
+    image: '/coin_image.jpg',
     visualType: 'coin',
     visualColor: '#B89A67',
     visualPattern: 'antique-metallic',

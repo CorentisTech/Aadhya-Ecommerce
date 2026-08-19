@@ -1,58 +1,109 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Search, Heart, User, ShoppingBag, Menu, X } from 'lucide-react';
+import { Search, Heart, User, ShoppingBag, Menu, X, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const Navbar: React.FC = () => {
-  const {
-    activePage,
-    setPage,
-    cart,
-    wishlist,
-    setCartOpen,
-    setSearchOpen,
-    setAccountOpen,
+  const { 
+    activePage, 
+    setPage, 
+    cart, 
+    wishlist, 
+    setSearchOpen, 
+    setAccountOpen, 
+    setCartOpen 
   } = useApp();
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [numismaticsHovered, setNumismaticsHovered] = useState(false);
+
+  // Monitor scroll height to trigger background blur
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Monitor escape key to close sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
 
-  // Navigate to sections on fashion homepage
   const handleNavClick = (sectionId: string) => {
     setPage('home');
-    setMobileMenuOpen(false);
+    setSidebarOpen(false);
     setTimeout(() => {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
   };
 
+  // Stagger variants for sidebar links
+  const sidebarVariants = {
+    closed: { 
+      x: '-100%', 
+      transition: { type: 'spring', damping: 25, stiffness: 200 } 
+    },
+    open: { 
+      x: 0, 
+      transition: { type: 'spring', damping: 25, stiffness: 200 } 
+    }
+  };
+
+  const listVariants = {
+    closed: {},
+    open: {
+      transition: { staggerChildren: 0.06 }
+    }
+  };
+
+  const itemVariants = {
+    closed: { opacity: 0, x: -20 },
+    open: { opacity: 1, x: 0, transition: { duration: 0.4, ease: 'easeOut' } }
+  };
+
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-brand-warmWhite border-b border-brand-border/60 py-4 px-6 md:px-12 flex items-center justify-between">
-        {/* Left: Brand Wordmark */}
+      {/* Navbar Container */}
+      <header 
+        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+          isScrolled 
+            ? 'bg-brand-warmWhite/85 backdrop-blur-lg border-b border-brand-border/60 py-3' 
+            : 'bg-brand-warmWhite border-b border-brand-border/20 py-5'
+        } px-6 md:px-12 flex items-center justify-between`}
+      >
+        {/* Left: Brand Logo Wordmark */}
         <div className="flex items-center">
           <button
             onClick={() => setPage('home')}
-            className="font-display text-2xl md:text-3xl font-bold tracking-[0.2em] text-brand-espresso hover:opacity-85 transition-opacity"
+            className="font-display text-xl md:text-2xl font-bold tracking-[0.25em] text-brand-espresso hover:opacity-85 transition-opacity"
           >
             AADHYA
           </button>
         </div>
 
-        {/* Center/Left Nav Menu (Desktop) */}
-        <nav className="hidden md:flex items-center space-x-8 text-xs font-semibold tracking-[0.15em] text-brand-espresso">
+        {/* Center: Desktop Navigation Links */}
+        <nav className="hidden md:flex items-center space-x-8 text-[10px] font-bold tracking-[0.2em] text-brand-espresso">
           <button
             onClick={() => handleNavClick('bestsellers')}
             className="hover:text-brand-dustyRose transition-colors relative py-1 group"
           >
-            BESTSELLERS
+            BEST SELLERS
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-dustyRose transition-all duration-300 group-hover:w-full" />
           </button>
           <button
@@ -70,14 +121,14 @@ export const Navbar: React.FC = () => {
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-dustyRose transition-all duration-300 group-hover:w-full" />
           </button>
           <button
-            onClick={() => handleNavClick('about-us')}
+            onClick={() => handleNavClick('categories')} // Curations
             className="hover:text-brand-dustyRose transition-colors relative py-1 group"
           >
             ABOUT US
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-dustyRose transition-all duration-300 group-hover:w-full" />
           </button>
 
-          {/* Special Numismatics navigation link */}
+          {/* Numismatics Item with custom popup card */}
           <div
             className="relative"
             onMouseEnter={() => setNumismaticsHovered(true)}
@@ -91,14 +142,14 @@ export const Navbar: React.FC = () => {
                   : 'border-brand-border/80 text-brand-warmGray'
               }`}
             >
-              {/* Rotating Coin Visual */}
+              {/* Spinning Coin */}
               <div className="relative w-4 h-4 perspective-1000 preserve-3d">
                 <motion.div
-                  className="w-full h-full rounded-full bg-brand-gold border border-brand-antiqueBronze/40 flex items-center justify-center text-[8px] font-bold text-brand-espresso"
+                  className="w-full h-full rounded-full bg-brand-gold border border-brand-antiqueBronze/40 flex items-center justify-center text-[7px] font-bold text-brand-espresso"
                   animate={{ rotateY: 360 }}
                   transition={{
                     repeat: Infinity,
-                    duration: numismaticsHovered ? 2 : 6,
+                    duration: numismaticsHovered ? 2.5 : 7,
                     ease: 'linear',
                   }}
                   style={{ backfaceVisibility: 'hidden' }}
@@ -106,10 +157,10 @@ export const Navbar: React.FC = () => {
                   🪙
                 </motion.div>
               </div>
-              <span className="tracking-[0.2em] font-bold text-[10px]">NUMISMATICS</span>
+              <span className="tracking-[0.2em] font-extrabold text-[9px] uppercase">NUMISMATICS</span>
             </button>
 
-            {/* Premium Tooltip */}
+            {/* Premium Gold Accent Tooltip Popover */}
             <AnimatePresence>
               {numismaticsHovered && (
                 <motion.div
@@ -117,34 +168,38 @@ export const Navbar: React.FC = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 5, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute left-1/2 -translate-x-1/2 mt-2 w-48 bg-brand-espresso text-brand-warmWhite text-[10px] tracking-[0.1em] font-medium py-2 px-3 text-center rounded shadow-lg z-50"
+                  className="absolute left-1/2 -translate-x-1/2 mt-2.5 w-52 bg-brand-espresso text-brand-warmWhite text-[9px] tracking-[0.12em] font-bold py-3.5 px-4 text-center rounded-2xl shadow-xl z-50 border border-brand-gold/30"
                 >
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-brand-espresso rotate-45" />
-                  Explore Coins & Currency
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-brand-espresso rotate-45 border-t border-l border-brand-gold/30" />
+                  <p className="mb-2 text-brand-softBeige">Explore Coins & Currency</p>
+                  <div className="flex items-center justify-center gap-1 text-brand-gold hover:text-brand-white transition-colors cursor-pointer text-[8px] tracking-[0.2em] uppercase font-extrabold">
+                    <span>EXPLORE</span>
+                    <ArrowRight className="w-2.5 h-2.5" />
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </nav>
 
-        {/* Right Actions Menu */}
-        <div className="flex items-center space-x-5 text-brand-espresso">
+        {/* Right: Core Actions Grid */}
+        <div className="flex items-center space-x-4 text-brand-espresso">
           <button
             onClick={() => setSearchOpen(true)}
-            aria-label="Search Catalog"
+            aria-label="Search"
             className="hover:text-brand-dustyRose transition-colors p-1"
           >
-            <Search className="w-5 h-5 stroke-[1.5]" />
+            <Search className="w-4 h-4 stroke-[2]" />
           </button>
           
           <button
             onClick={() => setPage('wishlist')}
-            aria-label="View Wishlist"
+            aria-label="Wishlist"
             className="hover:text-brand-dustyRose transition-colors p-1 relative"
           >
-            <Heart className={`w-5 h-5 stroke-[1.5] ${activePage === 'wishlist' ? 'fill-brand-dustyRose stroke-brand-dustyRose' : ''}`} />
+            <Heart className={`w-4 h-4 stroke-[2] ${activePage === 'wishlist' ? 'fill-brand-dustyRose stroke-brand-dustyRose' : ''}`} />
             {wishlist.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-brand-sale text-brand-warmWhite text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-brand-sale text-brand-warmWhite text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
                 {wishlist.length}
               </span>
             )}
@@ -152,142 +207,189 @@ export const Navbar: React.FC = () => {
 
           <button
             onClick={() => setAccountOpen(true)}
-            aria-label="Open Account"
+            aria-label="Account"
             className="hover:text-brand-dustyRose transition-colors p-1"
           >
-            <User className="w-5 h-5 stroke-[1.5]" />
+            <User className="w-4 h-4 stroke-[2]" />
           </button>
 
           <button
             onClick={() => setCartOpen(true)}
-            aria-label="Open Cart"
+            aria-label="Cart"
             className="hover:text-brand-dustyRose transition-colors p-1 relative"
           >
-            <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
+            <ShoppingBag className="w-4 h-4 stroke-[2]" />
             {cartItemsCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-brand-espresso text-brand-warmWhite text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-brand-espresso text-brand-warmWhite text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
                 {cartItemsCount}
               </span>
             )}
           </button>
 
-          {/* Burger Menu for mobile */}
+          {/* Desktop & Mobile General Menu Icon (Opens left side panel) */}
           <button
-            onClick={() => setMobileMenuOpen(true)}
-            aria-label="Open Menu"
-            className="md:hidden p-1 hover:text-brand-dustyRose transition-colors"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Menu"
+            className="p-1 hover:text-brand-dustyRose transition-colors border-l border-brand-border/60 pl-3 ml-1"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="w-5 h-5 stroke-[2]" />
           </button>
         </div>
       </header>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Modern Glassy Navigation Drawer (opens from Left) */}
       <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-brand-espresso/40 backdrop-blur-sm md:hidden"
-          >
+        {sidebarOpen && (
+          <>
+            {/* Dark background overlay */}
             <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm bg-brand-warmWhite shadow-2xl p-8 flex flex-col justify-between"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSidebarOpen(false)}
+              className="fixed inset-0 z-50 bg-brand-espresso/35 backdrop-blur-sm"
+            />
+
+            {/* Glassy Sidebar panel (opens from left) */}
+            <motion.div
+              variants={sidebarVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
+              className="fixed left-0 top-0 bottom-0 z-50 w-full max-w-sm bg-[#FCFAF7]/75 backdrop-blur-xl border-r border-[#E8E1DA]/80 shadow-2xl p-8 flex flex-col justify-between"
             >
-              {/* Close Button */}
-              <div className="flex items-center justify-between border-b border-brand-border/60 pb-4">
-                <span className="font-display font-bold tracking-widest text-brand-espresso">AADHYA</span>
+              {/* Close Head block */}
+              <div className="flex items-center justify-between border-b border-brand-border pb-4">
+                <span className="font-display font-bold tracking-[0.25em] text-brand-espresso">AADHYA</span>
                 <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-1 hover:text-brand-dustyRose transition-colors"
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-1.5 hover:bg-brand-softBeige/60 rounded-full transition-colors"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5 text-brand-warmGray" />
                 </button>
               </div>
 
-              {/* Menu Links */}
-              <div className="flex-grow py-8 space-y-8 overflow-y-auto">
-                <div className="space-y-4">
-                  <h4 className="text-[10px] tracking-[0.2em] font-bold text-brand-warmGray uppercase border-b border-brand-border pb-1">
-                    FASHION DEPARTMENT
-                  </h4>
-                  <div className="flex flex-col space-y-3 font-display text-lg text-brand-espresso">
-                    <button
+              {/* Staggered Links Container */}
+              <motion.div 
+                variants={listVariants}
+                className="flex-grow py-8 space-y-8 overflow-y-auto"
+              >
+                <div className="space-y-4 text-left">
+                  <span className="text-[9px] tracking-[0.25em] font-extrabold text-brand-warmGray block">
+                    DEPARTMENTS
+                  </span>
+                  
+                  <nav className="flex flex-col space-y-3.5 font-display text-xl font-bold tracking-wide text-brand-espresso">
+                    <motion.button
+                      variants={itemVariants}
+                      onClick={() => { setPage('home'); setSidebarOpen(false); }}
+                      className="text-left hover:text-brand-dustyRose transition-colors"
+                    >
+                      HOME
+                    </motion.button>
+                    
+                    <motion.button
+                      variants={itemVariants}
                       onClick={() => handleNavClick('bestsellers')}
                       className="text-left hover:text-brand-dustyRose transition-colors"
                     >
-                      Best Sellers
-                    </button>
-                    <button
+                      BEST SELLERS
+                    </motion.button>
+                    
+                    <motion.button
+                      variants={itemVariants}
                       onClick={() => handleNavClick('new-arrivals')}
                       className="text-left hover:text-brand-dustyRose transition-colors"
                     >
-                      New Arrivals
-                    </button>
-                    <button
+                      NEW ARRIVALS
+                    </motion.button>
+                    
+                    <motion.button
+                      variants={itemVariants}
                       onClick={() => handleNavClick('categories')}
                       className="text-left hover:text-brand-dustyRose transition-colors"
                     >
-                      Categories
-                    </button>
-                    <button
-                      onClick={() => handleNavClick('about-us')}
+                      CATEGORIES
+                    </motion.button>
+
+                    <motion.button
+                      variants={itemVariants}
+                      onClick={() => { setPage('home'); setSidebarOpen(false); }}
                       className="text-left hover:text-brand-dustyRose transition-colors"
                     >
-                      About Us
-                    </button>
-                  </div>
-                </div>
+                      SHOP
+                    </motion.button>
 
-                <div className="space-y-4 pt-4 border-t border-brand-border/60">
-                  <h4 className="text-[10px] tracking-[0.2em] font-bold text-brand-antiqueBronze uppercase border-b border-brand-border pb-1">
-                    NUMISMATICS DEPARTMENT
-                  </h4>
-                  <div className="flex flex-col space-y-4">
-                    <button
-                      onClick={() => {
-                        setPage('numismatics');
-                        setMobileMenuOpen(false);
-                      }}
-                      className="flex items-center space-x-3 p-3 bg-brand-softBeige border border-brand-antiqueBronze/30 rounded-lg text-brand-antiqueBronze text-left font-display text-lg"
+                    <motion.button
+                      variants={itemVariants}
+                      onClick={() => handleNavClick('categories')} // About
+                      className="text-left hover:text-brand-dustyRose transition-colors"
                     >
-                      {/* Spin Coin inside button */}
-                      <span className="w-5 h-5 animate-spin-coin flex items-center justify-center bg-brand-gold rounded-full border border-brand-antiqueBronze text-xs">
-                        🪙
-                      </span>
-                      <span className="font-bold tracking-wide">Coins & Notes</span>
-                    </button>
-                  </div>
+                      ABOUT US
+                    </motion.button>
+                  </nav>
                 </div>
-              </div>
 
-              {/* Account / Support in Mobile Footer */}
-              <div className="border-t border-brand-border/60 pt-4 flex flex-col space-y-3 text-xs tracking-wider text-brand-warmGray font-semibold">
-                <button
-                  onClick={() => {
-                    setAccountOpen(true);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="text-left hover:text-brand-espresso transition-colors"
+                {/* Separator line */}
+                <div className="w-full h-px bg-brand-border" />
+
+                {/* Coin Special Item */}
+                <motion.div variants={itemVariants} className="space-y-4 text-left">
+                  <button
+                    onClick={() => {
+                      setPage('numismatics');
+                      setSidebarOpen(false);
+                    }}
+                    className="flex items-center space-x-3.5 px-4 py-3 bg-brand-softBeige border border-brand-antiqueBronze/20 rounded-2xl text-brand-antiqueBronze text-left font-display text-lg w-full shadow-sm hover:bg-brand-softBeige/70 transition-colors"
+                  >
+                    <span className="w-6 h-6 animate-spin-coin flex items-center justify-center bg-brand-gold rounded-full border border-brand-antiqueBronze text-xs">
+                      🪙
+                    </span>
+                    <span className="font-extrabold tracking-[0.1em] text-sm">NUMISMATICS</span>
+                  </button>
+                </motion.div>
+
+                {/* Separator line */}
+                <div className="w-full h-px bg-brand-border" />
+
+                {/* Sub links */}
+                <motion.div 
+                  variants={itemVariants}
+                  className="flex flex-col space-y-3 text-[11px] font-bold tracking-widest text-brand-warmGray text-left"
                 >
-                  My Account
-                </button>
-                <button
-                  onClick={() => {
-                    setPage('wishlist');
-                    setMobileMenuOpen(false);
-                  }}
-                  className="text-left hover:text-brand-espresso transition-colors"
-                >
-                  Saved Items ({wishlist.length})
-                </button>
+                  <button
+                    onClick={() => { setAccountOpen(true); setSidebarOpen(false); }}
+                    className="text-left hover:text-brand-espresso transition-colors"
+                  >
+                    ACCOUNT
+                  </button>
+                  <button
+                    onClick={() => { setPage('wishlist'); setSidebarOpen(false); }}
+                    className="text-left hover:text-brand-espresso transition-colors"
+                  >
+                    WISHLIST
+                  </button>
+                  <button
+                    onClick={() => { setAccountOpen(true); setSidebarOpen(false); }}
+                    className="text-left hover:text-brand-espresso transition-colors"
+                  >
+                    ORDERS
+                  </button>
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="text-left hover:text-brand-espresso transition-colors"
+                  >
+                    HELP & SUPPORT
+                  </button>
+                </motion.div>
+              </motion.div>
+
+              {/* Sidebar Footer info */}
+              <div className="border-t border-brand-border pt-4 text-[9px] text-brand-warmGray font-bold tracking-wider text-left">
+                © 2026 AADHYA. All Rights Reserved.
               </div>
             </motion.div>
-          </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
