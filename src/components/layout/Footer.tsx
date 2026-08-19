@@ -114,7 +114,7 @@ export const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="w-full bg-[#DE7A8C] text-[#47271B] pt-12 pb-6 px-4 md:px-12 lg:px-24 mt-20 relative overflow-hidden select-none">
+    <footer className="w-full bg-[#DE7A8C] text-[#47271B] pt-16 pb-24 md:pb-8 px-6 md:px-12 lg:px-24 mt-20 relative overflow-hidden select-none">
       
       {/* Top Section (2 Columns: Left details, Right scalloped cream block) */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch relative z-20">
