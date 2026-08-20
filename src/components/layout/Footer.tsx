@@ -114,7 +114,7 @@ export const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="w-full bg-[#F9E1D3] text-[#47271B] pt-16 pb-24 md:pb-8 px-6 md:px-12 lg:px-24 mt-20 relative overflow-hidden select-none">
+    <footer className="w-full bg-[#DE7A8C] text-[#47271B] pt-16 pb-24 md:pb-8 px-6 md:px-12 lg:px-24 mt-20 relative overflow-hidden select-none">
       
       {/* Top Section (2 Columns: Left details, Right scalloped cream block) */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch relative z-20">
@@ -124,7 +124,7 @@ export const Footer: React.FC = () => {
           <div className="space-y-4">
             {/* Elegant Cloud-Coin Hug Logo */}
             <div className="flex items-center space-x-2">
-              <div className="w-12 h-12 rounded-full border-2 border-[#FCF5E5] bg-[#F9E1D3] flex items-center justify-center shadow-md relative overflow-hidden">
+              <div className="w-12 h-12 rounded-full border-2 border-[#FCF5E5] bg-[#DE7A8C] flex items-center justify-center shadow-md relative overflow-hidden">
                 <div className="absolute inset-1.5 rounded-full border border-dashed border-[#FCF5E5]/60" />
                 <Disc className="w-6 h-6 text-[#FCF5E5] animate-spin-slow" />
               </div>
@@ -154,7 +154,7 @@ export const Footer: React.FC = () => {
                   <a
                     key={idx}
                     href={item.href}
-                    className="w-8 h-8 rounded-full border border-[#FCF5E5] bg-[#F9E1D3] text-[#FCF5E5] flex items-center justify-center hover:bg-[#FCF5E5] hover:text-[#F26A2E] transition-all shadow-sm"
+                    className="w-8 h-8 rounded-full border border-[#FCF5E5] bg-[#DE7A8C] text-[#FCF5E5] flex items-center justify-center hover:bg-[#FCF5E5] hover:text-[#DE7A8C] transition-all shadow-sm"
                   >
                     <Icon className="w-3.5 h-3.5" />
                   </a>
@@ -184,7 +184,7 @@ export const Footer: React.FC = () => {
           {/* Dynamic Scalloped Edge Half-Circles on Left (Visible only on desktop viewports) */}
           <div className="hidden lg:flex absolute top-0 bottom-0 left-0 w-3 -translate-x-1/2 flex-col justify-between py-3 overflow-hidden pointer-events-none">
             {Array(16).fill(0).map((_, i) => (
-              <div key={i} className="w-6 h-6 rounded-full bg-[#F9E1D3] -translate-x-1/2" />
+              <div key={i} className="w-6 h-6 rounded-full bg-[#DE7A8C] -translate-x-1/2" />
             ))}
           </div>
 
@@ -220,11 +220,11 @@ export const Footer: React.FC = () => {
                         {section.links.map((link) => (
                           <li key={link.name}>
                             {link.action ? (
-                              <button onClick={link.action} className="hover:text-[#F26A2E] transition-colors text-left">
+                              <button onClick={link.action} className="hover:text-[#DE7A8C] transition-colors text-left">
                                 {link.name}
                               </button>
                             ) : (
-                              <a href={link.href} className="hover:text-[#F26A2E] transition-colors">
+                              <a href={link.href} className="hover:text-[#DE7A8C] transition-colors">
                                 {link.name}
                               </a>
                             )}
