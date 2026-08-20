@@ -22,6 +22,17 @@ export const Hero: React.FC = () => {
   // Filter bestsellers for the hero showcase (synced to custom public images)
   const bestsellers = PRODUCTS.filter((p) => p.bestseller && p.department === 'fashion');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Monitor screen width to remove height limits on mobile viewports
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // States for size/color selections
   const [selectedSize, setSelectedSize] = useState('');
@@ -57,11 +68,11 @@ export const Hero: React.FC = () => {
 
   return (
     <section 
-      className="w-full relative flex items-center justify-center py-8 sm:py-16 px-6 md:px-12 lg:px-24 overflow-hidden border-b border-brand-border/40 select-none bg-[#FCFAF7]"
+      className="w-full relative flex items-center justify-center py-3 sm:py-16 px-4 sm:px-12 lg:px-24 overflow-hidden border-b border-brand-border/40 select-none bg-[#FCFAF7]"
       style={{
         // 80-90% warm white with subtle orange glow influence
         background: 'radial-gradient(circle at 75% 50%, rgba(242, 106, 46, 0.05) 0%, rgba(252, 250, 247, 1) 70%), #FCFAF7',
-        minHeight: 'clamp(480px, 78vh, 650px)'
+        minHeight: isMobile ? 'auto' : 'clamp(480px, 78vh, 650px)'
       }}
     >
       {/* 2-column responsive layout (Side-by-side on mobile as well to prevent stacking) */}
