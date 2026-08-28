@@ -37,6 +37,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState(false);
+  const [isImgZoomed, setImgZoomed] = useState(false);
 
   // Lightbox Modals
   const [isGalleryOpen, setGalleryOpen] = useState(false);
@@ -134,114 +135,209 @@ export default function ProductDetailPage({ params }: PageProps) {
             <X className="w-4 h-4" />
           </button>
 
-          {/* Editorial Grid (Side-by-side on mobile as well using col-span-7 and col-span-5) */}
-          <div className="grid grid-cols-12 gap-4 lg:gap-8 items-stretch pt-4">
+          {/* Mobile Structure (Visible below lg) */}
+          <div className="block lg:hidden space-y-6 text-left">
             
-            {/* Left Column: Product Information & Specs (7 cols on mobile, 4 cols on desktop) */}
-            <div className="col-span-7 lg:col-span-4 flex flex-col justify-between text-left space-y-4 md:space-y-8 min-h-[300px]">
+            {/* 1. Title Block at Top */}
+            <div className="space-y-3 pt-2">
+              <span className="text-[9px] text-brand-warmGray font-bold tracking-[0.25em] uppercase block">
+                artisan weaves
+              </span>
+              <h1 className="font-display font-bold text-2xl text-brand-espresso leading-tight">
+                {product.name}
+              </h1>
+              <p className="text-xs text-[#756E69] leading-relaxed font-semibold">
+                {product.description}
+              </p>
+              <div>
+                <span className="text-[10px] font-bold text-brand-espresso tracking-widest uppercase block">
+                  {product.fabric ? `${product.fabric.toUpperCase()}` : 'RAW SILK'}
+                </span>
+              </div>
+            </div>
+
+            {/* 2. Image Viewport */}
+            <div className="w-full aspect-[3/4] bg-brand-softBeige/10 rounded-2xl overflow-hidden relative shadow-md">
+              <img
+                src={activeImages[activeImageIndex]}
+                alt={product.name}
+                className={`w-full h-full object-cover transition-transform duration-350 ${
+                  isImgZoomed ? 'scale-150 cursor-zoom-out' : 'scale-100 cursor-zoom-in'
+                }`}
+                onClick={() => setImgZoomed(!isImgZoomed)}
+              />
+
+              {/* Fullscreen icon */}
+              <button
+                onClick={() => {
+                  setLightboxImageIndex(activeImageIndex);
+                  setGalleryOpen(true);
+                }}
+                className="absolute bottom-3 right-3 p-1.5 bg-[#FFFFFF]/90 hover:bg-brand-white border border-brand-border/20 text-brand-espresso rounded-full transition-all shadow-sm"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Swipe controls */}
+              <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                <button
+                  onClick={handlePrevImage}
+                  className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleNextImage}
+                  className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* 3. Specs Selectors Card (Colour, REF, model size, height, size buttons) */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm border border-brand-border/20 space-y-4">
+              {/* Colors selection */}
+              <div className="space-y-1.5">
+                <span className="text-[9px] font-extrabold text-brand-espresso tracking-wider uppercase block">
+                  Colour: {activeColorObj?.colorName || 'Selected'}
+                </span>
+                <div className="flex space-x-2">
+                  {product.colors?.map((colorHex) => {
+                    const isSelected = selectedColor === colorHex;
+                    return (
+                      <button
+                        key={colorHex}
+                        onClick={() => handleColorChange(colorHex)}
+                        className={`w-5 h-5 rounded-full border transition-all relative flex items-center justify-center ${
+                          isSelected ? 'scale-110 border-brand-espresso ring-1 ring-brand-espresso/30' : 'border-brand-border/60'
+                        }`}
+                        style={{ backgroundColor: colorHex }}
+                        aria-label="Select Color"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="w-full h-px bg-brand-border/15" />
+
+              {/* Metadata */}
+              <div className="space-y-0.5 text-[9px] text-brand-warmGray font-bold tracking-widest uppercase">
+                <div>REF: {product.sku || '1102/554'}</div>
+                <div>The model size: {selectedSize}</div>
+                <div>Height: 5.70 ft</div>
+              </div>
+
+              <div className="w-full h-px bg-brand-border/15" />
+
+              {/* Sizes selection */}
+              <div className="space-y-1.5">
+                <span className="text-[9px] font-extrabold text-brand-espresso tracking-wider uppercase block">
+                  Select your size:
+                </span>
+                <div className="flex gap-2">
+                  {(product.sizes || ['34', '36', '38', '40']).map((sz) => {
+                    const isSelected = selectedSize === sz;
+                    return (
+                      <button
+                        key={sz}
+                        onClick={() => setSelectedSize(sz)}
+                        className={`w-9 h-9 border rounded-lg text-xs font-bold transition-all ${
+                          isSelected ? 'border-brand-espresso bg-brand-espresso text-white' : 'border-brand-border bg-white text-brand-espresso'
+                        }`}
+                      >
+                        {sz}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Action Button (Shop button) */}
+            <button
+              onClick={handleAddToCart}
+              disabled={added}
+              className="w-full py-4 bg-white text-brand-espresso hover:bg-white/95 border border-brand-border/30 rounded-full font-bold text-xs tracking-widest uppercase transition-all shadow-md text-center block"
+            >
+              {added ? '✓ Added to bag' : `Shop ₹${product.price.toLocaleString('en-IN')}`}
+            </button>
+
+            {/* 5. Fabric & Fit details cards */}
+            <div className="flex items-center space-x-3 pt-4 border-t border-brand-border/20">
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+                <Check className="w-4.5 h-4.5 text-[#F26A2E] stroke-[2.5]" />
+              </div>
               
-              <div className="space-y-2 md:space-y-4">
-                <span className="text-[8px] md:text-[9px] text-brand-warmGray font-bold tracking-[0.25em] uppercase block">
+              <div className="grid grid-cols-2 gap-3 flex-grow">
+                <div className="bg-white rounded-xl p-2.5 shadow-sm border border-brand-border/10 text-left">
+                  <h5 className="text-[8px] font-bold text-brand-espresso tracking-wider uppercase mb-0.5">
+                    Fabric Details
+                  </h5>
+                  <p className="text-[9px] text-[#756E69] font-medium leading-tight">
+                    Premium {product.fabric || 'Silk'} fibers.
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl p-2.5 shadow-sm border border-brand-border/10 text-left">
+                  <h5 className="text-[8px] font-bold text-brand-espresso tracking-wider uppercase mb-0.5">
+                    Fit & Style
+                  </h5>
+                  <p className="text-[9px] text-[#756E69] font-medium leading-tight">
+                    Styled for {product.fit || 'Relaxed'} fit.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Desktop Structure (Visible on lg and up) */}
+          <div className="hidden lg:grid grid-cols-12 gap-8 items-stretch pt-4">
+            
+            {/* Left Column: Product Information & Specs (4 cols) */}
+            <div className="lg:col-span-4 flex flex-col justify-between text-left space-y-8 min-h-[400px]">
+              
+              <div className="space-y-4">
+                <span className="text-[9px] text-brand-warmGray font-bold tracking-[0.25em] uppercase block">
                   artisan weaves
                 </span>
-                <h1 className="font-display font-bold text-base sm:text-2xl md:text-3xl lg:text-4.5xl text-brand-espresso leading-tight">
+                <h1 className="font-display font-bold text-3xl md:text-4.5xl text-brand-espresso leading-tight">
                   {product.name}
                 </h1>
-                <p className="text-[9px] sm:text-xs text-brand-warmGray leading-relaxed font-semibold max-w-sm">
+                <p className="text-xs text-brand-warmGray leading-relaxed font-semibold max-w-sm">
                   {product.description}
                 </p>
-                <div className="pt-1">
-                  <span className="text-[9px] md:text-xs font-bold text-brand-espresso tracking-widest uppercase block">
+                <div className="pt-2">
+                  <span className="text-xs font-bold text-brand-espresso tracking-widest uppercase block">
                     {product.fabric ? `${product.fabric.toUpperCase()}` : 'RAW SILK'}
                   </span>
                 </div>
-
-                {/* Mobile-Only Specs Card (Rendered inside left column to fit side-by-side with image) */}
-                <div className="block lg:hidden bg-white rounded-2xl p-3 md:p-4 shadow-sm border border-brand-border/10 space-y-3 mt-3">
-                  <div className="space-y-1">
-                    <span className="text-[8px] font-extrabold text-brand-espresso tracking-wider uppercase block">
-                      Colour: {activeColorObj?.colorName || 'Selected'}
-                    </span>
-                    <div className="flex space-x-1.5">
-                      {product.colors?.map((colorHex) => {
-                        const isSelected = selectedColor === colorHex;
-                        return (
-                          <button
-                            key={colorHex}
-                            onClick={() => handleColorChange(colorHex)}
-                            className={`w-4 h-4 rounded-full border transition-all relative flex items-center justify-center ${
-                              isSelected ? 'scale-110 border-brand-espresso ring-1 ring-brand-espresso/30' : 'border-brand-border/60'
-                            }`}
-                            style={{ backgroundColor: colorHex }}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  <div className="w-full h-px bg-brand-border/10" />
-
-                  <div className="space-y-0.5 text-[8px] text-brand-warmGray font-bold tracking-widest uppercase">
-                    <div>REF: {product.sku || '1102/554'}</div>
-                    <div>The model size: {selectedSize}</div>
-                    <div>Height: 5.70 ft</div>
-                  </div>
-
-                  <div className="w-full h-px bg-brand-border/10" />
-
-                  <div className="space-y-1">
-                    <span className="text-[8px] font-extrabold text-brand-espresso tracking-wider uppercase block">
-                      Size:
-                    </span>
-                    <div className="flex gap-1">
-                      {(product.sizes || ['34', '36', '38', '40']).map((sz) => {
-                        const isSelected = selectedSize === sz;
-                        return (
-                          <button
-                            key={sz}
-                            onClick={() => setSelectedSize(sz)}
-                            className={`w-6.5 h-6.5 border rounded-md text-[9px] font-bold transition-all ${
-                              isSelected ? 'border-brand-espresso bg-brand-espresso text-white' : 'border-brand-border bg-white text-brand-espresso'
-                            }`}
-                          >
-                            {sz}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mobile-Only Action Button */}
-                <button
-                  onClick={handleAddToCart}
-                  disabled={added}
-                  className="block lg:hidden w-full py-2.5 bg-white text-brand-espresso hover:bg-white/95 border border-brand-border/30 rounded-full font-bold text-[9px] tracking-widest uppercase transition-all shadow-sm text-center"
-                >
-                  {added ? '✓ Added' : `Shop ₹${product.price}`}
-                </button>
               </div>
 
-              {/* Bottom spec cards (Hidden on mobile to save vertical height) */}
-              <div className="hidden sm:flex items-center space-x-3 pt-4 border-t border-brand-border/20">
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm flex-shrink-0">
-                  <Check className="w-4.5 h-4.5 text-[#F26A2E] stroke-[2.5]" />
+              {/* Bottom spec cards */}
+              <div className="flex items-center space-x-3 pt-6 border-t border-brand-border/20">
+                {/* Checkbox badge */}
+                <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Check className="w-5 h-5 text-[#F26A2E] stroke-[2.5]" />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3 flex-grow">
-                  <div className="bg-white rounded-xl p-2.5 shadow-sm border border-brand-border/10 text-left">
-                    <h5 className="text-[7px] font-bold text-brand-espresso tracking-wider uppercase mb-0.5">
+                  {/* Card 1 */}
+                  <div className="bg-white rounded-xl p-3 shadow-sm border border-brand-border/10 text-left">
+                    <h5 className="text-[8px] font-bold text-brand-espresso tracking-wider uppercase mb-1">
                       Fabric Details
                     </h5>
-                    <p className="text-[8px] text-brand-warmGray font-medium leading-tight">
+                    <p className="text-[9px] text-brand-warmGray font-medium leading-tight">
                       Premium {product.fabric || 'Silk'} fibers.
                     </p>
                   </div>
-                  <div className="bg-white rounded-xl p-2.5 shadow-sm border border-brand-border/10 text-left">
-                    <h5 className="text-[7px] font-bold text-brand-espresso tracking-wider uppercase mb-0.5">
+                  {/* Card 2 */}
+                  <div className="bg-white rounded-xl p-3 shadow-sm border border-brand-border/10 text-left">
+                    <h5 className="text-[8px] font-bold text-brand-espresso tracking-wider uppercase mb-1">
                       Fit & Style
                     </h5>
-                    <p className="text-[8px] text-brand-warmGray font-medium leading-tight">
+                    <p className="text-[9px] text-brand-warmGray font-medium leading-tight">
                       Styled for {product.fit || 'Relaxed'} fit.
                     </p>
                   </div>
@@ -250,13 +346,16 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             </div>
 
-            {/* Center Column: Portrait Model Image (5 cols on mobile, 4 cols on desktop) */}
-            <div className="col-span-5 lg:col-span-4 flex justify-center items-center relative h-full">
+            {/* Center Column: Portrait Model Image (4 cols) */}
+            <div className="lg:col-span-4 flex justify-center items-center relative">
               <div className="w-full aspect-[3/4] bg-brand-softBeige/10 rounded-2xl overflow-hidden relative shadow-md">
                 <img
                   src={activeImages[activeImageIndex]}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover transition-transform duration-300 ${
+                    isImgZoomed ? 'scale-150 cursor-zoom-out' : 'scale-100 cursor-zoom-in'
+                  }`}
+                  onClick={() => setImgZoomed(!isImgZoomed)}
                 />
 
                 {/* Fullscreen icon */}
@@ -265,31 +364,31 @@ export default function ProductDetailPage({ params }: PageProps) {
                     setLightboxImageIndex(activeImageIndex);
                     setGalleryOpen(true);
                   }}
-                  className="absolute bottom-3 right-3 p-1.5 bg-[#FFFFFF]/90 hover:bg-brand-white border border-brand-border/20 text-brand-espresso rounded-full transition-all shadow-sm"
+                  className="absolute bottom-3 right-3 p-2 bg-[#FFFFFF]/90 hover:bg-brand-white border border-brand-border/20 text-brand-espresso rounded-full transition-all shadow-sm"
                 >
-                  <Maximize2 className="w-3 h-3" />
+                  <Maximize2 className="w-3.5 h-3.5" />
                 </button>
 
                 {/* Swipe controls */}
                 <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
                   <button
                     onClick={handlePrevImage}
-                    className="p-1 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
                   >
-                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
                   <button
                     onClick={handleNextImage}
-                    className="p-1 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
                   >
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Right Column: Desktop Spec Card & Action Controls (4 cols, hidden below lg) */}
-            <div className="hidden lg:flex lg:col-span-4 flex-col justify-between space-y-6">
+            {/* Right Column: Spec Card & Action Controls (4 cols) */}
+            <div className="lg:col-span-4 flex flex-col justify-between space-y-6">
               
               {/* White Specifications Card */}
               <div className="bg-white rounded-[24px] p-6 shadow-sm border border-brand-border/20 text-left space-y-5 flex-grow">
@@ -511,7 +610,10 @@ export default function ProductDetailPage({ params }: PageProps) {
               <img
                 src={activeImages[lightboxImageIndex]}
                 alt="Product Lightbox Zoom"
-                className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl"
+                className={`max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl transition-transform duration-300 ${
+                  isImgZoomed ? 'scale-150 cursor-zoom-out' : 'scale-100 cursor-zoom-in'
+                }`}
+                onClick={() => setImgZoomed(!isImgZoomed)}
               />
 
               {/* Prev / Next controls */}

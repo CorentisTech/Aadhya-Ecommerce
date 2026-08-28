@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PRODUCTS, Product } from '@/data/mockData';
 import { useApp } from '@/context/AppContext';
-import { Heart, Star, SlidersHorizontal, X, Search, Check } from 'lucide-react';
+import { Heart, Star, SlidersHorizontal, X, Search, Check, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Defined filter option lists matching the exact product dataset attributes
@@ -33,6 +33,7 @@ function CatalogContent() {
   const [selectedCategoryTab, setSelectedCategoryTab] = useState<'ALL' | 'WESTERN' | 'ETHNIC' | 'DRESSES' | 'BLOUSE' | 'TROUSERS' | 'TOPS'>('ALL');
   const [sortBy, setSortBy] = useState('Top Rated');
   const [isFilterOpen, setFilterOpen] = useState(false);
+  const [isSortOpen, setSortOpen] = useState(false);
 
   // Selected Checkbox Filters state
   const [selectedFilters, setSelectedFilters] = useState<{
@@ -215,18 +216,47 @@ function CatalogContent() {
               <span>Filters</span>
             </button>
 
-            {/* Sorting dropdown */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="flex-1 md:flex-none px-5 py-3 border border-brand-border rounded-full text-xs font-bold tracking-widest bg-transparent outline-none cursor-pointer uppercase shadow-sm"
-            >
-              <option value="Top Rated">Top Rated</option>
-              <option value="Newest">Newest</option>
-              <option value="Price: Low to High">Price: Low to High</option>
-              <option value="Price: High to Low">Price: High to Low</option>
-              <option value="Best Selling">Best Selling</option>
-            </select>
+            {/* Sorting custom dropdown */}
+            <div className="relative flex-1 md:flex-none">
+              <button
+                onClick={() => setSortOpen(!isSortOpen)}
+                className="w-full flex items-center justify-between space-x-2 px-5 py-3 border border-brand-border rounded-full text-xs font-bold tracking-widest bg-transparent hover:bg-brand-softBeige/25 transition-colors uppercase shadow-sm"
+              >
+                <span>{sortBy}</span>
+                <ChevronDown className="w-4 h-4 text-brand-warmGray stroke-[2]" />
+              </button>
+              <AnimatePresence>
+                {isSortOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setSortOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-48 bg-white border border-brand-border rounded-2xl shadow-xl z-20 py-2 overflow-hidden text-left"
+                    >
+                      {['Top Rated', 'Newest', 'Price: Low to High', 'Price: High to Low', 'Best Selling'].map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => {
+                            setSortBy(opt);
+                            setSortOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-[11px] font-extrabold tracking-wider uppercase transition-colors ${
+                            sortBy === opt
+                              ? 'bg-brand-espresso text-white'
+                              : 'text-brand-espresso hover:bg-brand-softBeige/40'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Search bar input */}
