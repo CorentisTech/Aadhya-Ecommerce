@@ -141,31 +141,31 @@ export const Navbar: React.FC = () => {
         <nav className="hidden md:flex items-center space-x-8 text-[10px] font-bold tracking-[0.2em] text-brand-espresso">
           <button
             onClick={() => handleNavClick('bestsellers')}
-            className="hover:text-brand-dustyRose transition-colors relative py-1 group"
+            className="hover:text-[#F26A2E] transition-colors relative py-1 group"
           >
             BEST SELLERS
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-dustyRose transition-all duration-300 group-hover:w-full" />
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F26A2E] transition-all duration-300 group-hover:w-full" />
           </button>
           <button
             onClick={() => handleNavClick('new-arrivals')}
-            className="hover:text-brand-dustyRose transition-colors relative py-1 group"
+            className="hover:text-[#F26A2E] transition-colors relative py-1 group"
           >
             NEW ARRIVALS
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-dustyRose transition-all duration-300 group-hover:w-full" />
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F26A2E] transition-all duration-300 group-hover:w-full" />
           </button>
           <button
             onClick={() => handleNavClick('categories')}
-            className="hover:text-brand-dustyRose transition-colors relative py-1 group"
+            className="hover:text-[#F26A2E] transition-colors relative py-1 group"
           >
             CATEGORIES
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-dustyRose transition-all duration-300 group-hover:w-full" />
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F26A2E] transition-all duration-300 group-hover:w-full" />
           </button>
           <button
             onClick={() => handleNavClick('categories')}
-            className="hover:text-brand-dustyRose transition-colors relative py-1 group"
+            className="hover:text-[#F26A2E] transition-colors relative py-1 group"
           >
             ABOUT US
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-dustyRose transition-all duration-300 group-hover:w-full" />
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F26A2E] transition-all duration-300 group-hover:w-full" />
           </button>
 
           {/* Numismatics Item with custom popup card */}
@@ -183,7 +183,7 @@ export const Navbar: React.FC = () => {
               }`}
             >
               {/* Rotating Coin using User-provided 1957 Coin image */}
-              <div className="relative w-4 h-4 rounded-full overflow-hidden border border-brand-antiqueBronze/40 shadow-sm flex items-center justify-center bg-brand-gold">
+              <div className="relative w-4 h-4 rounded-full overflow-hidden border border-[#2C2522] shadow-sm flex items-center justify-center bg-[#2C2522]">
                 <motion.img
                   src="/coin_image.jpg"
                   alt="Coin"
@@ -317,12 +317,12 @@ export const Navbar: React.FC = () => {
                       onClick={() => { setPage('home'); setSidebarOpen(false); }}
                       className={`flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full transition-all relative ${
                         activePage === 'home' 
-                          ? 'bg-brand-softBeige text-brand-espresso font-extrabold shadow-sm' 
-                          : 'hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso'
+                          ? 'bg-[#FFF3EC] text-[#F26A2E] font-extrabold shadow-sm' 
+                          : 'hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E]'
                       }`}
                     >
                       {activePage === 'home' && (
-                        <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-brand-dustyRose rounded-r-md" />
+                        <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#F26A2E] rounded-r-md" />
                       )}
                       <Home className="w-4 h-4 stroke-[2]" />
                       <span>HOME</span>
@@ -332,7 +332,7 @@ export const Navbar: React.FC = () => {
                     <motion.button
                       variants={itemVariants}
                       onClick={() => handleNavClick('bestsellers')}
-                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                     >
                       <Sparkles className="w-4 h-4 stroke-[2]" />
                       <span>BEST SELLERS</span>
@@ -342,7 +342,7 @@ export const Navbar: React.FC = () => {
                     <motion.button
                       variants={itemVariants}
                       onClick={() => handleNavClick('new-arrivals')}
-                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                     >
                       <Compass className="w-4 h-4 stroke-[2]" />
                       <span>NEW ARRIVALS</span>
@@ -352,27 +352,27 @@ export const Navbar: React.FC = () => {
                     <motion.button
                       variants={itemVariants}
                       onClick={() => handleNavClick('categories')}
-                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                     >
                       <Grid className="w-4 h-4 stroke-[2]" />
                       <span>CATEGORIES</span>
                     </motion.button>
-
+ 
                     {/* Shop Link */}
                     <motion.button
                       variants={itemVariants}
                       onClick={() => { setPage('home'); setSidebarOpen(false); }}
-                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                     >
                       <ShoppingBag className="w-4 h-4 stroke-[2]" />
                       <span>SHOP COLLECTION</span>
                     </motion.button>
-
+ 
                     {/* About Link */}
                     <motion.button
                       variants={itemVariants}
                       onClick={() => handleNavClick('categories')}
-                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                     >
                       <Info className="w-4 h-4 stroke-[2]" />
                       <span>ABOUT US</span>
@@ -395,7 +395,7 @@ export const Navbar: React.FC = () => {
                   >
                     <div className="flex items-center space-x-3">
                       {/* Spinning coin */}
-                      <div className="w-5 h-5 rounded-full overflow-hidden border border-brand-antiqueBronze/40 flex items-center justify-center bg-brand-gold">
+                      <div className="w-5 h-5 rounded-full overflow-hidden border border-[#2C2522] flex items-center justify-center bg-[#2C2522]">
                         <img
                           src="/coin_image.jpg"
                           alt="Coin"
@@ -417,7 +417,7 @@ export const Navbar: React.FC = () => {
                 >
                   <button
                     onClick={() => { setAccountOpen(true); setSidebarOpen(false); }}
-                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
+                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                   >
                     <User className="w-4 h-4 stroke-[2]" />
                     <span>ACCOUNT</span>
@@ -425,7 +425,7 @@ export const Navbar: React.FC = () => {
                   
                   <button
                     onClick={() => { setPage('wishlist'); setSidebarOpen(false); }}
-                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
+                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                   >
                     <Heart className="w-4 h-4 stroke-[2]" />
                     <span>WISHLIST</span>
@@ -433,7 +433,7 @@ export const Navbar: React.FC = () => {
 
                   <button
                     onClick={() => { setAccountOpen(true); setSidebarOpen(false); }}
-                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
+                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                   >
                     <Package className="w-4 h-4 stroke-[2]" />
                     <span>ORDERS</span>
@@ -441,7 +441,7 @@ export const Navbar: React.FC = () => {
 
                   <button
                     onClick={() => setSidebarOpen(false)}
-                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-brand-softBeige/40 text-brand-warmGray hover:text-brand-espresso transition-all"
+                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                   >
                     <HelpCircle className="w-4 h-4 stroke-[2]" />
                     <span>HELP & SUPPORT</span>
