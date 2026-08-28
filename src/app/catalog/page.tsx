@@ -202,20 +202,35 @@ function CatalogContent() {
         </div>
 
         {/* Toolbar panel: Filters, Search, Sort */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-brand-border/40 pb-6">
-          {/* Filters Toggle Button */}
-          <div className="flex justify-start">
+        <div className="flex flex-col gap-4 border-b border-brand-border/40 pb-6 md:flex-row md:items-center md:justify-between">
+          
+          {/* Filters & Sort Group (Side-by-side on mobile, standalone on desktop) */}
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            {/* Filters Toggle Button */}
             <button
               onClick={() => setFilterOpen(true)}
-              className="flex items-center space-x-2 px-6 py-3 border border-brand-border rounded-full text-xs font-bold tracking-widest hover:bg-brand-softBeige/40 transition-colors uppercase shadow-sm"
+              className="flex-1 md:flex-none flex items-center justify-center space-x-2 px-6 py-3 border border-brand-border rounded-full text-xs font-bold tracking-widest hover:bg-brand-softBeige/40 transition-colors uppercase shadow-sm"
             >
               <SlidersHorizontal className="w-4 h-4 stroke-[1.75]" />
               <span>Filters</span>
             </button>
+
+            {/* Sorting dropdown */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="flex-1 md:flex-none px-5 py-3 border border-brand-border rounded-full text-xs font-bold tracking-widest bg-transparent outline-none cursor-pointer uppercase shadow-sm"
+            >
+              <option value="Top Rated">Top Rated</option>
+              <option value="Newest">Newest</option>
+              <option value="Price: Low to High">Price: Low to High</option>
+              <option value="Price: High to Low">Price: High to Low</option>
+              <option value="Best Selling">Best Selling</option>
+            </select>
           </div>
 
           {/* Search bar input */}
-          <div className="flex-grow max-w-md relative">
+          <div className="w-full md:flex-grow md:max-w-md relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-warmGray stroke-[2]" />
             <input
               type="text"
@@ -226,20 +241,6 @@ function CatalogContent() {
             />
           </div>
 
-          {/* Sorting dropdown */}
-          <div className="flex justify-end">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-5 py-3 border border-brand-border rounded-full text-xs font-bold tracking-widest bg-transparent outline-none cursor-pointer uppercase shadow-sm"
-            >
-              <option value="Top Rated">Top Rated</option>
-              <option value="Newest">Newest</option>
-              <option value="Price: Low to High">Price: Low to High</option>
-              <option value="Price: High to Low">Price: High to Low</option>
-              <option value="Best Selling">Best Selling</option>
-            </select>
-          </div>
         </div>
 
         {/* Category selector tabs */}
