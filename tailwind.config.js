@@ -9,7 +9,7 @@ export default {
     extend: {
       colors: {
         brand: {
-          warmWhite: "#FCFAF7",
+          warmWhite: "#FFFFFF",
           softBeige: "#F4EFE9",
           espresso: "#2C2522",
           warmGray: "#756E69",
