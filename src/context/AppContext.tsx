@@ -13,6 +13,21 @@ export interface CartItem {
   selectedColor?: string;
 }
 
+export interface UserDetails {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  zip: string;
+  state: string;
+  city: string;
+  landmark?: string;
+  streetName: string;
+  otherPhone?: string;
+  avatar: 'male' | 'female';
+}
+
 interface AppContextType {
   activePage: PageType;
   setPage: (page: PageType) => void;
@@ -34,6 +49,15 @@ interface AppContextType {
   setSearchQuery: (query: string) => void;
   selectedProduct: Product | null;
   setSelectedProduct: (product: Product | null) => void;
+  
+  // Auth states
+  user: UserDetails | null;
+  isLoggedIn: boolean;
+  loginUser: (email: string) => void;
+  logoutUser: () => void;
+  registerUser: (details: UserDetails) => void;
+  updateUserDetails: (details: Partial<UserDetails>) => void;
+  deleteUserAccount: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -59,12 +83,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Authentication & Profile States
+  const [user, setUser] = useState<UserDetails | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   // Load from localStorage on mount (client-side only)
   useEffect(() => {
     const localCart = localStorage.getItem('aadhya_cart');
     if (localCart) setCart(JSON.parse(localCart));
     const localWishlist = localStorage.getItem('aadhya_wishlist');
     if (localWishlist) setWishlist(JSON.parse(localWishlist));
+    const localUser = localStorage.getItem('aadhya_user');
+    if (localUser) {
+      setUser(JSON.parse(localUser));
+      setIsLoggedIn(true);
+    }
     setIsLoaded(true);
   }, []);
 
@@ -175,6 +208,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return wishlist.some((item) => item.id === productId);
   };
 
+  const loginUser = (email: string) => {
+    const mockUser: UserDetails = {
+      email,
+      firstName: 'Prem',
+      lastName: 'Kumar',
+      phone: '9876543210',
+      address: 'Flat 402, Royal Palms Residency, MG Road',
+      zip: '411001',
+      state: 'Maharashtra',
+      city: 'Pune',
+      landmark: 'Opposite Grand Mall',
+      streetName: 'MG Road',
+      otherPhone: '',
+      avatar: 'male',
+    };
+    setUser(mockUser);
+    setIsLoggedIn(true);
+    localStorage.setItem('aadhya_user', JSON.stringify(mockUser));
+  };
+
+  const logoutUser = () => {
+    setUser(null);
+    setIsLoggedIn(false);
+    localStorage.removeItem('aadhya_user');
+  };
+
+  const registerUser = (details: UserDetails) => {
+    setUser(details);
+    setIsLoggedIn(true);
+    localStorage.setItem('aadhya_user', JSON.stringify(details));
+  };
+
+  const updateUserDetails = (details: Partial<UserDetails>) => {
+    if (user) {
+      const updated = { ...user, ...details };
+      setUser(updated);
+      localStorage.setItem('aadhya_user', JSON.stringify(updated));
+    }
+  };
+
+  const deleteUserAccount = () => {
+    setUser(null);
+    setIsLoggedIn(false);
+    localStorage.removeItem('aadhya_user');
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -198,6 +277,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSearchQuery,
         selectedProduct,
         setSelectedProduct,
+        user,
+        isLoggedIn,
+        loginUser,
+        logoutUser,
+        registerUser,
+        updateUserDetails,
+        deleteUserAccount,
       }}
     >
       {children}

@@ -18,8 +18,8 @@ export const MobileBottomNav: React.FC = () => {
     { id: 'home', label: 'Home', icon: Home, action: () => setPage('home') },
     { id: 'search', label: 'Search', icon: Search, action: () => setSearchOpen(true) },
     { id: 'categories', label: 'Categories', icon: Grid, action: handleCategoriesClick },
-    { id: 'wishlist', label: 'Wishlist', icon: Heart, action: () => setPage('wishlist') },
-    { id: 'account', label: 'Account', icon: User, action: () => setAccountOpen(true) }
+    { id: 'wishlist', label: 'Wishlist', icon: Heart, action: () => router.push('/wishlist') },
+    { id: 'account', label: 'Account', icon: User, action: () => router.push('/account') }
   ];
 
   return (

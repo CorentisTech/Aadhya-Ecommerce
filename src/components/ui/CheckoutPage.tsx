@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp, UserDetails } from '../../context/AppContext';
 import { ProductVisual } from './ProductVisual';
 import { 
   ArrowLeft, 
@@ -16,17 +16,38 @@ import {
   Lock, 
   X, 
   ArrowUp,
-  ChevronDown
+  ChevronDown,
+  Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const CheckoutPage: React.FC = () => {
-  const { cart, clearCart, setPage } = useApp();
+  const { cart, clearCart, setPage, isLoggedIn, loginUser, registerUser, user } = useApp();
   const [success, setSuccess] = useState(false);
   const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   
+  // Checkout login inline panel states
+  const [checkoutLoginScreen, setCheckoutLoginScreen] = useState<'landing' | 'email' | 'register'>('landing');
+  const [checkoutEmail, setCheckoutEmail] = useState('');
+  const [checkoutOtp, setCheckoutOtp] = useState('');
+  const [checkoutOtpSent, setCheckoutOtpSent] = useState(false);
+  const [checkoutOtpError, setCheckoutOtpError] = useState(false);
+  const [checkoutRegForm, setCheckoutRegForm] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    address: 'Flat 402, Royal Palms Residency, MG Road',
+    zip: '411001',
+    state: 'Maharashtra',
+    city: 'Pune',
+    landmark: 'Opposite Grand Mall',
+    streetName: 'MG Road',
+    otherPhone: '',
+    avatar: 'male' as 'male' | 'female',
+  });
+
   // Mock inputs inside payment methods
   const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvv: '', name: '' });
   const [upiId, setUpiId] = useState('');
@@ -43,6 +64,22 @@ export const CheckoutPage: React.FC = () => {
     zip: '411001',
     country: 'India',
   });
+
+  // Automatically pre-fill shipping address when user logs in
+  React.useEffect(() => {
+    if (user) {
+      setFormData({
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+        address: user.streetName || user.address,
+        landmark: user.landmark || '',
+        city: user.city,
+        state: user.state,
+        zip: user.zip,
+        country: 'India',
+      });
+    }
+  }, [user]);
 
   const subtotal = cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
   const shippingThreshold = 5000;
@@ -90,6 +127,148 @@ export const CheckoutPage: React.FC = () => {
             CONTINUE SHOPPING
           </button>
         </motion.div>
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="w-full min-h-screen bg-[#FCFAF7] flex items-center justify-center py-12 px-4 select-none text-left">
+        <div className="bg-white w-full max-w-sm rounded-3xl p-6 md:p-8 shadow-xl border border-brand-border/30 text-center space-y-6">
+          
+          {/* Brand Logo Header */}
+          <div className="space-y-1">
+            <h1 className="font-display font-bold text-3xl text-[#1C1816] tracking-widest uppercase">
+              AADHYA
+            </h1>
+            <span className="text-[9px] font-bold text-brand-warmGray tracking-[0.25em] uppercase block">
+              Secure Checkout Login
+            </span>
+          </div>
+
+          {checkoutLoginScreen === 'landing' && (
+            <div className="space-y-5">
+              <p className="text-[10px] text-brand-warmGray font-bold tracking-wider leading-relaxed">
+                You must login or create an account to proceed to payment.
+              </p>
+              
+              <div className="space-y-2 pt-2">
+                <button 
+                  onClick={() => setCheckoutLoginScreen('email')}
+                  className="w-full py-3 bg-brand-white border border-brand-border/60 text-brand-espresso text-[10px] font-extrabold tracking-widest uppercase hover:bg-brand-softBeige/20 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <Mail className="w-3.5 h-3.5 text-[#F26A2E]" />
+                  <span>Continue with Email</span>
+                </button>
+                <button 
+                  onClick={() => loginUser("ananya.sharma@example.com")}
+                  className="w-full py-3 bg-[#F26A2E] text-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-95 rounded-xl transition-all shadow-sm"
+                >
+                  Quick Guest Checkout
+                </button>
+              </div>
+            </div>
+          )}
+
+          {checkoutLoginScreen === 'email' && (
+            <div className="space-y-5">
+              <h2 className="font-display font-bold text-lg text-brand-espresso">Welcome Back</h2>
+              
+              {!checkoutOtpSent ? (
+                <form onSubmit={(e) => { e.preventDefault(); setCheckoutOtpSent(true); }} className="space-y-4">
+                  <div className="space-y-1.5 text-left">
+                    <label className="text-[9px] font-bold text-brand-warmGray uppercase tracking-wider block">Email Address</label>
+                    <input
+                      required
+                      type="email"
+                      placeholder="ananya.sharma@example.com"
+                      value={checkoutEmail}
+                      onChange={(e) => setCheckoutEmail(e.target.value)}
+                      className="w-full bg-[#FCFAF7] border border-brand-border/60 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                    />
+                  </div>
+                  <button type="submit" className="w-full py-3 bg-[#F26A2E] text-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-95 rounded-xl">
+                    Send Verification OTP
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (checkoutOtp === '1234') {
+                    setCheckoutOtpError(false);
+                    // Open register form to let them enter name etc.
+                    setCheckoutLoginScreen('register');
+                  } else {
+                    setCheckoutOtpError(true);
+                  }
+                }} className="space-y-4">
+                  <div className="text-left bg-[#FFF3EC] p-3 rounded-xl border border-[#F9E1D3]/50">
+                    <p className="text-[9px] font-bold text-[#F26A2E] tracking-wider uppercase">
+                      ✓ OTP sent! Enter code "1234" to verify.
+                    </p>
+                  </div>
+                  <div className="space-y-1 text-left">
+                    <label className="text-[9px] font-bold text-brand-warmGray uppercase tracking-wider block">OTP Verification Code</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="Enter 4-digit code"
+                      maxLength={4}
+                      value={checkoutOtp}
+                      onChange={(e) => setCheckoutOtp(e.target.value)}
+                      className="w-full bg-[#FCFAF7] border border-brand-border/60 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-center tracking-[0.4em]"
+                    />
+                  </div>
+                  {checkoutOtpError && <span className="text-[9px] font-bold text-brand-sale block">✕ Invalid Code. Use "1234".</span>}
+                  <button type="submit" className="w-full py-3 bg-brand-espresso text-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-95 rounded-xl">
+                    Verify Code
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {checkoutLoginScreen === 'register' && (
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const newUser: UserDetails = {
+                email: checkoutEmail,
+                firstName: checkoutRegForm.firstName,
+                lastName: checkoutRegForm.lastName,
+                phone: checkoutRegForm.phone,
+                address: `${checkoutRegForm.streetName}, ${checkoutRegForm.landmark ? checkoutRegForm.landmark + ', ' : ''}${checkoutRegForm.city}, ${checkoutRegForm.state} - ${checkoutRegForm.zip}`,
+                zip: checkoutRegForm.zip,
+                state: checkoutRegForm.state,
+                city: checkoutRegForm.city,
+                landmark: checkoutRegForm.landmark,
+                streetName: checkoutRegForm.streetName,
+                otherPhone: checkoutRegForm.otherPhone,
+                avatar: checkoutRegForm.avatar
+              };
+              registerUser(newUser);
+            }} className="space-y-3.5 text-left max-h-[70vh] overflow-y-auto pr-1">
+              <h2 className="font-display font-bold text-lg text-[#1C1816] text-center">Complete Registration</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[8px] font-bold text-[#383230] block">First Name</label>
+                  <input required type="text" value={checkoutRegForm.firstName} onChange={(e) => setCheckoutRegForm({ ...checkoutRegForm, firstName: e.target.value })} className="w-full bg-[#FCFAF7] border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E]" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[8px] font-bold text-[#383230] block">Last Name</label>
+                  <input required type="text" value={checkoutRegForm.lastName} onChange={(e) => setCheckoutRegForm({ ...checkoutRegForm, lastName: e.target.value })} className="w-full bg-[#FCFAF7] border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E]" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[8px] font-bold text-[#383230] block">Phone Number</label>
+                <input required type="tel" value={checkoutRegForm.phone} onChange={(e) => setCheckoutRegForm({ ...checkoutRegForm, phone: e.target.value })} className="w-full bg-[#FCFAF7] border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E]" />
+              </div>
+              <button type="submit" className="w-full py-3 bg-[#F26A2E] text-white text-[10px] font-extrabold tracking-widest uppercase rounded-xl">
+                Register & Checkout
+              </button>
+            </form>
+          )}
+
+        </div>
       </div>
     );
   }

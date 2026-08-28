@@ -239,9 +239,9 @@ export const Navbar: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setAccountOpen(true)}
+            onClick={() => router.push('/account')}
             aria-label="Account"
-            className="hover:text-brand-dustyRose transition-colors p-1"
+            className="hover:text-[#F26A2E] transition-colors p-1"
           >
             <User className="w-4 h-4 stroke-[2]" />
           </button>

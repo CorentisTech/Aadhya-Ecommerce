@@ -93,95 +93,96 @@ export const CartPage: React.FC = () => {
                 return (
                   <div 
                     key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}-${index}`}
-                    className="bg-brand-white p-4 border border-brand-border/30 rounded-3xl flex items-start gap-4 relative shadow-sm"
+                    className="bg-brand-white p-4 border border-brand-border/30 rounded-3xl flex flex-col gap-3.5 relative shadow-sm"
                   >
-                    {/* Rounded Image Frame */}
-                    <div className="w-20 h-24 bg-brand-softBeige/15 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-brand-border/20">
-                      <img 
-                        src={item.product.image} 
-                        alt={item.product.name} 
-                        className="w-full h-full object-cover" 
-                      />
-                    </div>
-
-                    {/* Details Column */}
-                    <div className="flex-grow flex flex-col justify-between h-24 py-1 text-left">
-                      <div className="space-y-0.5">
-                        <span className="text-[8px] font-extrabold text-[#F26A2E] tracking-widest uppercase block">
-                          {item.product.department === 'numismatics' ? 'Ethnic Heritage' : 'Women\'s Couture'}
-                        </span>
-                        <h3 className="font-sans font-bold text-sm text-brand-espresso line-clamp-1">
-                          {item.product.name}
-                        </h3>
-                        
-                        {/* Specs display (with small color swatch dot) */}
-                        <div className="flex items-center space-x-2 text-[10px] text-brand-warmGray font-bold">
-                          {item.selectedSize && <span>Size: {item.selectedSize}</span>}
-                          {item.selectedSize && item.selectedColor && <span>•</span>}
-                          {item.selectedColor && (
-                            <span className="flex items-center space-x-1">
-                              <span>Color:</span>
-                              <span 
-                                className="w-2.5 h-2.5 rounded-full border border-brand-border/50 inline-block"
-                                style={{ backgroundColor: colorHex }}
-                              />
-                            </span>
-                          )}
-                        </div>
+                    <div className="flex items-start gap-4 w-full">
+                      {/* Rounded Image Frame */}
+                      <div className="w-16 h-20 sm:w-20 sm:h-24 bg-brand-softBeige/15 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-brand-border/20">
+                        <img 
+                          src={item.product.image} 
+                          alt={item.product.name} 
+                          className="w-full h-full object-cover" 
+                        />
                       </div>
 
-                      {/* Bottom actions row */}
-                      <div className="flex items-center space-x-4">
-                        {/* Quantity Selector: - 1 + */}
-                        <div className="flex items-center border border-brand-border/50 rounded-full py-0.5 px-2.5 bg-brand-warmWhite text-xs font-bold text-brand-espresso">
-                          <button
-                            onClick={() => {
-                              if (item.quantity > 1) {
-                                updateQuantity(item.product.id, item.quantity - 1, item.selectedSize, item.selectedColor);
-                              }
-                            }}
-                            className="hover:text-[#F26A2E] p-1 font-extrabold"
-                          >
-                            -
-                          </button>
-                          <span className="px-3 min-w-[20px] text-center">{item.quantity}</span>
-                          <button
-                            onClick={() => {
-                              updateQuantity(item.product.id, item.quantity + 1, item.selectedSize, item.selectedColor);
-                            }}
-                            className="hover:text-[#F26A2E] p-1 font-extrabold"
-                          >
-                            +
-                          </button>
+                      {/* Details & Price container */}
+                      <div className="flex-grow flex flex-col sm:flex-row sm:justify-between min-h-[80px] sm:min-h-[96px] justify-between text-left">
+                        <div className="space-y-0.5">
+                          <span className="text-[8px] font-extrabold text-[#F26A2E] tracking-widest uppercase block">
+                            {item.product.department === 'numismatics' ? 'Ethnic Heritage' : 'Women\'s Couture'}
+                          </span>
+                          <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso line-clamp-2 pr-2">
+                            {item.product.name}
+                          </h3>
+                          
+                          {/* Specs display (with small color swatch dot) */}
+                          <div className="flex items-center space-x-2 text-[10px] text-brand-warmGray font-bold pt-1">
+                            {item.selectedSize && <span>Size: {item.selectedSize}</span>}
+                            {item.selectedSize && item.selectedColor && <span>•</span>}
+                            {item.selectedColor && (
+                              <span className="flex items-center space-x-1">
+                                <span>Color:</span>
+                                <span 
+                                  className="w-2.5 h-2.5 rounded-full border border-brand-border/50 inline-block"
+                                  style={{ backgroundColor: colorHex }}
+                                />
+                              </span>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Favorite button */}
-                        <button
-                          onClick={() => toggleWishlist(item.product)}
-                          className="flex items-center space-x-1 text-[10px] font-bold text-brand-warmGray hover:text-[#F26A2E] transition-colors"
-                        >
-                          <Heart className={`w-3.5 h-3.5 ${inWishlist ? 'fill-[#F26A2E] text-[#F26A2E]' : ''}`} />
-                          <span>Move to Favourites</span>
-                        </button>
-
-                        {/* Delete button */}
-                        <button
-                          onClick={() => removeFromCart(item.product.id, item.selectedSize, item.selectedColor)}
-                          className="flex items-center space-x-1 text-[10px] font-bold text-brand-warmGray hover:text-brand-sale transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Delete</span>
-                        </button>
+                        {/* Price aligned */}
+                        <div className="text-left sm:text-right mt-1.5 sm:mt-0 flex-shrink-0">
+                          <span className="font-display font-extrabold text-sm sm:text-base text-brand-espresso">
+                            ₹{item.product.price.toLocaleString('en-IN')}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Price align right */}
-                    <div className="text-right flex flex-col justify-between h-24 py-1 flex-shrink-0">
-                      <span className="font-display font-extrabold text-base text-brand-espresso">
-                        ₹{item.product.price.toLocaleString('en-IN')}
-                      </span>
-                    </div>
+                    {/* Bottom actions row */}
+                    <div className="flex flex-wrap items-center gap-3 w-full border-t border-brand-border/10 pt-3">
+                      {/* Quantity Selector: - 1 + */}
+                      <div className="flex items-center border border-brand-border/50 rounded-full py-0.5 px-2 bg-brand-warmWhite text-xs font-bold text-brand-espresso">
+                        <button
+                          onClick={() => {
+                            if (item.quantity > 1) {
+                              updateQuantity(item.product.id, item.quantity - 1, item.selectedSize, item.selectedColor);
+                            }
+                          }}
+                          className="hover:text-[#F26A2E] p-1 font-extrabold"
+                        >
+                          -
+                        </button>
+                        <span className="px-2 min-w-[16px] text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => {
+                            updateQuantity(item.product.id, item.quantity + 1, item.selectedSize, item.selectedColor);
+                          }}
+                          className="hover:text-[#F26A2E] p-1 font-extrabold"
+                        >
+                          +
+                        </button>
+                      </div>
 
+                      {/* Favorite button */}
+                      <button
+                        onClick={() => toggleWishlist(item.product)}
+                        className="flex items-center space-x-1 text-[9px] font-bold text-brand-warmGray hover:text-[#F26A2E] transition-colors"
+                      >
+                        <Heart className={`w-3.5 h-3.5 ${inWishlist ? 'fill-[#F26A2E] text-[#F26A2E]' : ''}`} />
+                        <span>Move to Favourites</span>
+                      </button>
+
+                      {/* Delete button */}
+                      <button
+                        onClick={() => removeFromCart(item.product.id, item.selectedSize, item.selectedColor)}
+                        className="flex items-center space-x-1 text-[9px] font-bold text-brand-warmGray hover:text-brand-sale transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
                   </div>
                 );
               })}
