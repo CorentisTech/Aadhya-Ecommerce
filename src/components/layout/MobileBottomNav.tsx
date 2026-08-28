@@ -45,7 +45,7 @@ export const MobileBottomNav: React.FC = () => {
               <motion.div
                 animate={{
                   scale: isActive ? 1.15 : 1,
-                  color: isActive ? '#C98F91' : '#756E69'
+                  color: isActive ? '#F26A2E' : '#756E69'
                 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
@@ -56,7 +56,7 @@ export const MobileBottomNav: React.FC = () => {
               {isActive && (
                 <motion.span
                   layoutId="activeDot"
-                  className="absolute bottom-0 w-1 h-1 bg-brand-dustyRose rounded-full"
+                  className="absolute bottom-0 w-1 h-1 bg-[#F26A2E] rounded-full"
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 />
               )}

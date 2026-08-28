@@ -217,7 +217,7 @@ export const ProductModal: React.FC = () => {
                 className={`flex-grow py-3 px-6 rounded-xl flex items-center justify-center gap-2 font-bold text-xs tracking-widest uppercase transition-all ${
                   addedSuccess
                     ? 'bg-brand-success text-brand-white'
-                    : 'bg-brand-espresso text-brand-white hover:bg-brand-espresso/90 shadow-md'
+                    : 'bg-[#F26A2E] text-brand-white hover:bg-[#F26A2E]/90 shadow-md'
                 }`}
               >
                 {addedSuccess ? (

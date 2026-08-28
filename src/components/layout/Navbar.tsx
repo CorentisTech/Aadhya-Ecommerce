@@ -239,7 +239,7 @@ export const Navbar: React.FC = () => {
           >
             <Heart className={`w-4 h-4 stroke-[2] ${activePage === 'wishlist' ? 'fill-brand-dustyRose stroke-brand-dustyRose' : ''}`} />
             {wishlist.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-brand-sale text-brand-warmWhite text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-[#F26A2E] text-brand-warmWhite text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
                 {wishlist.length}
               </span>
             )}
@@ -260,7 +260,7 @@ export const Navbar: React.FC = () => {
           >
             <ShoppingBag className="w-4 h-4 stroke-[2]" />
             {cartItemsCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-brand-espresso text-brand-warmWhite text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-[#F26A2E] text-brand-warmWhite text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
                 {cartItemsCount}
               </span>
             )}

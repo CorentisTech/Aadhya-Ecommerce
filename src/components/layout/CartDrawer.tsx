@@ -62,7 +62,7 @@ export const CartDrawer: React.FC = () => {
             <div className="flex-grow overflow-y-auto p-6 space-y-6">
               {cart.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-brand-softBeige flex items-center justify-center text-brand-warmGray text-xl">
+                  <div className="w-16 h-16 rounded-full bg-[#FFF3EC] flex items-center justify-center text-[#F26A2E] text-xl">
                     🛍
                   </div>
                   <div>
@@ -73,7 +73,7 @@ export const CartDrawer: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setCartOpen(false)}
-                    className="px-6 py-2 border border-brand-espresso text-xs font-bold tracking-widest text-brand-espresso hover:bg-brand-espresso hover:text-brand-white transition-colors"
+                    className="px-6 py-2 border border-[#F26A2E] text-xs font-bold tracking-widest text-[#F26A2E] hover:bg-[#F26A2E] hover:text-brand-white transition-colors"
                   >
                     CONTINUE SHOPPING
                   </button>
@@ -157,7 +157,7 @@ export const CartDrawer: React.FC = () => {
               <div className="p-6 bg-brand-white border-t border-brand-border space-y-4">
                 
                 {/* Shipping alert */}
-                <div className="bg-brand-softBeige/60 border border-brand-border/40 p-3 rounded-lg text-center">
+                <div className="bg-[#FFF3EC] border border-[#F9E1D3] p-3 rounded-lg text-center">
                   <p className="text-[10px] text-brand-espresso font-semibold tracking-wider">
                     {isFreeShipping ? (
                       <span className="text-brand-success font-bold">✓ YOU ARE ELIGIBLE FOR FREE SHIPPING</span>
@@ -174,7 +174,7 @@ export const CartDrawer: React.FC = () => {
                   {/* Progress bar */}
                   <div className="w-full bg-brand-border/40 h-1 rounded-full mt-2 overflow-hidden">
                     <div
-                      className={`h-full transition-all duration-500 ${isFreeShipping ? 'bg-brand-success' : 'bg-brand-antiqueBronze'}`}
+                      className={`h-full transition-all duration-500 ${isFreeShipping ? 'bg-brand-success' : 'bg-[#F26A2E]'}`}
                       style={{ width: `${Math.min((subtotal / shippingThreshold) * 100, 100)}%` }}
                     />
                   </div>
