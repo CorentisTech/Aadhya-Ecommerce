@@ -503,7 +503,7 @@ export const CheckoutPage: React.FC = () => {
                         scale: isHovered || isSelected ? 1.03 : 1,
                         zIndex: zVal,
                       }}
-                      transition={{ type: 'spring', damping: 20, stiffness: 250 }}
+                      transition={{ type: 'spring', damping: 28, stiffness: 60 }}
                       className={`absolute left-0 right-0 h-[170px] rounded-2xl p-4 flex flex-col justify-between text-white cursor-pointer shadow-lg border border-white/10 ${card.bgColor}`}
                     >
                       {/* Top Header Row */}
@@ -525,6 +525,7 @@ export const CheckoutPage: React.FC = () => {
                           <motion.div 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
+                            transition={{ duration: 0.35, delay: 0.15 }}
                             className="w-full space-y-2 text-left"
                             onClick={(e) => e.stopPropagation()} // Keep focus on inputs
                           >
