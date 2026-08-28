@@ -22,7 +22,7 @@ export const Categories: React.FC = () => {
           <span className="text-[9px] sm:text-[10px] text-brand-warmGray font-bold tracking-[0.2em] uppercase block">
             SHOP BY CATEGORY
           </span>
-          <h2 className="font-display font-bold text-2xl md:text-4xl text-brand-espresso tracking-tight">
+          <h2 className="font-display font-bold text-3xl md:text-5xl text-brand-espresso tracking-tight">
             Find Your Perfect Style
           </h2>
           <div className="w-10 h-0.5 bg-brand-sale/25 mx-auto mt-2" />

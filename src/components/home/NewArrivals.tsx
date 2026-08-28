@@ -20,7 +20,7 @@ export const NewArrivals: React.FC = () => {
         {[...Array(5)].map((_, i) => (
           <Star
             key={i}
-            className={`w-2.5 h-2.5 ${i < rating ? 'fill-current' : 'text-brand-border stroke-[1.5]'}`}
+            className={`w-3 h-3 ${i < rating ? 'fill-current' : 'text-brand-border stroke-[1.5]'}`}
           />
         ))}
       </div>
@@ -37,7 +37,7 @@ export const NewArrivals: React.FC = () => {
             <span className="text-[9px] sm:text-[10px] text-brand-warmGray font-bold tracking-[0.2em] uppercase block">
               NEW ARRIVALS
             </span>
-            <h2 className="font-display font-bold text-2xl md:text-4xl text-brand-espresso tracking-tight">
+            <h2 className="font-display font-bold text-3xl md:text-5xl text-brand-espresso tracking-tight">
               Fresh From the Atelier
             </h2>
             <p className="text-[10px] sm:text-xs text-brand-warmGray font-medium">
@@ -105,14 +105,14 @@ export const NewArrivals: React.FC = () => {
 
                 {/* Details */}
                 <div className="pt-2 space-y-1.5">
-                  <h3 className="font-sans font-bold text-[10px] sm:text-xs text-brand-espresso tracking-wide leading-snug group-hover:text-brand-dustyRose transition-colors line-clamp-1">
+                  <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso tracking-wide leading-snug group-hover:text-brand-dustyRose transition-colors line-clamp-1">
                     {product.name}
                   </h3>
 
                   {/* Ratings */}
                   <div className="flex items-center space-x-1">
                     {renderStars(product.rating)}
-                    <span className="text-[7px] sm:text-[8px] text-brand-warmGray font-bold">
+                    <span className="text-[9px] sm:text-[10px] text-brand-warmGray font-bold">
                       ({product.reviewsCount || 60})
                     </span>
                   </div>
@@ -120,14 +120,14 @@ export const NewArrivals: React.FC = () => {
                   {/* Pricing */}
                   <div className="flex items-baseline justify-between border-t border-brand-border/20 pt-1.5">
                     <div className="flex items-baseline space-x-1">
-                      <span className="text-[10px] sm:text-xs font-extrabold text-brand-espresso">
+                      <span className="text-xs sm:text-sm font-extrabold text-brand-espresso">
                         ₹{product.price.toLocaleString('en-IN')}
                       </span>
-                      <span className="text-[8px] sm:text-[9px] text-brand-warmGray line-through font-semibold">
+                      <span className="text-[10px] sm:text-xs text-brand-warmGray line-through font-semibold">
                         ₹{product.mrp.toLocaleString('en-IN')}
                       </span>
                     </div>
-                    <span className="text-[7px] sm:text-[8px] text-brand-sale font-extrabold tracking-wider bg-brand-sale/10 px-1 py-0.5 rounded">
+                    <span className="text-[9px] sm:text-[10px] text-brand-sale font-extrabold tracking-wider bg-brand-sale/10 px-1 py-0.5 rounded">
                       {product.discount}%
                     </span>
                   </div>

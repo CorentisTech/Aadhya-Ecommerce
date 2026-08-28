@@ -128,7 +128,7 @@ export const Reviews: React.FC = () => {
             <span className="text-[9px] sm:text-[10px] text-brand-warmGray font-bold tracking-[0.2em] uppercase">
               TESTIMONIALS
             </span>
-            <h2 className="font-display font-bold text-2xl md:text-4xl text-brand-espresso uppercase tracking-wider">
+            <h2 className="font-display font-bold text-3xl md:text-5xl text-brand-espresso uppercase tracking-wider">
               LOVED BY OUR CUSTOMERS
             </h2>
             <p className="font-display italic text-brand-warmGray text-xs">
