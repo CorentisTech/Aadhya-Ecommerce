@@ -184,17 +184,10 @@ export const Navbar: React.FC = () => {
             >
               {/* Rotating Coin using User-provided 1957 Coin image */}
               <div className="relative w-4 h-4 rounded-full overflow-hidden border border-[#2C2522] shadow-sm flex items-center justify-center bg-[#2C2522]">
-                <motion.img
-                  src="/coin_image.jpg"
+                <img
+                  src="/coin_image_new.png"
                   alt="Coin"
                   className="w-full h-full object-cover"
-                  animate={{ rotateY: 360 }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: numismaticsHovered ? 2 : 6,
-                    ease: 'linear',
-                  }}
-                  style={{ backfaceVisibility: 'hidden' }}
                 />
               </div>
               <span className="tracking-[0.2em] font-extrabold text-[9px] uppercase">NUMISMATICS</span>
@@ -397,9 +390,9 @@ export const Navbar: React.FC = () => {
                       {/* Spinning coin */}
                       <div className="w-5 h-5 rounded-full overflow-hidden border border-[#2C2522] flex items-center justify-center bg-[#2C2522]">
                         <img
-                          src="/coin_image.jpg"
+                          src="/coin_image_new.png"
                           alt="Coin"
-                          className="w-full h-full object-cover animate-spin-coin"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                       <span className="tracking-widest">🪙 NUMISMATICS</span>

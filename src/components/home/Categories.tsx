@@ -19,7 +19,7 @@ export const Categories: React.FC = () => {
         
         {/* Header Block (Centered) */}
         <div className="space-y-1.5 text-center max-w-lg mx-auto">
-          <span className="text-[9px] sm:text-[10px] text-[#F26A2E] font-bold tracking-[0.2em] uppercase block">
+          <span className="text-xs sm:text-sm text-[#F26A2E] font-extrabold tracking-[0.2em] uppercase block">
             SHOP BY CATEGORY
           </span>
           <h2 className="font-display font-bold text-3xl md:text-5xl text-brand-espresso tracking-tight">

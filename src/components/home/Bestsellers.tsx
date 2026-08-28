@@ -34,7 +34,7 @@ export const Bestsellers: React.FC = () => {
         {/* Header Grid */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-brand-border/40">
           <div className="flex-grow text-left space-y-1">
-            <span className="text-[9px] sm:text-[10px] text-[#F26A2E] font-bold tracking-[0.2em] uppercase block">
+            <span className="text-xs sm:text-sm text-[#F26A2E] font-extrabold tracking-[0.2em] uppercase block">
               BESTSELLERS
             </span>
             <h2 className="font-display font-bold text-3xl md:text-5xl text-brand-espresso tracking-tight">
