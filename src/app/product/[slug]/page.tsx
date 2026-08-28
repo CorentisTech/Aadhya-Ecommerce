@@ -4,15 +4,11 @@ import React, { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { PRODUCTS, Product } from '@/data/mockData';
-import { ProductVisual } from '@/components/ui/ProductVisual';
 import { 
   Heart, 
   ShoppingBag, 
-  ArrowLeft, 
   Star, 
   X, 
-  ChevronDown, 
-  ChevronUp, 
   Check, 
   ChevronLeft, 
   ChevronRight,
@@ -29,27 +25,20 @@ export default function ProductDetailPage({ params }: PageProps) {
   const { slug } = use(params);
   const { addToCart, toggleWishlist, isInWishlist } = useApp();
 
-  // Find product by slug
+  // Find product by slug name
   const product = PRODUCTS.find(
     (p) => p.name.toLowerCase().replace(/ /g, '-') === slug
   );
 
-  // Detail Page States
-  const [selectedSize, setSelectedSize] = useState('');
+  // States
+  const [selectedSize, setSelectedSize] = useState('36');
   const [selectedColor, setSelectedColor] = useState('');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState(false);
-  
-  // Accordion open states
-  const [accordions, setAccordions] = useState({
-    details: true,
-    shipping: false,
-    returns: false
-  });
 
-  // Lightbox Modal States
+  // Lightbox Modals
   const [isGalleryOpen, setGalleryOpen] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const [isPhotoLightboxOpen, setPhotoLightboxOpen] = useState(false);
@@ -58,10 +47,15 @@ export default function ProductDetailPage({ params }: PageProps) {
   // Set default selection values on mount / product change
   useEffect(() => {
     if (product) {
-      setSelectedSize('');
+      // Default size
+      if (product.sizes && product.sizes.length > 0) {
+        setSelectedSize(product.sizes[0]);
+      } else {
+        setSelectedSize('36');
+      }
       setSizeError(false);
       
-      // Set default color
+      // Default color
       if (product.imagesByColor && product.imagesByColor.length > 0) {
         setSelectedColor(product.imagesByColor[0].colorHex);
       } else if (product.colors && product.colors.length > 0) {
@@ -78,7 +72,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   // Handle color change: updates gallery
   const handleColorChange = (colorHex: string) => {
     setSelectedColor(colorHex);
-    setActiveImageIndex(0); // Reset gallery thumbnail index to first
+    setActiveImageIndex(0);
   };
 
   if (!product) {
@@ -108,16 +102,12 @@ export default function ProductDetailPage({ params }: PageProps) {
     }
     setSizeError(false);
 
-    // Add to Context Cart
+    // Add to Cart
     const colorName = activeColorObj?.colorName || selectedColor;
     addToCart(product, quantity, selectedSize, colorName);
     
     setAdded(true);
     setTimeout(() => setAdded(false), 1200);
-  };
-
-  const toggleAccordion = (section: keyof typeof accordions) => {
-    setAccordions(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const handlePrevImage = () => {
@@ -132,327 +122,192 @@ export default function ProductDetailPage({ params }: PageProps) {
     <div className="w-full min-h-screen bg-[#FFFFFF] py-16 px-4 md:px-12 lg:px-24 text-brand-espresso select-none">
       <div className="max-w-7xl mx-auto space-y-16">
         
-        {/* Breadcrumb Back row */}
-        <div className="flex items-center justify-between border-b border-brand-border pb-4">
+        {/* Main Floating Beige Container Card */}
+        <div className="w-full bg-[#EAE6DF] rounded-[32px] p-6 md:p-12 relative shadow-lg overflow-hidden border border-brand-border/20">
+          
+          {/* Top-Right White Close Button */}
           <button
             onClick={() => router.push('/catalog')}
-            className="flex items-center gap-1.5 text-xs font-bold tracking-widest text-brand-warmGray hover:text-brand-espresso transition-colors"
+            className="absolute top-6 right-6 w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-brand-softBeige transition-colors shadow-sm z-10 text-brand-espresso"
+            aria-label="Close"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>BACK TO PRODUCTS</span>
+            <X className="w-4 h-4" />
           </button>
-          <span className="text-[10px] text-brand-warmGray font-bold tracking-[0.25em] uppercase">
-            AADHYA FASHION EDITORIAL
-          </span>
-        </div>
 
-        {/* 3-column layout splits (Thumbnails, Main Image, Purchasing Specs) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          
-          {/* Column 1: Thumbnails Vertical selector (2 cols on desktop) */}
-          <div className="hidden lg:flex lg:col-span-2 flex-col space-y-3">
-            {activeImages.map((img, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveImageIndex(idx)}
-                className={`w-full aspect-[4/5] bg-brand-softBeige/10 border rounded-xl overflow-hidden p-1 transition-all ${
-                  activeImageIndex === idx
-                    ? 'border-brand-espresso ring-1 ring-brand-espresso/35'
-                    : 'border-brand-border/40 hover:border-brand-warmGray'
-                }`}
-              >
-                <img
-                  src={img}
-                  alt={`Thumbnail ${idx + 1}`}
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              </button>
-            ))}
-          </div>
-
-          {/* Column 2: Large main image panel (6 cols on desktop) */}
-          <div className="col-span-1 lg:col-span-6 space-y-4">
-            <div className="w-full aspect-[4/5] bg-brand-softBeige/10 border border-brand-border/40 rounded-3xl overflow-hidden relative flex items-center justify-center shadow-sm group">
-              {/* Discount Badge */}
-              <div className="absolute top-4 left-4 z-10">
-                <span className="text-[8px] md:text-[9px] bg-brand-sale text-brand-warmWhite font-extrabold tracking-widest px-3 py-1 rounded-full shadow-sm">
-                  {product.discount}% OFF
-                </span>
-              </div>
-
-              {/* View Fullscreen overlay icon */}
-              <button
-                onClick={() => {
-                  setLightboxImageIndex(activeImageIndex);
-                  setGalleryOpen(true);
-                }}
-                className="absolute bottom-4 right-4 z-10 p-2.5 bg-[#FFFFFF]/90 hover:bg-brand-white border border-brand-border/40 text-brand-espresso rounded-full transition-all shadow-sm opacity-0 group-hover:opacity-100"
-                aria-label="Zoom Image"
-              >
-                <Maximize2 className="w-4 h-4" />
-              </button>
-
-              {/* Main Image */}
-              <img
-                src={activeImages[activeImageIndex]}
-                alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.01]"
-              />
-
-              {/* Mobile Swipe Indicators */}
-              <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between lg:hidden pointer-events-none">
-                <button
-                  onClick={handlePrevImage}
-                  className="p-2 bg-white/80 border border-brand-border/20 rounded-full shadow pointer-events-auto text-brand-espresso hover:bg-white transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={handleNextImage}
-                  className="p-2 bg-white/80 border border-brand-border/20 rounded-full shadow pointer-events-auto text-brand-espresso hover:bg-white transition-colors"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Horizontal thumbnail slider on mobile/tablet viewports */}
-            <div className="flex lg:hidden overflow-x-auto gap-3 pb-2 scrollbar-none snap-x snap-mandatory">
-              {activeImages.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveImageIndex(idx)}
-                  className={`w-16 aspect-[4/5] bg-brand-softBeige/10 border rounded-lg overflow-hidden flex-shrink-0 snap-start p-0.5 ${
-                    activeImageIndex === idx ? 'border-brand-espresso' : 'border-brand-border/40'
-                  }`}
-                >
-                  <img src={img} alt="" className="w-full h-full object-cover rounded" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Column 3: Purchasing Specs (4 cols on desktop) */}
-          <div className="col-span-1 lg:col-span-4 space-y-6 text-left">
+          {/* Editorial Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-4">
             
-            {/* Header info */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] text-brand-warmGray font-bold tracking-[0.2em] uppercase">
-                  {product.category}
-                </span>
-                {product.sku && (
-                  <span className="text-[9px] text-brand-warmGray font-semibold tracking-wider">
-                    {product.sku}
-                  </span>
-                )}
-              </div>
-              <h1 className="font-display font-bold text-2xl md:text-3.5xl text-brand-espresso leading-tight">
-                {product.name}
-              </h1>
+            {/* Left Column: Product Information (4 cols) */}
+            <div className="lg:col-span-4 flex flex-col justify-between text-left space-y-8 min-h-[400px]">
               
-              <div className="flex items-baseline space-x-3 pt-2">
-                <span className="text-xl md:text-2xl font-bold text-brand-espresso">
-                  ₹{product.price.toLocaleString('en-IN')}
+              <div className="space-y-4">
+                <span className="text-[9px] text-brand-warmGray font-bold tracking-[0.25em] uppercase block">
+                  artisan weaves
                 </span>
-                <span className="text-sm font-semibold text-brand-warmGray line-through">
-                  ₹{product.mrp.toLocaleString('en-IN')}
-                </span>
+                <h1 className="font-display font-bold text-3xl md:text-4.5xl text-brand-espresso leading-tight">
+                  {product.name}
+                </h1>
+                <p className="text-xs text-brand-warmGray leading-relaxed font-semibold max-w-sm">
+                  {product.description}
+                </p>
+                <div className="pt-2">
+                  <span className="text-xs font-bold text-brand-espresso tracking-widest uppercase block">
+                    {product.fabric ? `${product.fabric.toUpperCase()}` : 'RAW SILK'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bottom spec cards */}
+              <div className="flex items-center space-x-3 pt-6 border-t border-brand-border/20">
+                {/* Checkbox badge */}
+                <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Check className="w-5 h-5 text-[#F26A2E] stroke-[2.5]" />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 flex-grow">
+                  {/* Card 1 */}
+                  <div className="bg-white rounded-xl p-3 shadow-sm border border-brand-border/10 text-left">
+                    <h5 className="text-[8px] font-bold text-brand-espresso tracking-wider uppercase mb-1">
+                      Fabric Details
+                    </h5>
+                    <p className="text-[9px] text-brand-warmGray font-medium leading-tight">
+                      Premium {product.fabric || 'Silk'} fibers.
+                    </p>
+                  </div>
+                  {/* Card 2 */}
+                  <div className="bg-white rounded-xl p-3 shadow-sm border border-brand-border/10 text-left">
+                    <h5 className="text-[8px] font-bold text-brand-espresso tracking-wider uppercase mb-1">
+                      Fit & Style
+                    </h5>
+                    <p className="text-[9px] text-brand-warmGray font-medium leading-tight">
+                      Styled for {product.fit || 'Relaxed'} fit.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Center Column: Portrait Model Image (4 cols) */}
+            <div className="lg:col-span-4 flex justify-center items-center relative">
+              <div className="w-full max-w-[280px] lg:max-w-full aspect-[3/4] bg-brand-softBeige/10 rounded-2xl overflow-hidden relative shadow-md">
+                <img
+                  src={activeImages[activeImageIndex]}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Fullscreen icon */}
+                <button
+                  onClick={() => {
+                    setLightboxImageIndex(activeImageIndex);
+                    setGalleryOpen(true);
+                  }}
+                  className="absolute bottom-3 right-3 p-2 bg-[#FFFFFF]/90 hover:bg-brand-white border border-brand-border/20 text-brand-espresso rounded-full transition-all shadow-sm"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Swipe controls */}
+                <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                  <button
+                    onClick={handlePrevImage}
+                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleNextImage}
+                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
 
-            <p className="text-xs text-brand-warmGray leading-relaxed font-medium">
-              {product.description}
-            </p>
+            {/* Right Column: Spec Card & Action Controls (4 cols) */}
+            <div className="lg:col-span-4 flex flex-col justify-between space-y-6">
+              
+              {/* White Specifications Card */}
+              <div className="bg-white rounded-[24px] p-6 shadow-sm border border-brand-border/20 text-left space-y-5 flex-grow">
+                
+                {/* Color swatch selection */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-extrabold text-brand-espresso tracking-wider uppercase block">
+                    Colour: {activeColorObj?.colorName || 'Selected'}
+                  </span>
+                  <div className="flex space-x-2">
+                    {product.colors?.map((colorHex) => {
+                      const isSelected = selectedColor === colorHex;
+                      return (
+                        <button
+                          key={colorHex}
+                          onClick={() => handleColorChange(colorHex)}
+                          className={`w-6 h-6 rounded-full border transition-all relative flex items-center justify-center ${
+                            isSelected
+                              ? 'scale-110 border-brand-espresso ring-1 ring-brand-espresso/30'
+                              : 'border-brand-border/60 hover:opacity-85'
+                          }`}
+                          style={{ backgroundColor: colorHex }}
+                          aria-label="Select Color"
+                        >
+                          {isSelected && (
+                            <Check className={`w-3 h-3 ${colorHex === '#FFFFFF' || colorHex === '#FCFAF7' ? 'text-brand-espresso' : 'text-white'}`} />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-            {/* Color selection Dot Swatches */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-[9px] font-bold text-brand-warmGray tracking-widest uppercase">
-                  <span>COLOUR: {activeColorObj?.colorName || 'SELECTED'}</span>
+                <div className="w-full h-px bg-brand-border/20 my-3" />
+
+                {/* SKU & size metadata updates */}
+                <div className="space-y-1.5 text-[9px] md:text-[10px] text-brand-warmGray font-extrabold tracking-widest uppercase">
+                  <div>REF: {product.sku || '1102/554'}</div>
+                  <div>The model size: {selectedSize}</div>
+                  <div>Height: 5.70 ft / 174 cm</div>
                 </div>
-                <div className="flex space-x-2.5">
-                  {product.colors.map((colorHex) => {
-                    const isSelected = selectedColor === colorHex;
-                    return (
-                      <button
-                        key={colorHex}
-                        onClick={() => handleColorChange(colorHex)}
-                        className={`w-6 h-6 rounded-full border transition-all relative flex items-center justify-center ${
-                          isSelected
-                            ? 'scale-110 border-brand-espresso ring-1 ring-brand-espresso/30'
-                            : 'border-brand-border/60 hover:opacity-85'
-                        }`}
-                        style={{ backgroundColor: colorHex }}
-                        aria-label="Select Color"
-                      >
-                        {isSelected && (
-                          <Check className={`w-3.5 h-3.5 ${colorHex === '#FFFFFF' || colorHex === '#FCFAF7' ? 'text-brand-espresso' : 'text-white'}`} />
-                        )}
-                      </button>
-                    );
-                  })}
+
+                <div className="w-full h-px bg-brand-border/20 my-3" />
+
+                {/* Sizing selection */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-extrabold text-brand-espresso tracking-wider uppercase block">
+                    Select your size:
+                  </span>
+                  <div className="flex gap-2">
+                    {(product.sizes || ['34', '36', '38', '40']).map((sz) => {
+                      const isSelected = selectedSize === sz;
+                      return (
+                        <button
+                          key={sz}
+                          onClick={() => setSelectedSize(sz)}
+                          className={`w-10 h-10 border rounded-lg text-xs font-bold transition-all ${
+                            isSelected
+                              ? 'border-brand-espresso bg-brand-espresso text-brand-white'
+                              : 'border-brand-border bg-white text-brand-espresso hover:bg-brand-softBeige/30'
+                          }`}
+                        >
+                          {sz}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+
               </div>
-            )}
 
-            {/* Size selection */}
-            {product.sizes && product.sizes.length > 0 && (
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between text-[9px] font-bold text-brand-warmGray tracking-widest uppercase">
-                  <span>SELECT SIZE:</span>
-                  {sizeError && (
-                    <span className="text-brand-sale text-[8px] font-extrabold normal-case">
-                      * Please select a size
-                    </span>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2 text-xs font-bold text-brand-espresso">
-                  {product.sizes.map((sz) => {
-                    const isSelected = selectedSize === sz;
-                    return (
-                      <button
-                        key={sz}
-                        onClick={() => {
-                          setSelectedSize(sz);
-                          setSizeError(false);
-                        }}
-                        className={`px-4 py-2 border rounded-xl transition-all shadow-sm ${
-                          isSelected
-                            ? 'border-brand-espresso bg-brand-espresso text-brand-white'
-                            : 'border-brand-border bg-white hover:bg-brand-softBeige/30'
-                        }`}
-                      >
-                        {sz}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Model Dimensions */}
-            {product.modelInfo && (
-              <p className="text-[10px] text-brand-warmGray font-semibold tracking-wide italic">
-                {product.modelInfo}
-              </p>
-            )}
-
-            {/* Add to Cart & Wishlist Actions */}
-            <div className="flex gap-4 pt-4 border-t border-brand-border/40">
+              {/* Action Button: Shop Price */}
               <button
                 onClick={handleAddToCart}
                 disabled={added}
-                className={`flex-grow py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 font-bold text-xs tracking-widest uppercase transition-all shadow-md ${
-                  added 
-                    ? 'bg-brand-success text-brand-white' 
-                    : 'bg-[#F26A2E] text-brand-white hover:bg-[#F26A2E]/90'
-                }`}
+                className="w-full py-4 bg-white text-brand-espresso hover:bg-white/95 border border-brand-border/30 rounded-full font-bold text-xs tracking-widest uppercase transition-all shadow-md text-center block"
               >
-                {added ? (
-                  <span>✓ ADDED TO BAG</span>
-                ) : (
-                  <>
-                    <ShoppingBag className="w-4 h-4" />
-                    <span>ADD TO SHOPPING BAG</span>
-                  </>
-                )}
+                {added ? '✓ Added to bag' : `Shop ₹${product.price.toLocaleString('en-IN')}`}
               </button>
 
-              <button
-                onClick={() => toggleWishlist(product)}
-                className={`p-3.5 rounded-xl border transition-all flex items-center justify-center shadow-sm ${
-                  inWishlist
-                    ? 'bg-brand-blush/40 border-brand-dustyRose text-brand-dustyRose'
-                    : 'border-brand-border hover:bg-brand-softBeige/30 text-brand-warmGray'
-                }`}
-                aria-label="Wishlist"
-              >
-                <Heart className={`w-4.5 h-4.5 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
-              </button>
-            </div>
-
-            {/* Collapsible details accordions */}
-            <div className="border-t border-brand-border/40 pt-4 space-y-1">
-              {/* Accordion 1: Details */}
-              <div className="border-b border-brand-border/20 py-2">
-                <button
-                  onClick={() => toggleAccordion('details')}
-                  className="w-full flex items-center justify-between text-[10px] font-extrabold tracking-widest text-brand-espresso uppercase focus:outline-none"
-                >
-                  <span>PRODUCT DETAILS & DESCRIPTION</span>
-                  {accordions.details ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
-                <AnimatePresence>
-                  {accordions.details && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <ul className="pl-4 pr-2 pt-2.5 space-y-1.5 list-disc text-[11px] text-brand-warmGray font-medium leading-relaxed">
-                        <li>Fabric composition: {product.fabric || 'Premium weave'}</li>
-                        <li>Occasion parameters: {product.occasion || 'General wear'}</li>
-                        <li>Silhouettes fit: {product.fit || 'Regular'}</li>
-                        {product.details?.map((detailItem, idx) => (
-                          <li key={idx}>{detailItem}</li>
-                        ))}
-                      </ul>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Accordion 2: Shipping */}
-              <div className="border-b border-brand-border/20 py-2">
-                <button
-                  onClick={() => toggleAccordion('shipping')}
-                  className="w-full flex items-center justify-between text-[10px] font-extrabold tracking-widest text-brand-espresso uppercase focus:outline-none"
-                >
-                  <span>SHIPPING & DELIVERY</span>
-                  {accordions.shipping ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
-                <AnimatePresence>
-                  {accordions.shipping && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <p className="pt-2.5 text-[11px] text-brand-warmGray leading-relaxed font-medium">
-                        Standard courier shipping delivered within 3-5 business days. Safe, insured courier packaging is certified for security.
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Accordion 3: Returns */}
-              <div className="border-b border-brand-border/20 py-2">
-                <button
-                  onClick={() => toggleAccordion('returns')}
-                  className="w-full flex items-center justify-between text-[10px] font-extrabold tracking-widest text-brand-espresso uppercase focus:outline-none"
-                >
-                  <span>EASY RETURN POLICY</span>
-                  {accordions.returns ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
-                <AnimatePresence>
-                  {accordions.returns && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <p className="pt-2.5 text-[11px] text-brand-warmGray leading-relaxed font-medium">
-                        Hassle-free 7-day return collection from your doorstep. The items must remain unworn, with original tags intact.
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
             </div>
 
           </div>
@@ -460,7 +315,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         </div>
 
         {/* Rating & Reviews Section */}
-        <div className="border-t border-brand-border/40 pt-16 grid grid-cols-1 lg:grid-cols-12 gap-8 text-left bg-brand-white">
+        <div className="border-t border-brand-border/40 pt-16 grid grid-cols-1 lg:grid-cols-12 gap-8 text-left bg-[#FFFFFF]">
           {/* Reviews Score Card (5 cols) */}
           <div className="lg:col-span-5 space-y-4">
             <h3 className="font-display font-bold text-lg md:text-xl tracking-wider text-brand-espresso uppercase">
@@ -476,7 +331,7 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
               
               <div className="flex-grow space-y-1 max-w-[200px]">
-                {/* 5 lines for stars distribution */}
+                {/* Stars distribution charts (thin black solid lines over light tracks) */}
                 {[
                   { star: 5, pct: '60%' },
                   { star: 4, pct: '20%' },
@@ -487,7 +342,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                   <div key={row.star} className="flex items-center text-[10px] font-bold text-brand-espresso">
                     <span className="w-3">{row.star}</span>
                     <Star className="w-2.5 h-2.5 text-brand-espresso fill-current mx-1.5" />
-                    <div className="flex-grow h-1 bg-brand-softBeige/60 rounded-full overflow-hidden">
+                    <div className="flex-grow h-[1px] bg-brand-border/30 rounded-full overflow-hidden">
                       <div className="h-full bg-brand-espresso" style={{ width: row.pct }} />
                     </div>
                   </div>
@@ -500,15 +355,15 @@ export default function ProductDetailPage({ params }: PageProps) {
             </p>
           </div>
 
-          {/* Testimonial card lists (7 cols) */}
+          {/* Testimonial Quote Card (7 cols) */}
           <div className="lg:col-span-7 space-y-4 flex flex-col justify-between">
-            <div className="bg-brand-softBeige/20 border border-brand-border/40 p-6 rounded-2xl space-y-4 shadow-sm relative">
-              <div className="flex text-amber-500">
+            <div className="bg-[#EAE6DF]/30 border border-brand-border/30 p-6 rounded-2xl space-y-4 shadow-sm relative">
+              <div className="flex text-brand-espresso">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                  <Star key={i} className="w-3 h-3 fill-current" />
                 ))}
               </div>
-              <p className="text-xs md:text-sm text-brand-espresso italic leading-relaxed font-medium">
+              <p className="text-xs md:text-sm text-brand-espresso font-medium leading-relaxed">
                 "The dedication to sustainability and ethical practices resonates strongly with today's consumers, positioning the brand as a responsible choice in the fashion world."
               </p>
               
@@ -529,7 +384,7 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             <div className="flex justify-start">
               <button 
-                onClick={() => alert("All verified customer reviews are synced!")}
+                onClick={() => alert("All verified reviews are loaded!")}
                 className="px-6 py-2.5 border border-brand-border rounded-full text-[10px] font-bold tracking-widest text-brand-espresso hover:bg-brand-softBeige/40 transition-colors uppercase"
               >
                 View All Reviews
@@ -540,8 +395,8 @@ export default function ProductDetailPage({ params }: PageProps) {
 
         {/* Customer Uploaded Photos grid */}
         {product.customerPhotos && product.customerPhotos.length > 0 && (
-          <div className="border-t border-brand-border/40 pt-16 text-left space-y-6 bg-brand-white">
-            <h3 className="font-display font-bold text-sm md:text-xs tracking-widest text-brand-espresso uppercase">
+          <div className="border-t border-brand-border/40 pt-16 text-left space-y-6 bg-[#FFFFFF]">
+            <h3 className="font-display font-bold text-xs tracking-widest text-brand-espresso uppercase">
               CUSTOMER UPLOADED PHOTOS ({product.customerPhotos.length})
             </h3>
             
