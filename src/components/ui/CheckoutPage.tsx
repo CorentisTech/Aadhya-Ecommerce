@@ -1,35 +1,66 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { ProductVisual } from './ProductVisual';
-import { ArrowLeft, CheckCircle, CreditCard } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { 
+  ArrowLeft, 
+  CheckCircle, 
+  CreditCard, 
+  Building, 
+  Smartphone, 
+  DollarSign, 
+  ShieldCheck, 
+  Truck, 
+  RotateCcw, 
+  Lock, 
+  X, 
+  ArrowUp,
+  ChevronDown
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const CheckoutPage: React.FC = () => {
   const { cart, clearCart, setPage } = useApp();
   const [success, setSuccess] = useState(false);
+  const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  
+  // Mock inputs inside payment methods
+  const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvv: '', name: '' });
+  const [upiId, setUpiId] = useState('');
+  const [selectedBank, setSelectedBank] = useState('');
+
+  // Pre-fill form data to match the uploaded screenshot
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    zip: '',
+    email: 'ananya.sharma@example.com',
+    name: 'Ananya Sharma',
+    address: 'Flat 402, Royal Palms Residency, MG Road',
+    landmark: 'Opposite Grand Mall',
+    city: 'Pune',
+    state: 'Maharashtra',
+    zip: '411001',
+    country: 'India',
   });
 
   const subtotal = cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
-  const shipping = subtotal >= 5000 ? 0 : 150;
-  const total = subtotal + shipping;
+  const shippingThreshold = 5000;
+  const isFreeShipping = subtotal >= shippingThreshold;
+  const shippingCost = isFreeShipping ? 0 : 150;
+  
+  // Dynamic 10% Festive Discount
+  const discount = Math.round(subtotal * 0.1);
+  const total = subtotal + shippingCost - discount;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccess(true);
-    clearCart();
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handlePayNow = () => {
+    setPaymentModalOpen(false);
+    setSuccess(true);
+    clearCart();
   };
 
   if (success) {
@@ -54,7 +85,7 @@ export const CheckoutPage: React.FC = () => {
           </p>
           <button
             onClick={() => setPage('home')}
-            className="w-full py-3 bg-brand-espresso text-brand-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-brand-espresso/90 transition-colors rounded-xl"
+            className="w-full py-3 bg-[#F26A2E] text-brand-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#F26A2E]/90 transition-colors rounded-xl"
           >
             CONTINUE SHOPPING
           </button>
@@ -63,21 +94,64 @@ export const CheckoutPage: React.FC = () => {
     );
   }
 
+  // Stacking properties of payment wallet cards
+  const paymentCards = [
+    {
+      id: 'net-banking',
+      title: 'Net Banking',
+      amount: `₹${Math.floor(total).toLocaleString('en-IN')}`,
+      bgColor: 'bg-[#802611]', // Deep auburn red
+      icon: Building,
+      zIndex: 10,
+      yOffset: 0,
+    },
+    {
+      id: 'upi',
+      title: 'UPI & QR Pay',
+      amount: `₹${Math.floor(total).toLocaleString('en-IN')}`,
+      bgColor: 'bg-[#9C7E12]', // Olive Gold
+      icon: Smartphone,
+      zIndex: 20,
+      yOffset: 45,
+    },
+    {
+      id: 'card',
+      title: 'Debit / Credit Card',
+      amount: `₹${Math.floor(total).toLocaleString('en-IN')}`,
+      bgColor: 'bg-[#C45E2E]', // Terracotta Orange
+      icon: CreditCard,
+      zIndex: 30,
+      yOffset: 90,
+    },
+    {
+      id: 'cod',
+      title: 'Cash on Delivery',
+      amount: `₹${Math.floor(total).toLocaleString('en-IN')}`,
+      bgColor: 'bg-[#2A2624]', // Charcoal espresso
+      icon: DollarSign,
+      zIndex: 40,
+      yOffset: 135,
+    }
+  ];
+
   return (
-    <div className="w-full min-h-screen bg-brand-warmWhite py-16 px-6 md:px-12 lg:px-24 text-brand-espresso">
-      
-      <div className="max-w-6xl mx-auto space-y-12">
+    <div className="w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left">
+      <div className="max-w-6xl mx-auto space-y-8">
         
-        {/* Header Back Button */}
-        <div className="flex items-center justify-between border-b border-brand-border pb-4">
+        {/* Header Navigation */}
+        <div className="flex items-center justify-between pb-2 border-b border-brand-border/40">
           <button
             onClick={() => setPage('home')}
-            className="flex items-center gap-1.5 text-xs font-bold tracking-widest text-brand-warmGray hover:text-brand-espresso transition-colors"
+            className="flex items-center gap-1.5 text-xs font-bold tracking-widest text-brand-warmGray hover:text-[#F26A2E] transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>BACK TO SHOP</span>
+            <ArrowLeft className="w-4 h-4 text-[#F26A2E]" />
+            <span>Back to Cart</span>
           </button>
-          <span className="font-display font-extrabold text-sm tracking-[0.25em]">SECURE CHECKOUT</span>
+          
+          <div className="flex items-center gap-2 text-brand-warmGray text-[10px] font-bold tracking-widest uppercase">
+            <Lock className="w-3.5 h-3.5 text-[#F26A2E]" />
+            <span>256-Bit SSL Secure Checkout</span>
+          </div>
         </div>
 
         {cart.length === 0 ? (
@@ -87,170 +161,485 @@ export const CheckoutPage: React.FC = () => {
             </p>
             <button
               onClick={() => setPage('home')}
-              className="px-6 py-2 bg-brand-espresso text-brand-white text-xs font-bold tracking-widest rounded-lg"
+              className="px-6 py-2 bg-[#F26A2E] text-brand-white text-xs font-bold tracking-widest rounded-lg"
             >
               GO SHOPPING
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* Left Column: Address Form & Payment (7 cols) */}
-            <div className="lg:col-span-7 space-y-8 bg-brand-white p-6 md:p-8 border border-brand-border/60 rounded-3xl">
+            {/* Left Column: Form Details & Drag CTA (7 cols) */}
+            <div className="lg:col-span-7 space-y-6">
               
-              <div className="space-y-4">
-                <h2 className="text-xs font-bold tracking-[0.2em] text-brand-espresso border-b border-brand-border pb-2">
-                  1. SHIPPING INFORMATION
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5 col-span-2">
-                    <label className="text-[9px] font-bold text-brand-warmGray tracking-wider block">FULL NAME</label>
+              {/* Elegant Title */}
+              <h1 className="font-display font-bold text-4xl text-brand-espresso tracking-tight">
+                Checkout
+              </h1>
+
+              {/* Stepper Indicators */}
+              <div className="flex items-center space-x-6 text-xs font-semibold tracking-wider pb-2">
+                <div className="flex items-center space-x-2">
+                  <span className="w-5 h-5 rounded-full bg-[#F26A2E] text-white flex items-center justify-center font-bold text-[10px]">1</span>
+                  <span className="text-[#F26A2E]">Shipping</span>
+                </div>
+                <div className="flex items-center space-x-2 text-brand-warmGray/60">
+                  <span className="w-5 h-5 rounded-full bg-brand-border/40 text-brand-warmGray flex items-center justify-center font-bold text-[10px]">2</span>
+                  <span>Payment</span>
+                </div>
+                <div className="flex items-center space-x-2 text-brand-warmGray/60">
+                  <span className="w-5 h-5 rounded-full bg-brand-border/40 text-brand-warmGray flex items-center justify-center font-bold text-[10px]">3</span>
+                  <span>Review</span>
+                </div>
+              </div>
+
+              {/* Address Form */}
+              <div className="bg-brand-white p-6 md:p-8 border border-brand-border/40 rounded-3xl space-y-5 shadow-sm">
+                
+                {/* Contact Info */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-brand-espresso tracking-widest uppercase block">
+                    Contact Information
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleTextChange}
+                    className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                    placeholder="Enter email address"
+                  />
+                </div>
+
+                {/* Shipping address details */}
+                <div className="space-y-4">
+                  <label className="text-[10px] font-bold text-brand-espresso tracking-widest uppercase block border-b border-brand-border/30 pb-1">
+                    Shipping Address
+                  </label>
+                  
+                  <div className="space-y-3">
+                    {/* Full Name */}
                     <input
                       required
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleTextChange}
-                      className="w-full bg-brand-warmWhite border border-brand-border/80 p-3 rounded-lg text-xs outline-none focus:border-brand-espresso font-semibold"
+                      className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                      placeholder="Full Name"
                     />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-brand-warmGray tracking-wider block">EMAIL ADDRESS</label>
-                    <input
-                      required
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleTextChange}
-                      className="w-full bg-brand-warmWhite border border-brand-border/80 p-3 rounded-lg text-xs outline-none focus:border-brand-espresso font-semibold"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-brand-warmGray tracking-wider block">PHONE NUMBER</label>
-                    <input
-                      required
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleTextChange}
-                      className="w-full bg-brand-warmWhite border border-brand-border/80 p-3 rounded-lg text-xs outline-none focus:border-brand-espresso font-semibold"
-                    />
-                  </div>
-                  <div className="space-y-1.5 col-span-2">
-                    <label className="text-[9px] font-bold text-brand-warmGray tracking-wider block">SHIPPING ADDRESS</label>
+
+                    {/* Address Line 1 */}
                     <input
                       required
                       type="text"
                       name="address"
                       value={formData.address}
                       onChange={handleTextChange}
-                      className="w-full bg-brand-warmWhite border border-brand-border/80 p-3 rounded-lg text-xs outline-none focus:border-brand-espresso font-semibold"
+                      className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                      placeholder="Address Line 1"
                     />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-brand-warmGray tracking-wider block">CITY / REGION</label>
+
+                    {/* Landmark / Line 2 */}
                     <input
-                      required
                       type="text"
-                      name="city"
-                      value={formData.city}
+                      name="landmark"
+                      value={formData.landmark}
                       onChange={handleTextChange}
-                      className="w-full bg-brand-warmWhite border border-brand-border/80 p-3 rounded-lg text-xs outline-none focus:border-brand-espresso font-semibold"
+                      className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                      placeholder="Landmark / Area (e.g. Opposite Grand Mall)"
                     />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-brand-warmGray tracking-wider block">PINCODE / POSTCODE</label>
-                    <input
-                      required
-                      type="text"
-                      name="zip"
-                      value={formData.zip}
-                      onChange={handleTextChange}
-                      className="w-full bg-brand-warmWhite border border-brand-border/80 p-3 rounded-lg text-xs outline-none focus:border-brand-espresso font-semibold"
-                    />
+
+                    {/* City & State */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <input
+                        required
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleTextChange}
+                        className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                        placeholder="City"
+                      />
+                      
+                      <div className="relative">
+                        <select
+                          name="state"
+                          value={formData.state}
+                          onChange={handleTextChange}
+                          className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso appearance-none"
+                        >
+                          <option value="Maharashtra">Maharashtra</option>
+                          <option value="Delhi">Delhi</option>
+                          <option value="Karnataka">Karnataka</option>
+                          <option value="Tamil Nadu">Tamil Nadu</option>
+                          <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        </select>
+                        <ChevronDown className="w-4 h-4 text-brand-warmGray absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {/* Zip & Country */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <input
+                        required
+                        type="text"
+                        name="zip"
+                        value={formData.zip}
+                        onChange={handleTextChange}
+                        className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                        placeholder="Pincode / Zipcode"
+                      />
+                      
+                      <div className="relative">
+                        <select
+                          name="country"
+                          value={formData.country}
+                          onChange={handleTextChange}
+                          className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso appearance-none"
+                        >
+                          <option value="India">India</option>
+                          <option value="United States">United States</option>
+                          <option value="United Kingdom">United Kingdom</option>
+                        </select>
+                        <ChevronDown className="w-4 h-4 text-brand-warmGray absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Payment selection */}
-              <div className="space-y-4 pt-4 border-t border-brand-border/40">
-                <h2 className="text-xs font-bold tracking-[0.2em] text-brand-espresso border-b border-brand-border pb-2 flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-brand-warmGray" />
-                  <span>2. PAYMENT METHOD</span>
-                </h2>
-                
-                {/* Visual payment options tabs */}
-                <div className="grid grid-cols-3 gap-3 text-center text-[10px] font-bold tracking-widest">
-                  <div className="p-4 border border-brand-espresso bg-brand-softBeige/20 rounded-xl cursor-pointer">
-                    UPI / QR
-                  </div>
-                  <div className="p-4 border border-brand-border rounded-xl cursor-not-allowed opacity-50">
-                    CARD
-                  </div>
-                  <div className="p-4 border border-brand-border rounded-xl cursor-not-allowed opacity-50">
-                    NET BANK
-                  </div>
+              {/* Dynamic Bouncing Touch Drag Up Gesture trigger button */}
+              <div className="relative pt-2">
+                <div className="flex flex-col items-center space-y-1 mb-2">
+                  <motion.div
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                    className="text-[#F26A2E] text-base"
+                  >
+                    👆
+                  </motion.div>
+                  <span className="text-[8px] font-bold text-[#F26A2E] tracking-[0.25em] uppercase">
+                    Drag up to pay
+                  </span>
+                </div>
+
+                <div className="h-16 bg-brand-white rounded-full border-2 border-dashed border-[#F26A2E]/50 relative overflow-hidden flex items-center justify-center p-1.5 shadow-sm">
+                  <motion.div
+                    drag="y"
+                    dragConstraints={{ top: -80, bottom: 0 }}
+                    dragElastic={0.15}
+                    onDragEnd={(event, info) => {
+                      if (info.offset.y < -40) {
+                        setPaymentModalOpen(true);
+                      }
+                    }}
+                    onClick={() => setPaymentModalOpen(true)}
+                    className="absolute inset-x-1.5 h-[50px] bg-[#F26A2E] rounded-full flex items-center justify-center cursor-pointer text-brand-white text-xs font-bold tracking-[0.25em] shadow-md select-none touch-none"
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="flex items-center gap-2">
+                      <ArrowUp className="w-3.5 h-3.5 animate-bounce" />
+                      <span>DRAG UP FOR PAYMENT</span>
+                    </span>
+                  </motion.div>
                 </div>
               </div>
 
             </div>
 
             {/* Right Column: Order Summary (5 cols) */}
-            <div className="lg:col-span-5 bg-brand-white border border-brand-border/60 p-6 md:p-8 rounded-3xl sticky top-28 space-y-6">
-              <h2 className="text-xs font-bold tracking-[0.2em] text-brand-espresso border-b border-brand-border pb-2">
-                ORDER SUMMARY
+            <div className="lg:col-span-5 bg-brand-white border border-brand-border/30 p-6 md:p-8 rounded-3xl space-y-6 shadow-sm">
+              <h2 className="font-display font-bold text-lg text-brand-espresso border-b border-brand-border/30 pb-2">
+                Order Summary
               </h2>
 
-              {/* Order items scroll list */}
-              <div className="max-h-[220px] overflow-y-auto space-y-4 pr-2">
+              {/* Order items lists with real images */}
+              <div className="max-h-[260px] overflow-y-auto space-y-4 pr-1">
                 {cart.map((item, index) => (
-                  <div key={index} className="flex gap-3 items-center pb-3 border-b border-brand-border/30">
-                    <div className="w-10 h-12 bg-brand-warmWhite rounded flex-shrink-0 flex items-center justify-center p-0.5 border border-brand-border/40">
-                      <ProductVisual type={item.product.visualType} color={item.product.visualColor} pattern={item.product.visualPattern} />
+                  <div key={index} className="flex gap-4 items-center pb-4 border-b border-brand-border/20">
+                    <div className="w-14 h-16 bg-brand-softBeige/10 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-brand-border/30">
+                      <img 
+                        src={item.product.image} 
+                        alt={item.product.name} 
+                        className="w-full h-full object-cover" 
+                      />
                     </div>
-                    <div className="flex-grow text-left space-y-0.5">
-                      <h4 className="font-display font-bold text-[11px] text-brand-espresso line-clamp-1">{item.product.name}</h4>
-                      <p className="text-[8px] text-brand-warmGray font-semibold tracking-wider">
-                        QTY: {item.quantity} {item.selectedSize && `• SIZE: ${item.selectedSize}`}
+                    
+                    <div className="flex-grow text-left space-y-1">
+                      <h4 className="font-sans font-bold text-xs text-brand-espresso line-clamp-1">
+                        {item.product.name}
+                      </h4>
+                      <p className="text-[9px] text-brand-warmGray font-bold tracking-wider uppercase">
+                        {item.selectedColor && `Color: ${item.selectedColor.toUpperCase()}`} {item.selectedSize && `• Size: ${item.selectedSize}`}
+                      </p>
+                      <p className="text-[9px] text-brand-warmGray font-bold">
+                        QTY: {item.quantity}
                       </p>
                     </div>
-                    <span className="text-[11px] font-bold text-brand-espresso">
+
+                    <span className="text-xs font-extrabold text-brand-espresso">
                       ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
                     </span>
                   </div>
                 ))}
               </div>
 
-              {/* Pricing totals */}
-              <div className="space-y-2 border-t border-brand-border/40 pt-4 text-xs font-semibold tracking-wider text-brand-warmGray">
+              {/* Totals Summary */}
+              <div className="space-y-2.5 border-t border-brand-border/30 pt-4 text-[10px] font-bold tracking-widest text-brand-warmGray">
                 <div className="flex justify-between">
-                  <span>ITEMS TOTAL</span>
+                  <span>SUBTOTAL</span>
                   <span>₹{subtotal.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>SHIPPING & HANDLING</span>
-                  <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+                  <span>INSURED EXPRESS SHIPPING</span>
+                  <span>{shippingCost === 0 ? '₹0.00 (Free)' : `₹${shippingCost}`}</span>
                 </div>
-                <div className="flex justify-between text-sm font-bold text-brand-espresso border-t border-brand-border/30 pt-3">
-                  <span>TOTAL BILL</span>
-                  <span>₹{total.toLocaleString('en-IN')}</span>
+                <div className="flex justify-between text-brand-success font-extrabold">
+                  <span>FESTIVE SPECIAL DISCOUNT</span>
+                  <span>-₹{discount.toLocaleString('en-IN')}</span>
+                </div>
+                
+                <div className="flex justify-between text-sm font-bold text-brand-espresso border-t border-brand-border/30 pt-4">
+                  <span className="font-display font-bold">TOTAL</span>
+                  <span className="text-[#F26A2E] text-lg font-extrabold">
+                    ₹{total.toLocaleString('en-IN')}
+                  </span>
                 </div>
               </div>
 
-              {/* Place Order CTA */}
-              <button
-                type="submit"
-                className="w-full py-4 bg-brand-espresso text-brand-white text-xs font-bold tracking-[0.25em] uppercase hover:bg-brand-espresso/90 transition-colors shadow-md rounded-xl"
-              >
-                PLACE SECURE ORDER (₹{total.toLocaleString('en-IN')})
-              </button>
+              {/* Checkout Badge overlays */}
+              <div className="grid grid-cols-3 gap-2 pt-4 border-t border-brand-border/30 text-center">
+                <div className="flex flex-col items-center space-y-1">
+                  <ShieldCheck className="w-5 h-5 text-[#F26A2E] stroke-[1.5]" />
+                  <span className="text-[7px] font-extrabold text-brand-espresso uppercase tracking-wider">Secure Checkout</span>
+                </div>
+                <div className="flex flex-col items-center space-y-1">
+                  <Truck className="w-5 h-5 text-[#F26A2E] stroke-[1.5]" />
+                  <span className="text-[7px] font-extrabold text-brand-espresso uppercase tracking-wider">Free Insured Post</span>
+                </div>
+                <div className="flex flex-col items-center space-y-1">
+                  <RotateCcw className="w-5 h-5 text-[#F26A2E] stroke-[1.5]" />
+                  <span className="text-[7px] font-extrabold text-brand-espresso uppercase tracking-wider">Easy Returns</span>
+                </div>
+              </div>
 
             </div>
 
-          </form>
+          </div>
         )}
 
       </div>
+
+      {/* Stacked wallet popup modal */}
+      <AnimatePresence>
+        {isPaymentModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#121110]/70 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={() => setPaymentModalOpen(false)}
+          >
+            {/* Modal Body */}
+            <motion.div
+              initial={{ scale: 0.95, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 30 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="bg-white w-full max-w-md rounded-3xl p-6 md:p-8 relative shadow-2xl border border-brand-border/30 text-center flex flex-col justify-between overflow-hidden min-h-[500px]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              
+              {/* Close Button */}
+              <button
+                onClick={() => setPaymentModalOpen(false)}
+                className="absolute top-4 right-4 text-brand-espresso p-1.5 hover:bg-brand-softBeige rounded-full transition-colors border border-brand-border/40"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+
+              {/* Header Title */}
+              <div className="space-y-1 mt-2">
+                <h3 className="font-display font-bold text-2xl text-brand-espresso leading-tight">
+                  Choose Payment Method
+                </h3>
+                <p className="text-[10px] text-brand-warmGray font-bold tracking-wider">
+                  Tap or click any card in your wallet to proceed
+                </p>
+              </div>
+
+              {/* Stacked Wallet container (300px height view box) */}
+              <div className="relative h-[320px] w-full flex flex-col justify-end mt-4 select-none">
+                
+                {paymentCards.map((card) => {
+                  const Icon = card.icon;
+                  const isHovered = hoveredCard === card.id;
+                  const isSelected = selectedCard === card.id;
+                  
+                  // Compute dynamic coordinate slide heights on hover/selection
+                  let yVal = card.yOffset;
+                  let zVal = card.zIndex;
+                  
+                  if (isSelected) {
+                    yVal = -150; // Pop way up when selected
+                    zVal = 100;
+                  } else if (isHovered) {
+                    yVal = -110; // Pop up on hover
+                    zVal = 80;
+                  }
+                  
+                  return (
+                    <motion.div
+                      key={card.id}
+                      onClick={() => {
+                        setSelectedCard(selectedCard === card.id ? null : card.id);
+                      }}
+                      onMouseEnter={() => setHoveredCard(card.id)}
+                      onMouseLeave={() => setHoveredCard(null)}
+                      animate={{
+                        y: yVal,
+                        scale: isHovered || isSelected ? 1.03 : 1,
+                        zIndex: zVal,
+                      }}
+                      transition={{ type: 'spring', damping: 20, stiffness: 250 }}
+                      className={`absolute left-0 right-0 h-[170px] rounded-2xl p-4 flex flex-col justify-between text-white cursor-pointer shadow-lg border border-white/10 ${card.bgColor}`}
+                    >
+                      {/* Top Header Row */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Icon className="w-5 h-5 stroke-[1.5]" />
+                          <span className="font-display text-[13px] font-bold tracking-wider uppercase">
+                            {card.title}
+                          </span>
+                        </div>
+                        <span className="font-sans text-[13px] font-extrabold">
+                          {card.amount}
+                        </span>
+                      </div>
+
+                      {/* Card Middle Mock Chip & dynamic layout inputs */}
+                      <div className="flex-grow flex flex-col justify-center pt-2">
+                        {isSelected ? (
+                          <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="w-full space-y-2 text-left"
+                            onClick={(e) => e.stopPropagation()} // Keep focus on inputs
+                          >
+                            {/* Option 1: Card fields */}
+                            {card.id === 'card' && (
+                              <div className="space-y-1.5 text-[8px] font-bold text-white/80">
+                                <input
+                                  type="text"
+                                  placeholder="Cardholder Name"
+                                  value={cardDetails.name}
+                                  onChange={(e) => setCardDetails({ ...cardDetails, name: e.target.value })}
+                                  className="w-full bg-white/15 border border-white/20 p-2 rounded-lg text-[9px] text-white placeholder-white/50 outline-none"
+                                />
+                                <div className="grid grid-cols-3 gap-1.5">
+                                  <input
+                                    type="text"
+                                    placeholder="Card Number"
+                                    value={cardDetails.number}
+                                    onChange={(e) => setCardDetails({ ...cardDetails, number: e.target.value })}
+                                    className="col-span-2 bg-white/15 border border-white/20 p-2 rounded-lg text-[9px] text-white placeholder-white/50 outline-none"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="CVV"
+                                    value={cardDetails.cvv}
+                                    onChange={(e) => setCardDetails({ ...cardDetails, cvv: e.target.value })}
+                                    className="bg-white/15 border border-white/20 p-2 rounded-lg text-[9px] text-white placeholder-white/50 outline-none"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Option 2: UPI fields */}
+                            {card.id === 'upi' && (
+                              <div className="space-y-1.5 text-center flex flex-col items-center">
+                                {/* Small Mock QR code */}
+                                <div className="w-10 h-10 bg-white/25 rounded p-1 flex flex-col justify-between">
+                                  <div className="flex justify-between"><div className="w-2 h-2 bg-white rounded-xs"/><div className="w-2 h-2 bg-white rounded-xs"/></div>
+                                  <div className="flex justify-between"><div className="w-2 h-2 bg-white rounded-xs"/><div className="w-2 h-2 bg-white rounded-xs"/></div>
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder="Enter UPI ID (e.g. name@upi)"
+                                  value={upiId}
+                                  onChange={(e) => setUpiId(e.target.value)}
+                                  className="w-full bg-white/15 border border-white/20 p-1.5 rounded-lg text-[9px] text-white placeholder-white/50 outline-none text-center"
+                                />
+                              </div>
+                            )}
+
+                            {/* Option 3: Netbanking banks dropdown */}
+                            {card.id === 'net-banking' && (
+                              <div className="space-y-1.5">
+                                <select
+                                  value={selectedBank}
+                                  onChange={(e) => setSelectedBank(e.target.value)}
+                                  className="w-full bg-white/15 border border-white/20 p-2 rounded-lg text-[9px] text-white outline-none select-bank"
+                                >
+                                  <option value="" className="text-brand-espresso">Select your Bank</option>
+                                  <option value="sbi" className="text-brand-espresso">State Bank of India</option>
+                                  <option value="hdfc" className="text-brand-espresso">HDFC Bank</option>
+                                  <option value="icici" className="text-brand-espresso">ICICI Bank</option>
+                                  <option value="axis" className="text-brand-espresso">Axis Bank</option>
+                                </select>
+                              </div>
+                            )}
+
+                            {/* Option 4: COD details */}
+                            {card.id === 'cod' && (
+                              <p className="text-[8px] font-semibold text-center text-white/90 leading-tight">
+                                Handover cash or scan QR code on delivery. Insured package dispatch.
+                              </p>
+                            )}
+
+                          </motion.div>
+                        ) : (
+                          // Mock Card Chip layout
+                          <div className="w-8 h-6 bg-yellow-400/20 border border-yellow-400/30 rounded-md flex items-center justify-center self-start">
+                            <div className="w-4 h-3 bg-yellow-400/40 rounded-sm" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Pay Button Action overlay */}
+                      {isSelected ? (
+                        <button
+                          onClick={handlePayNow}
+                          className="w-full py-2 bg-white text-brand-espresso font-extrabold text-[10px] tracking-wider rounded-xl uppercase hover:bg-opacity-90 transition-all"
+                        >
+                          PAY {card.amount} SECURELY
+                        </button>
+                      ) : (
+                        // Mock card footer network label
+                        <div className="flex items-center justify-between text-[7px] font-extrabold opacity-75 uppercase tracking-widest pt-2">
+                          <span>•••• CARD EMBLEM</span>
+                          <span>AADHYA PAY</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+
+                {/* Stitched Wallet Bottom Pocket container (overlaps stack) */}
+                <div className="absolute bottom-0 left-0 right-0 h-[36px] bg-[#1C1816] rounded-t-2xl border-t border-dashed border-[#F26A2E]/50 shadow-inner flex items-center justify-center z-45">
+                  <div className="text-[8px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase">
+                    Aadhya Secure Wallet
+                  </div>
+                </div>
+
+              </div>
+
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
