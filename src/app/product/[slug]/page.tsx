@@ -38,6 +38,25 @@ export default function ProductDetailPage({ params }: PageProps) {
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState(false);
   const [isImgZoomed, setImgZoomed] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setZoomPos({ x, y });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length > 0) {
+      const touch = e.touches[0];
+      const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+      const x = ((touch.clientX - left) / width) * 100;
+      const y = ((touch.clientY - top) / height) * 100;
+      setZoomPos({ x, y });
+    }
+  };
 
   // Lightbox Modals
   const [isGalleryOpen, setGalleryOpen] = useState(false);
@@ -157,14 +176,23 @@ export default function ProductDetailPage({ params }: PageProps) {
             </div>
 
             {/* 2. Image Viewport */}
-            <div className="w-full aspect-[3/4] bg-brand-softBeige/10 rounded-2xl overflow-hidden relative shadow-md">
+            <div 
+              className="w-full aspect-[3/4] bg-brand-softBeige/10 rounded-2xl overflow-hidden relative shadow-md cursor-zoom-in"
+              onMouseMove={handleMouseMove}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              onTouchMove={handleTouchMove}
+              onTouchStart={() => setIsHovered(true)}
+              onTouchEnd={() => setIsHovered(false)}
+            >
               <img
                 src={activeImages[activeImageIndex]}
                 alt={product.name}
-                className={`w-full h-full object-cover transition-transform duration-350 ${
-                  isImgZoomed ? 'scale-150 cursor-zoom-out' : 'scale-100 cursor-zoom-in'
-                }`}
-                onClick={() => setImgZoomed(!isImgZoomed)}
+                className="w-full h-full object-cover transition-transform duration-150 ease-out"
+                style={{
+                  transform: isHovered ? 'scale(2.8)' : 'scale(1)',
+                  transformOrigin: isHovered ? `${zoomPos.x}% ${zoomPos.y}%` : 'center center'
+                }}
               />
 
               {/* Fullscreen icon */}
@@ -348,14 +376,23 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             {/* Center Column: Portrait Model Image (4 cols) */}
             <div className="lg:col-span-4 flex justify-center items-center relative">
-              <div className="w-full aspect-[3/4] bg-brand-softBeige/10 rounded-2xl overflow-hidden relative shadow-md">
+              <div 
+                className="w-full aspect-[3/4] bg-brand-softBeige/10 rounded-2xl overflow-hidden relative shadow-md cursor-zoom-in"
+                onMouseMove={handleMouseMove}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                onTouchMove={handleTouchMove}
+                onTouchStart={() => setIsHovered(true)}
+                onTouchEnd={() => setIsHovered(false)}
+              >
                 <img
                   src={activeImages[activeImageIndex]}
                   alt={product.name}
-                  className={`w-full h-full object-cover transition-transform duration-300 ${
-                    isImgZoomed ? 'scale-150 cursor-zoom-out' : 'scale-100 cursor-zoom-in'
-                  }`}
-                  onClick={() => setImgZoomed(!isImgZoomed)}
+                  className="w-full h-full object-cover transition-transform duration-150 ease-out"
+                  style={{
+                    transform: isHovered ? 'scale(2.8)' : 'scale(1)',
+                    transformOrigin: isHovered ? `${zoomPos.x}% ${zoomPos.y}%` : 'center center'
+                  }}
                 />
 
                 {/* Fullscreen icon */}
@@ -611,7 +648,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                 src={activeImages[lightboxImageIndex]}
                 alt="Product Lightbox Zoom"
                 className={`max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl transition-transform duration-300 ${
-                  isImgZoomed ? 'scale-150 cursor-zoom-out' : 'scale-100 cursor-zoom-in'
+                  isImgZoomed ? 'scale-[2.5] cursor-zoom-out' : 'scale-100 cursor-zoom-in'
                 }`}
                 onClick={() => setImgZoomed(!isImgZoomed)}
               />
