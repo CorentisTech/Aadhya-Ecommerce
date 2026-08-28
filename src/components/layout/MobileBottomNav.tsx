@@ -4,16 +4,14 @@ import React from 'react';
 import { useApp } from '@/context/AppContext';
 import { Home, Search, Grid, Heart, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 export const MobileBottomNav: React.FC = () => {
   const { activePage, setPage, setSearchOpen, setAccountOpen } = useApp();
+  const router = useRouter();
 
   const handleCategoriesClick = () => {
-    setPage('home');
-    setTimeout(() => {
-      const el = document.getElementById('categories');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    router.push('/catalog');
   };
 
   const navItems = [

@@ -4,9 +4,11 @@ import React from 'react';
 import { CATEGORIES } from '../../data/mockData';
 import { useApp } from '../../context/AppContext';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 export const Categories: React.FC = () => {
   const { setPage } = useApp();
+  const router = useRouter();
   
   // Display only fashion categories on the main home page
   const fashionCategories = CATEGORIES.filter((c) => c.department === 'fashion');
@@ -31,7 +33,7 @@ export const Categories: React.FC = () => {
           {fashionCategories.map((category, index) => (
             <motion.button
               key={category.id}
-              onClick={() => setPage('home')}
+              onClick={() => router.push(`/catalog?category=${category.id}`)}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

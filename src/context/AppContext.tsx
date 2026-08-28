@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product } from '../data/mockData';
+import { useRouter } from 'next/navigation';
 
 export type PageType = 'home' | 'numismatics' | 'wishlist' | 'checkout' | 'account';
 
@@ -38,6 +39,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const router = useRouter();
   // Navigation State
   const [activePage, setPageInternal] = useState<PageType>('home');
 
@@ -73,6 +75,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [cart, isLoaded]);
 
+  // Smooth scroll to top on page change
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem('aadhya_wishlist', JSON.stringify(wishlist));
@@ -86,6 +89,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCartOpen(false);
     setSearchOpen(false);
     setAccountOpen(false);
+
+    if (page === 'home') {
+      router.push('/');
+    } else if (page === 'numismatics') {
+      router.push('/numismatics');
+    } else if (page === 'wishlist') {
+      router.push('/wishlist');
+    } else if (page === 'checkout') {
+      router.push('/checkout');
+    } else if (page === 'account') {
+      router.push('/account');
+    }
   };
 
   // Cart Handlers

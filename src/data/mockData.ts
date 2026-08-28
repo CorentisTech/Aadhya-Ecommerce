@@ -1,3 +1,9 @@
+export interface ProductColorGallery {
+  colorName: string;
+  colorHex: string;
+  images: string[];
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -19,6 +25,19 @@ export interface Product {
   year?: string; // For Numismatics
   rating?: number; // UI/UX star ratings (1-5)
   reviewsCount?: number; // UI/UX reviews count
+  
+  // Editorial specifications and color galleries
+  imagesByColor?: ProductColorGallery[];
+  fabric?: string;
+  neckType?: string;
+  sleeves?: string;
+  occasion?: string;
+  length?: string;
+  fit?: string;
+  sku?: string;
+  modelInfo?: string;
+  details?: string[];
+  customerPhotos?: string[];
 }
 
 export interface Review {
@@ -107,7 +126,6 @@ export const CATEGORIES: Category[] = [
 ];
 
 export const PRODUCTS: Product[] = [
-  // Fashion Products (Strict 4 from reference grid - All Premium Womenswear on solid white studio backgrounds)
   {
     id: 'f-prod-1',
     name: 'Floral Midi Dress',
@@ -120,12 +138,54 @@ export const PRODUCTS: Product[] = [
     visualType: 'dress',
     visualColor: '#F3DFDF',
     visualPattern: 'floral-embroidery',
-    colors: ['#F3DFDF', '#C98F91'],
-    sizes: ['S', 'M', 'L', 'XL'],
+    colors: ['#F3DFDF', '#D0E1FD'],
+    sizes: ['34', '36', '38', '40'],
     bestseller: true,
     department: 'fashion',
-    rating: 4,
-    reviewsCount: 128
+    rating: 4.8,
+    reviewsCount: 128,
+    fabric: 'Chiffon',
+    neckType: 'V-Neck',
+    sleeves: 'Half Sleeves',
+    occasion: 'Casual',
+    length: 'Midi',
+    fit: 'Relaxed',
+    sku: 'REF-1102/554',
+    modelInfo: 'The model size: 36. Height: 5.70ft / 174cm.',
+    details: [
+      'Soft lightweight floral print chiffon fabric.',
+      'Flared tiered ruffle panels for elegant movement.',
+      'Inner satin lining for absolute comfort.',
+      'Includes detachable matching fabric waist sash.'
+    ],
+    customerPhotos: [
+      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=300&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=300&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=300&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=300&auto=format&fit=crop'
+    ],
+    imagesByColor: [
+      {
+        colorName: 'Pink',
+        colorHex: '#F3DFDF',
+        images: [
+          '/floral_midi_dress.png',
+          'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop'
+        ]
+      },
+      {
+        colorName: 'Blue',
+        colorHex: '#D0E1FD',
+        images: [
+          'https://images.unsplash.com/photo-1539008885128-40d24b2d6ca5?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop'
+        ]
+      }
+    ]
   },
   {
     id: 'f-prod-2',
@@ -139,12 +199,52 @@ export const PRODUCTS: Product[] = [
     visualType: 'blouse',
     visualColor: '#FFFFFF',
     visualPattern: 'plain',
-    colors: ['#F3DFDF', '#FCFAF7'],
-    sizes: ['XS', 'S', 'M', 'L'],
+    colors: ['#F3DFDF', '#FFFFFF'],
+    sizes: ['34', '36', '38', '40'],
     bestseller: true,
     department: 'fashion',
-    rating: 4,
-    reviewsCount: 256
+    rating: 4.9,
+    reviewsCount: 256,
+    fabric: 'Silk',
+    neckType: 'Sweetheart',
+    sleeves: 'Long Sleeves',
+    occasion: 'Festive',
+    length: 'Crop',
+    fit: 'Slim Fit',
+    sku: 'REF-2289/302',
+    modelInfo: 'The model size: 34. Height: 5.80ft / 177cm.',
+    details: [
+      'Premium silk fabric with a soft structural sheen.',
+      'Adjustable front bow closure at the neckline.',
+      'Long balloon sleeves with elegant buttoned cuffs.',
+      'Flattering crop length designed for high-waisted styling.'
+    ],
+    customerPhotos: [
+      'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=300&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=300&auto=format&fit=crop'
+    ],
+    imagesByColor: [
+      {
+        colorName: 'Blush',
+        colorHex: '#F3DFDF',
+        images: [
+          '/pink_bow_top.png',
+          'https://images.unsplash.com/photo-1534126511673-b6899657816a?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1620799139834-6b8f844fbe61?q=80&w=600&auto=format&fit=crop'
+        ]
+      },
+      {
+        colorName: 'White',
+        colorHex: '#FFFFFF',
+        images: [
+          'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1603252109303-2751441dd157?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=600&auto=format&fit=crop'
+        ]
+      }
+    ]
   },
   {
     id: 'f-prod-3',
@@ -158,12 +258,49 @@ export const PRODUCTS: Product[] = [
     visualType: 'kurti',
     visualColor: '#756E69',
     visualPattern: 'plain',
-    colors: ['#756E69', '#2C2522'],
+    colors: ['#D1C4B9', '#121110'],
     sizes: ['S', 'M', 'L', 'XL'],
     bestseller: true,
     department: 'fashion',
-    rating: 4,
-    reviewsCount: 174
+    rating: 4.7,
+    reviewsCount: 174,
+    fabric: 'Wool Blend',
+    neckType: 'Round Neck',
+    sleeves: 'Full Sleeves',
+    occasion: 'Casual',
+    length: 'Crop',
+    fit: 'Oversized',
+    sku: 'REF-8319/401',
+    modelInfo: 'The model size: M. Height: 5.60ft / 170cm.',
+    details: [
+      'Premium wool blend yarn with soft touch ribbing.',
+      'Classic rounded crewneck and dropped shoulders.',
+      'Cozy oversized silhouette with comfortable rib cuffs.',
+      'Easy wash and long-term durability.'
+    ],
+    customerPhotos: [],
+    imagesByColor: [
+      {
+        colorName: 'Beige',
+        colorHex: '#D1C4B9',
+        images: [
+          '/ribbed_knit_sweater.png',
+          'https://images.unsplash.com/photo-1620799139834-6b8f844fbe61?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1620799139587-2159d7276375?q=80&w=600&auto=format&fit=crop'
+        ]
+      },
+      {
+        colorName: 'Black',
+        colorHex: '#121110',
+        images: [
+          'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=600&auto=format&fit=crop'
+        ]
+      }
+    ]
   },
   {
     id: 'f-prod-4',
@@ -177,15 +314,40 @@ export const PRODUCTS: Product[] = [
     visualType: 'bodycon',
     visualColor: '#2C2522',
     visualPattern: 'plain',
-    colors: ['#2C2522', '#756E69'],
-    sizes: ['XS', 'S', 'M', 'L'],
+    colors: ['#C98F91', '#756E69'],
+    sizes: ['34', '36', '38', '40'],
     bestseller: false,
     department: 'fashion',
-    rating: 4,
-    reviewsCount: 221
+    rating: 4.6,
+    reviewsCount: 221,
+    fabric: 'Linen',
+    neckType: 'Collared',
+    sleeves: 'Three-Quarter',
+    occasion: 'Formal',
+    length: 'Maxi',
+    fit: 'Flared',
+    sku: 'REF-4920/121',
+    modelInfo: 'The model size: 36. Height: 5.75ft / 175cm.',
+    details: [
+      'Tailored matching set from breathable utility linen.',
+      'Point collar styling and front double buttons.',
+      'Flared trousers with comfortable elasticized waist.',
+      'Sophisticated double pleated pockets.'
+    ],
+    customerPhotos: [],
+    imagesByColor: [
+      {
+        colorName: 'Rose',
+        colorHex: '#C98F91',
+        images: [
+          'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop'
+        ]
+      }
+    ]
   },
-
-  // Supporting Editorial Fashion Items (All Premium Womenswear on solid white studio backgrounds)
   {
     id: 'f-prod-5',
     name: 'Sage Linen Kurti',
@@ -201,8 +363,35 @@ export const PRODUCTS: Product[] = [
     colors: ['#71836C', '#F4EFE9'],
     sizes: ['S', 'M', 'L', 'XL'],
     department: 'fashion',
-    rating: 4,
-    reviewsCount: 95
+    rating: 4.8,
+    reviewsCount: 95,
+    fabric: 'Linen',
+    neckType: 'Collared',
+    sleeves: 'Three-Quarter',
+    occasion: 'Festive',
+    length: 'Midi',
+    fit: 'Tailored',
+    sku: 'REF-7890/409',
+    modelInfo: 'The model size: M. Height: 5.70ft / 174cm.',
+    details: [
+      'Pure organic linen with metallic silver pin-stripes.',
+      'Mandarin button collar and double side slits.',
+      'Three-quarter length sleeves with folded cuffs.',
+      'Comfortable lightweight fit perfect for festive curation.'
+    ],
+    customerPhotos: [],
+    imagesByColor: [
+      {
+        colorName: 'Sage',
+        colorHex: '#71836C',
+        images: [
+          'https://images.unsplash.com/photo-1561414927-6d86591d0c4f?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop'
+        ]
+      }
+    ]
   },
   {
     id: 'f-prod-6',
@@ -218,8 +407,35 @@ export const PRODUCTS: Product[] = [
     colors: ['#2C2522'],
     sizes: ['XS', 'S', 'M', 'L'],
     department: 'fashion',
-    rating: 4,
-    reviewsCount: 45
+    rating: 4.5,
+    reviewsCount: 45,
+    fabric: 'Cotton',
+    neckType: 'Round Neck',
+    sleeves: 'Sleeveless',
+    occasion: 'Formal',
+    length: 'Maxi',
+    fit: 'Flared',
+    sku: 'REF-6628/109',
+    modelInfo: 'The model size: S. Height: 5.65ft / 172cm.',
+    details: [
+      'Tailored wide leg structure in dark espresso color.',
+      'Double front pleats with back pockets details.',
+      'High-waisted fit with invisible hook closures.',
+      'Smooth premium cotton fabric blend.'
+    ],
+    customerPhotos: [],
+    imagesByColor: [
+      {
+        colorName: 'Espresso',
+        colorHex: '#2C2522',
+        images: [
+          'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=600&auto=format&fit=crop'
+        ]
+      }
+    ]
   },
   {
     id: 'f-prod-7',
@@ -233,12 +449,52 @@ export const PRODUCTS: Product[] = [
     visualType: 'saree',
     visualColor: '#C98F91',
     visualPattern: 'floral-embroidery',
-    colors: ['#C98F91', '#FFFFFF'],
+    colors: ['#DE7A8C', '#B89A67'],
     sizes: ['Free Size'],
     bestseller: true,
     department: 'fashion',
-    rating: 5,
-    reviewsCount: 198
+    rating: 5.0,
+    reviewsCount: 198,
+    fabric: 'Raw Silk',
+    neckType: 'Boat Neck',
+    sleeves: 'Three-Quarter',
+    occasion: 'Wedding',
+    length: 'Maxi',
+    fit: 'Tailored',
+    sku: 'REF-4491/220',
+    modelInfo: 'The model size: Free Size. Height: 5.70ft / 174cm.',
+    details: [
+      'Dense handwoven gold zari checks throughout.',
+      'Classic matching running blouse piece included.',
+      'Rich contrast pallu with detailed floral motifs.',
+      'Made from authenticated premium raw silk.'
+    ],
+    customerPhotos: [
+      'https://images.unsplash.com/photo-1610030470224-3467b4a47530?q=80&w=300&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=300&auto=format&fit=crop'
+    ],
+    imagesByColor: [
+      {
+        colorName: 'Rose',
+        colorHex: '#DE7A8C',
+        images: [
+          '/rose_silk_saree.png',
+          'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1610030470224-3467b4a47530?q=80&w=600&auto=format&fit=crop'
+        ]
+      },
+      {
+        colorName: 'Gold',
+        colorHex: '#B89A67',
+        images: [
+          'https://images.unsplash.com/photo-1610030469668-93535c17b6b3?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1610030470224-3467b4a47530?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600&auto=format&fit=crop'
+        ]
+      }
+    ]
   },
   {
     id: 'f-prod-8',
@@ -252,12 +508,41 @@ export const PRODUCTS: Product[] = [
     visualType: 'dress',
     visualColor: '#F4EFE9',
     visualPattern: 'silk-sheen',
-    colors: ['#F4EFE9'],
-    sizes: ['S', 'M', 'L'],
+    colors: ['#FCFAF7'],
+    sizes: ['Free Size'],
     bestseller: true,
     department: 'fashion',
-    rating: 5,
-    reviewsCount: 88
+    rating: 4.9,
+    reviewsCount: 88,
+    fabric: 'Chiffon',
+    neckType: 'Boat Neck',
+    sleeves: 'Sleeveless',
+    occasion: 'Evening',
+    length: 'Maxi',
+    fit: 'Flared',
+    sku: 'REF-9928/502',
+    modelInfo: 'The model size: Free Size. Height: 5.75ft / 175cm.',
+    details: [
+      'Layered asymmetrical drapes in fluid ivory georgette.',
+      'Single shoulder strap with structured pleated details.',
+      'Muted ivory tint with premium satin feel.',
+      'Perfect for contemporary evening and occasion wear.'
+    ],
+    customerPhotos: [
+      'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=300&auto=format&fit=crop'
+    ],
+    imagesByColor: [
+      {
+        colorName: 'Ivory',
+        colorHex: '#FCFAF7',
+        images: [
+          '/ivory_saree.png',
+          'https://images.unsplash.com/photo-1610030470224-3467b4a47530?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop'
+        ]
+      }
+    ]
   },
 
   // Numismatics Products (Coins & notes - Preserved exact business fields)

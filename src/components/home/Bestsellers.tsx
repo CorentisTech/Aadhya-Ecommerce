@@ -5,9 +5,11 @@ import { PRODUCTS } from '../../data/mockData';
 import { useApp } from '../../context/AppContext';
 import { Heart, Star, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 export const Bestsellers: React.FC = () => {
   const { toggleWishlist, isInWishlist, setSelectedProduct } = useApp();
+  const router = useRouter();
   
   // Filter bestseller fashion items
   const bestsellerProducts = PRODUCTS.filter((p) => p.bestseller && p.department === 'fashion');
@@ -45,7 +47,7 @@ export const Bestsellers: React.FC = () => {
           
           <div className="flex justify-center md:justify-end flex-shrink-0">
             <button 
-              onClick={() => setSelectedProduct(bestsellerProducts[0])}
+              onClick={() => router.push('/catalog?collection=best-sellers')}
               className="px-4 py-2 border border-brand-border rounded-full text-[10px] font-bold tracking-widest text-brand-espresso hover:bg-brand-softBeige/40 transition-colors flex items-center space-x-1"
             >
               <span>VIEW ALL</span>
@@ -67,7 +69,7 @@ export const Bestsellers: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.04 }}
                 className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start"
-                onClick={() => setSelectedProduct(product)}
+                onClick={() => router.push(`/product/${product.name.toLowerCase().replace(/ /g, '-')}`)}
               >
                 {/* Image panel */}
                 <div className="w-full aspect-[4/5] bg-brand-softBeige/15 rounded-lg overflow-hidden relative flex items-center justify-center">

@@ -18,8 +18,10 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 export const Navbar: React.FC = () => {
+  const router = useRouter();
   const { 
     activePage, 
     setPage, 
@@ -57,6 +59,11 @@ export const Navbar: React.FC = () => {
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const handleNavClick = (sectionId: string) => {
+    if (sectionId === 'categories') {
+      router.push('/catalog');
+      setSidebarOpen(false);
+      return;
+    }
     setPage('home');
     setSidebarOpen(false);
     setTimeout(() => {
@@ -123,7 +130,7 @@ export const Navbar: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setPage('home')}
+            onClick={() => { router.push('/'); setPage('home'); }}
             className="font-display text-xl md:text-2xl font-bold tracking-[0.25em] text-brand-espresso hover:opacity-85 transition-opacity"
           >
             AADHYA
