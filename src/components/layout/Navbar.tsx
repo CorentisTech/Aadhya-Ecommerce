@@ -247,9 +247,9 @@ export const Navbar: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setCartOpen(true)}
+            onClick={() => router.push('/cart')}
             aria-label="Cart"
-            className="hover:text-brand-dustyRose transition-colors p-1 relative"
+            className="hover:text-[#F26A2E] transition-colors p-1 relative"
           >
             <ShoppingBag className="w-4 h-4 stroke-[2]" />
             {cartItemsCount > 0 && (
