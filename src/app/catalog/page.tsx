@@ -6,6 +6,8 @@ import { PRODUCTS, Product } from '@/data/mockData';
 import { useApp } from '@/context/AppContext';
 import { Heart, Star, SlidersHorizontal, X, Search, Check, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { NavigationControls } from '@/components/ui/NavigationControls';
+import { ZoomableImage } from '@/components/ui/ZoomableImage';
 
 // Defined filter option lists matching the exact product dataset attributes
 const FILTER_CRITERIA = {
@@ -189,9 +191,12 @@ function CatalogContent() {
   const sortedProducts = getSortedProducts(filteredProducts);
 
   return (
-    <div className="w-full min-h-screen bg-[#FFFFFF] py-16 px-4 md:px-12 lg:px-24 text-brand-espresso select-none relative">
-      <div className="max-w-7xl mx-auto space-y-10">
+    <div className="w-full max-w-full min-h-screen bg-[#FFFFFF] py-10 md:py-16 px-4 md:px-12 lg:px-24 text-brand-espresso select-none relative">
+      <div className="max-w-7xl mx-auto space-y-8">
         
+        {/* Navigation Controls (← Back & Back to Home) */}
+        <NavigationControls className="justify-start border-b border-brand-border/30 pb-3" />
+
         {/* Editorial Header */}
         <div className="space-y-2 text-center">
           <h1 className="font-display font-bold text-3xl md:text-5xl tracking-wide uppercase text-brand-espresso">
@@ -321,33 +326,35 @@ function CatalogContent() {
                   onClick={() => router.push(`/product/${slug}`)}
                   className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-2xl p-2.5 hover:shadow-md transition-shadow relative"
                 >
-                  {/* Image Aspect ratio container (4/5) */}
-                  <div className="w-full aspect-[4/5] bg-brand-softBeige/15 rounded-xl overflow-hidden relative flex items-center justify-center">
-                    <img
+                  {/* Image Aspect ratio container with Press & Hold Zoom */}
+                  <div className="w-full relative">
+                    <ZoomableImage
                       src={product.image}
                       alt={product.name}
-                      className="w-full h-full object-cover transform group-hover:scale-104 transition-transform duration-500 ease-out"
-                      loading="lazy"
-                    />
-
-                    {/* Collection badge label */}
-                    <div className="absolute top-2 left-2">
-                      <span className="text-[7px] md:text-[8px] bg-[#FFFFFF]/90 border border-brand-border/40 text-brand-espresso font-extrabold tracking-widest px-2 py-0.5 rounded shadow-sm uppercase">
-                        {product.category}
-                      </span>
-                    </div>
-
-                    {/* Wishlist interactive button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWishlist(product);
-                      }}
-                      className="absolute top-2 right-2 p-2 bg-brand-white/85 hover:bg-brand-white border border-brand-border/20 text-brand-warmGray rounded-full hover:scale-105 transition-all shadow-sm z-10"
-                      aria-label="Wishlist"
+                      aspectRatio="aspect-[4/5]"
+                      className="rounded-xl bg-brand-softBeige/15"
+                      showHint={true}
+                      onClick={() => router.push(`/product/${slug}`)}
                     >
-                      <Heart className={`w-3.5 h-3.5 ${inWishlist ? 'fill-brand-dustyRose stroke-brand-dustyRose' : 'text-brand-warmGray'}`} />
-                    </button>
+                      {/* Collection badge label */}
+                      <div className="absolute top-2 left-2 pointer-events-none">
+                        <span className="text-[7px] md:text-[8px] bg-[#FFFFFF]/90 border border-brand-border/40 text-brand-espresso font-extrabold tracking-widest px-2 py-0.5 rounded shadow-sm uppercase">
+                          {product.category}
+                        </span>
+                      </div>
+
+                      {/* Wishlist interactive button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWishlist(product);
+                        }}
+                        className="absolute top-2 right-2 p-2 bg-brand-white/85 hover:bg-brand-white border border-brand-border/20 text-brand-warmGray rounded-full transition-all shadow-sm z-10 pointer-events-auto"
+                        aria-label="Wishlist"
+                      >
+                        <Heart className={`w-3.5 h-3.5 ${inWishlist ? 'fill-brand-dustyRose stroke-brand-dustyRose' : 'text-brand-warmGray'}`} />
+                      </button>
+                    </ZoomableImage>
                   </div>
 
                   {/* Metadata underneath image */}

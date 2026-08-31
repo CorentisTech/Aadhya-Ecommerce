@@ -25,6 +25,7 @@ import {
   HelpCircle as FaqIcon
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { NavigationControls } from '@/components/ui/NavigationControls';
 
 type ScreenMode = 'landing' | 'email-verify' | 'register-form';
 type AccountTab = 'manage' | 'addresses' | 'payments' | 'orders' | 'help' | 'faqs' | 'delete';
@@ -580,18 +581,13 @@ export default function AccountRoute() {
 
   // --- RENDERING REGISTERED ACCOUNT DASHBOARD PANEL ---
   return (
-    <div className="w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left">
+    <div className="w-full max-w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left">
       <div className="max-w-5xl mx-auto space-y-8">
         
         {/* Header navigation bar */}
-        <div className="flex items-center justify-between pb-3 border-b border-brand-border/40">
-          <button
-            onClick={() => router.push('/')}
-            className="flex items-center gap-1.5 text-xs font-bold tracking-widest text-brand-warmGray hover:text-[#F26A2E] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 text-[#F26A2E]" />
-            <span>Back to Home</span>
-          </button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-brand-border/40 gap-3">
+          <NavigationControls className="py-0" />
+          
           <span className="text-[10px] font-bold text-brand-warmGray tracking-[0.25em] uppercase">
             Curated Member Space
           </span>

@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="w-full bg-[#121110] text-[#FCFAF7] pt-16 pb-24 md:pb-12 px-6 md:px-12 lg:px-24 mt-20 relative overflow-hidden select-none">
+    <footer className="w-full max-w-full bg-[#121110] text-[#FCFAF7] pt-12 sm:pt-16 pb-24 md:pb-12 px-4 sm:px-6 md:px-12 lg:px-24 mt-16 md:mt-20 relative overflow-hidden select-none">
       
       {/* Top Section: Brand description and Directory columns */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-16 text-left relative z-20">

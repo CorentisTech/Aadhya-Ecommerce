@@ -68,7 +68,7 @@ export const Hero: React.FC = () => {
 
   return (
     <section 
-      className="w-full relative flex items-center justify-center py-3 sm:py-16 px-4 sm:px-12 lg:px-24 overflow-hidden border-b border-brand-border/40 select-none bg-[#FFFFFF]"
+      className="w-full max-w-full relative flex items-center justify-center py-3 sm:py-16 px-4 sm:px-12 lg:px-24 overflow-hidden border-b border-brand-border/40 select-none bg-[#FFFFFF]"
       style={{
         // 80-90% warm white with subtle orange glow influence
         background: 'radial-gradient(circle at 75% 50%, rgba(242, 106, 46, 0.05) 0%, rgba(255, 255, 255, 1) 70%), #FFFFFF',

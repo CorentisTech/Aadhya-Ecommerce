@@ -8,6 +8,8 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { PRODUCTS } from '../../data/mockData';
 
+import { NavigationControls } from './NavigationControls';
+
 export const CartPage: React.FC = () => {
   const { cart, updateQuantity, removeFromCart, toggleWishlist, isInWishlist } = useApp();
   const router = useRouter();
@@ -46,15 +48,11 @@ export const CartPage: React.FC = () => {
   const crossSellProducts = PRODUCTS.filter(p => !cartIds.includes(p.id)).slice(0, 4);
 
   return (
-    <div className="w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left">
+    <div className="w-full max-w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left">
       <div className="max-w-6xl mx-auto space-y-8">
         
-        {/* Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-[10px] font-bold tracking-widest text-brand-warmGray uppercase">
-          <button onClick={() => router.push('/')} className="hover:text-[#F26A2E] transition-colors">Home</button>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-brand-espresso">Shopping Cart</span>
-        </div>
+        {/* Navigation Controls (← Back & Back to Home) */}
+        <NavigationControls className="justify-start border-b border-brand-border/30 pb-3" />
 
         {/* Serif Page Title */}
         <h1 className="font-display font-bold text-4xl text-brand-espresso tracking-tight">
@@ -251,12 +249,12 @@ export const CartPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Place Order CTA */}
+              {/* Place Order CTA - Rounded Pill Style */}
               <button
                 onClick={() => router.push('/checkout')}
-                className="w-full py-4 bg-brand-espresso text-brand-white text-xs font-bold tracking-[0.25em] uppercase hover:bg-brand-espresso/90 transition-colors shadow-md rounded-full flex items-center justify-center gap-2"
+                className="w-full py-4 px-8 bg-[#F26A2E] text-brand-white text-xs font-bold tracking-[0.25em] uppercase hover:bg-[#F26A2E]/90 transition-all shadow-md rounded-full flex items-center justify-center gap-2 active:scale-98"
               >
-                <span>Place an order</span>
+                <span>PROCEED TO PAYMENT</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 

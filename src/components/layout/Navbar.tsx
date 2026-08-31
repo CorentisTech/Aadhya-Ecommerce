@@ -102,10 +102,10 @@ export const Navbar: React.FC = () => {
     <>
       {/* Navbar Container - Fixed Height (68px) and Constant Spacing */}
       <header 
-        className="sticky top-0 z-40 w-full h-[68px] bg-[#FCFAF7]/94 backdrop-blur-[14px] border-b border-[#E8E1DA] px-6 md:px-12 flex items-center justify-between"
+        className="sticky top-0 z-40 w-full max-w-full h-[68px] bg-[#FCFAF7]/94 backdrop-blur-[14px] border-b border-[#E8E1DA] px-3 sm:px-6 md:px-12 flex items-center justify-between box-border overflow-hidden"
       >
         {/* Left: Splitting Burger Trigger + Brand Logo Wordmark */}
-        <div className="flex items-center space-x-5">
+        <div className="flex items-center space-x-2 sm:space-x-5">
           {/* Framer Motion Morphing Burger Button */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -216,7 +216,7 @@ export const Navbar: React.FC = () => {
         </nav>
 
         {/* Right: Core Actions Grid */}
-        <div className="flex items-center space-x-4 text-brand-espresso">
+        <div className="flex items-center space-x-2 sm:space-x-4 text-brand-espresso">
           <button
             onClick={() => setSearchOpen(true)}
             aria-label="Search"

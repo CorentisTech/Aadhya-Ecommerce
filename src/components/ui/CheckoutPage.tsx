@@ -20,6 +20,99 @@ import {
   Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { NavigationControls } from './NavigationControls';
+
+interface DragToPaymentButtonProps {
+  onProceed: () => void;
+  isOpen: boolean;
+}
+
+const DragToPaymentButton: React.FC<DragToPaymentButtonProps> = ({ onProceed, isOpen }) => {
+  type DragState = 'idle' | 'dragging' | 'completed' | 'cancelled' | 'resetting';
+  const [dragState, setDragState] = useState<DragState>('idle');
+  const [resetKey, setResetKey] = useState(0);
+
+  // Automatically reset position & state when payment modal closes or opens
+  useEffect(() => {
+    if (!isOpen) {
+      setDragState('resetting');
+      const timer = setTimeout(() => {
+        setDragState('idle');
+        setResetKey(prev => prev + 1);
+      }, 150);
+      return () => clearTimeout(timer);
+    } else {
+      setDragState('completed');
+    }
+  }, [isOpen]);
+
+  const handleDragStart = () => {
+    setDragState('dragging');
+  };
+
+  const handleDragEnd = (event: any, info: any) => {
+    if (info.offset.y < -30 || info.velocity.y < -150) {
+      setDragState('completed');
+      onProceed();
+    } else {
+      setDragState('cancelled');
+      setTimeout(() => {
+        setDragState('idle');
+        setResetKey(prev => prev + 1);
+      }, 200);
+    }
+  };
+
+  const handleClick = () => {
+    setDragState('completed');
+    onProceed();
+  };
+
+  return (
+    <div className="relative pt-2 select-none">
+      <div className="flex flex-col items-center space-y-1 mb-2">
+        <motion.div
+          animate={{ y: [0, -6, 0] }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+          className="text-[#F26A2E] text-base"
+        >
+          👆
+        </motion.div>
+        <span className="text-[8px] font-bold text-[#F26A2E] tracking-[0.25em] uppercase">
+          Drag up to pay
+        </span>
+      </div>
+
+      <div className="h-16 bg-brand-white rounded-full border-2 border-dashed border-[#F26A2E]/50 relative overflow-hidden flex items-center justify-center p-1.5 shadow-sm">
+        <motion.div
+          key={resetKey}
+          drag="y"
+          dragConstraints={{ top: -75, bottom: 0 }}
+          dragElastic={0.1}
+          dragSnapToOrigin={true}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onClick={handleClick}
+          animate={
+            dragState === 'idle' || dragState === 'resetting' || dragState === 'cancelled'
+              ? { y: 0 }
+              : undefined
+          }
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="absolute inset-x-1.5 h-[50px] bg-[#F26A2E] rounded-full flex items-center justify-center cursor-pointer text-brand-white text-xs font-bold tracking-[0.25em] shadow-md touch-none"
+          whileTap={{ scale: 0.98 }}
+        >
+          <span className="flex items-center gap-2">
+            <ArrowUp className="w-3.5 h-3.5 animate-bounce" />
+            <span>
+              {dragState === 'completed' ? 'PROCESSING PAYMENT...' : 'DRAG UP FOR PAYMENT'}
+            </span>
+          </span>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
 
 export const CheckoutPage: React.FC = () => {
   const { cart, clearCart, setPage, isLoggedIn, loginUser, registerUser, user } = useApp();
@@ -314,18 +407,12 @@ export const CheckoutPage: React.FC = () => {
   ];
 
   return (
-    <div className="w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left">
+    <div className="w-full max-w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header Navigation */}
-        <div className="flex items-center justify-between pb-2 border-b border-brand-border/40">
-          <button
-            onClick={() => setPage('home')}
-            className="flex items-center gap-1.5 text-xs font-bold tracking-widest text-brand-warmGray hover:text-[#F26A2E] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 text-[#F26A2E]" />
-            <span>Back to Cart</span>
-          </button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 border-b border-brand-border/40 gap-3">
+          <NavigationControls className="py-0" />
           
           <div className="flex items-center gap-2 text-brand-warmGray text-[10px] font-bold tracking-widest uppercase">
             <Lock className="w-3.5 h-3.5 text-[#F26A2E]" />
@@ -489,42 +576,11 @@ export const CheckoutPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Dynamic Bouncing Touch Drag Up Gesture trigger button */}
-              <div className="relative pt-2">
-                <div className="flex flex-col items-center space-y-1 mb-2">
-                  <motion.div
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                    className="text-[#F26A2E] text-base"
-                  >
-                    👆
-                  </motion.div>
-                  <span className="text-[8px] font-bold text-[#F26A2E] tracking-[0.25em] uppercase">
-                    Drag up to pay
-                  </span>
-                </div>
-
-                <div className="h-16 bg-brand-white rounded-full border-2 border-dashed border-[#F26A2E]/50 relative overflow-hidden flex items-center justify-center p-1.5 shadow-sm">
-                  <motion.div
-                    drag="y"
-                    dragConstraints={{ top: -80, bottom: 0 }}
-                    dragElastic={0.15}
-                    onDragEnd={(event, info) => {
-                      if (info.offset.y < -40) {
-                        setPaymentModalOpen(true);
-                      }
-                    }}
-                    onClick={() => setPaymentModalOpen(true)}
-                    className="absolute inset-x-1.5 h-[50px] bg-[#F26A2E] rounded-full flex items-center justify-center cursor-pointer text-brand-white text-xs font-bold tracking-[0.25em] shadow-md select-none touch-none"
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <span className="flex items-center gap-2">
-                      <ArrowUp className="w-3.5 h-3.5 animate-bounce" />
-                      <span>DRAG UP FOR PAYMENT</span>
-                    </span>
-                  </motion.div>
-                </div>
-              </div>
+              {/* State-Safe Drag to Payment CTA */}
+              <DragToPaymentButton
+                onProceed={() => setPaymentModalOpen(true)}
+                isOpen={isPaymentModalOpen}
+              />
 
             </div>
 

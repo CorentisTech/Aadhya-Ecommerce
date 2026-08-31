@@ -15,6 +15,8 @@ import {
   Maximize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { NavigationControls } from '@/components/ui/NavigationControls';
+import { ZoomableImage } from '@/components/ui/ZoomableImage';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -139,9 +141,12 @@ export default function ProductDetailPage({ params }: PageProps) {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#FFFFFF] py-16 px-4 md:px-12 lg:px-24 text-brand-espresso select-none">
-      <div className="max-w-7xl mx-auto space-y-16">
+    <div className="w-full max-w-full min-h-screen bg-[#FFFFFF] py-10 md:py-16 px-4 md:px-12 lg:px-24 text-brand-espresso select-none">
+      <div className="max-w-7xl mx-auto space-y-8">
         
+        {/* Navigation Controls (← Back & Back to Home) */}
+        <NavigationControls className="justify-start border-b border-brand-border/30 pb-3" />
+
         {/* Main Floating Beige Container Card */}
         <div className="w-full bg-[#EAE6DF] rounded-[32px] p-6 md:p-12 relative shadow-lg overflow-hidden border border-brand-border/20">
           
@@ -175,52 +180,53 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* 2. Image Viewport */}
-            <div 
-              className="w-full aspect-[3/4] bg-brand-softBeige/10 rounded-2xl overflow-hidden relative shadow-md cursor-zoom-in"
-              onMouseMove={handleMouseMove}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              onTouchMove={handleTouchMove}
-              onTouchStart={() => setIsHovered(true)}
-              onTouchEnd={() => setIsHovered(false)}
-            >
-              <img
+            {/* 2. Image Viewport with Press & Hold Zoom */}
+            <div className="w-full relative">
+              <ZoomableImage
                 src={activeImages[activeImageIndex]}
                 alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-150 ease-out"
-                style={{
-                  transform: isHovered ? 'scale(2.8)' : 'scale(1)',
-                  transformOrigin: isHovered ? `${zoomPos.x}% ${zoomPos.y}%` : 'center center'
-                }}
-              />
-
-              {/* Fullscreen icon */}
-              <button
+                aspectRatio="aspect-[3/4]"
+                className="rounded-2xl bg-brand-softBeige/10 shadow-md"
+                showHint={true}
                 onClick={() => {
                   setLightboxImageIndex(activeImageIndex);
                   setGalleryOpen(true);
                 }}
-                className="absolute bottom-3 right-3 p-1.5 bg-[#FFFFFF]/90 hover:bg-brand-white border border-brand-border/20 text-brand-espresso rounded-full transition-all shadow-sm"
               >
-                <Maximize2 className="w-3.5 h-3.5" />
-              </button>
+                {/* Fullscreen icon */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxImageIndex(activeImageIndex);
+                    setGalleryOpen(true);
+                  }}
+                  className="absolute bottom-3 right-3 p-1.5 bg-[#FFFFFF]/90 hover:bg-brand-white border border-brand-border/20 text-brand-espresso rounded-full transition-all shadow-sm pointer-events-auto"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
 
-              {/* Swipe controls */}
-              <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
-                <button
-                  onClick={handlePrevImage}
-                  className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={handleNextImage}
-                  className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
+                {/* Swipe controls */}
+                <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePrevImage();
+                    }}
+                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNextImage();
+                    }}
+                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </ZoomableImage>
             </div>
 
             {/* 3. Specs Selectors Card (Colour, REF, model size, height, size buttons) */}
@@ -374,53 +380,54 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             </div>
 
-            {/* Center Column: Portrait Model Image (4 cols) */}
+            {/* Center Column: Portrait Model Image with Press & Hold Zoom */}
             <div className="lg:col-span-4 flex justify-center items-center relative">
-              <div 
-                className="w-full aspect-[3/4] bg-brand-softBeige/10 rounded-2xl overflow-hidden relative shadow-md cursor-zoom-in"
-                onMouseMove={handleMouseMove}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                onTouchMove={handleTouchMove}
-                onTouchStart={() => setIsHovered(true)}
-                onTouchEnd={() => setIsHovered(false)}
-              >
-                <img
+              <div className="w-full relative">
+                <ZoomableImage
                   src={activeImages[activeImageIndex]}
                   alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-150 ease-out"
-                  style={{
-                    transform: isHovered ? 'scale(2.8)' : 'scale(1)',
-                    transformOrigin: isHovered ? `${zoomPos.x}% ${zoomPos.y}%` : 'center center'
-                  }}
-                />
-
-                {/* Fullscreen icon */}
-                <button
+                  aspectRatio="aspect-[3/4]"
+                  className="rounded-2xl bg-brand-softBeige/10 shadow-md"
+                  showHint={true}
                   onClick={() => {
                     setLightboxImageIndex(activeImageIndex);
                     setGalleryOpen(true);
                   }}
-                  className="absolute bottom-3 right-3 p-2 bg-[#FFFFFF]/90 hover:bg-brand-white border border-brand-border/20 text-brand-espresso rounded-full transition-all shadow-sm"
                 >
-                  <Maximize2 className="w-3.5 h-3.5" />
-                </button>
+                  {/* Fullscreen icon */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxImageIndex(activeImageIndex);
+                      setGalleryOpen(true);
+                    }}
+                    className="absolute bottom-3 right-3 p-2 bg-[#FFFFFF]/90 hover:bg-brand-white border border-brand-border/20 text-brand-espresso rounded-full transition-all shadow-sm pointer-events-auto"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                  </button>
 
-                {/* Swipe controls */}
-                <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
-                  <button
-                    onClick={handlePrevImage}
-                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleNextImage}
-                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+                  {/* Swipe controls */}
+                  <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePrevImage();
+                      }}
+                      className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNextImage();
+                      }}
+                      className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </ZoomableImage>
               </div>
             </div>
 

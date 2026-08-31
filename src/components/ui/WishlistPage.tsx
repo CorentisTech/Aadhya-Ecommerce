@@ -5,6 +5,9 @@ import { useApp } from '../../context/AppContext';
 import { Heart, ShoppingBag, Flame, ChevronRight, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+import { NavigationControls } from './NavigationControls';
+import { ZoomableImage } from './ZoomableImage';
+
 export const WishlistPage: React.FC = () => {
   const { wishlist, toggleWishlist, addToCart, setPage } = useApp();
   const router = useRouter();
@@ -45,17 +48,11 @@ export const WishlistPage: React.FC = () => {
   if (activeTab === 'numismatics') displayedProducts = numisItems;
 
   return (
-    <div className="w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left select-none">
+    <div className="w-full max-w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left select-none">
       <div className="max-w-6xl mx-auto space-y-8">
         
-        {/* Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-[10px] font-bold tracking-widest text-brand-warmGray uppercase">
-          <button onClick={() => router.push('/')} className="hover:text-[#F26A2E] transition-colors">Home</button>
-          <ChevronRight className="w-3 h-3" />
-          <button onClick={() => router.push('/catalog')} className="hover:text-[#F26A2E] transition-colors">Catalog</button>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-brand-espresso">Favorites</span>
-        </div>
+        {/* Navigation Controls (← Back & Back to Home) */}
+        <NavigationControls className="justify-start border-b border-brand-border/30 pb-3" />
 
         {wishlist.length === 0 ? (
           <div className="text-center py-20 bg-brand-white border border-brand-border/40 rounded-3xl space-y-5 shadow-sm max-w-2xl mx-auto">
@@ -206,12 +203,15 @@ export const WishlistPage: React.FC = () => {
                           </div>
                         ) : null}
 
-                        {/* Image panel */}
-                        <div className="w-[180px] aspect-[4/5] bg-brand-softBeige/5 rounded-2xl overflow-hidden flex items-center justify-center mt-3">
-                          <img 
-                            src={product.image} 
-                            alt={product.name} 
-                            className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500" 
+                        {/* Image panel with Press & Hold Zoom */}
+                        <div className="w-[180px] mt-3">
+                          <ZoomableImage
+                            src={product.image}
+                            alt={product.name}
+                            aspectRatio="aspect-[4/5]"
+                            className="rounded-2xl bg-brand-softBeige/5"
+                            showHint={true}
+                            onClick={() => router.push(`/product/${product.name.toLowerCase().replace(/ /g, '-')}`)}
                           />
                         </div>
 

@@ -7,6 +7,8 @@ import { Heart, Star, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
+import { ZoomableImage } from '../ui/ZoomableImage';
+
 export const Bestsellers: React.FC = () => {
   const { toggleWishlist, isInWishlist, setSelectedProduct } = useApp();
   const router = useRouter();
@@ -28,7 +30,7 @@ export const Bestsellers: React.FC = () => {
   };
 
   return (
-    <section id="bestsellers" className="w-full py-10 md:py-20 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40 overflow-hidden">
+    <section id="bestsellers" className="w-full max-w-full py-10 md:py-20 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40 overflow-hidden">
       <div className="max-w-6xl mx-auto space-y-8 md:space-y-12">
         
         {/* Header Grid */}
@@ -56,10 +58,11 @@ export const Bestsellers: React.FC = () => {
           </div>
         </div>
 
-        {/* Horizontal scroll container (Compacted cards side-by-side to show 1.5 - 2 items) */}
+        {/* Horizontal scroll container */}
         <div className="flex overflow-x-auto pb-3 gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
           {bestsellerProducts.slice(0, 4).map((product, index) => {
             const inWishlist = isInWishlist(product.id);
+            const slug = product.name.toLowerCase().replace(/ /g, '-');
 
             return (
               <motion.div
@@ -69,38 +72,40 @@ export const Bestsellers: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.04 }}
                 className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start"
-                onClick={() => router.push(`/product/${product.name.toLowerCase().replace(/ /g, '-')}`)}
               >
-                {/* Image panel */}
-                <div className="w-full aspect-[4/5] bg-brand-softBeige/15 rounded-lg overflow-hidden relative flex items-center justify-center">
-                  <img
+                {/* Image panel with Press & Hold Zoom */}
+                <div className="w-full relative">
+                  <ZoomableImage
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-full object-cover transform group-hover:scale-103 transition-transform duration-500 ease-out mix-blend-multiply"
-                    loading="lazy"
-                  />
-
-                  {/* Top left badge */}
-                  <div className="absolute top-2 left-2">
-                    <span className="text-[7px] bg-brand-white/95 border border-brand-border/60 text-brand-espresso font-extrabold tracking-widest px-1.5 py-0.5 rounded shadow-sm">
-                      BEST
-                    </span>
-                  </div>
-
-                  {/* Wishlist button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleWishlist(product);
-                    }}
-                    className={`absolute top-2 right-2 p-1.5 rounded-full border transition-all shadow-sm ${
-                      inWishlist
-                        ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
-                        : 'bg-brand-white/95 border-brand-border/60 text-brand-warmGray hover:bg-brand-white'
-                    }`}
+                    aspectRatio="aspect-[4/5]"
+                    className="rounded-lg bg-brand-softBeige/15"
+                    imgClassName="mix-blend-multiply"
+                    showHint={true}
+                    onClick={() => router.push(`/product/${slug}`)}
                   >
-                    <Heart className={`w-2.5 h-2.5 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
-                  </button>
+                    {/* Top left badge */}
+                    <div className="absolute top-2 left-2 pointer-events-none">
+                      <span className="text-[7px] bg-brand-white/95 border border-brand-border/60 text-brand-espresso font-extrabold tracking-widest px-1.5 py-0.5 rounded shadow-sm">
+                        BEST
+                      </span>
+                    </div>
+
+                    {/* Wishlist button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(product);
+                      }}
+                      className={`absolute top-2 right-2 p-1.5 rounded-full border transition-all shadow-sm pointer-events-auto ${
+                        inWishlist
+                          ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
+                          : 'bg-brand-white/95 border-brand-border/60 text-brand-warmGray hover:bg-brand-white'
+                      }`}
+                    >
+                      <Heart className={`w-2.5 h-2.5 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
+                    </button>
+                  </ZoomableImage>
                 </div>
 
                 {/* Details */}

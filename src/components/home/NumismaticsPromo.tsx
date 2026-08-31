@@ -11,7 +11,7 @@ export const NumismaticsPromo: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <section className="w-full py-20 px-6 md:px-12 lg:px-24 bg-brand-softBeige/40 border-t border-b border-brand-border/60 overflow-hidden relative">
+    <section className="w-full max-w-full py-20 px-6 md:px-12 lg:px-24 bg-brand-softBeige/40 border-t border-b border-brand-border/60 overflow-hidden relative">
       
       {/* Background Subtle Highlights */}
       <div className="absolute top-1/2 left-0 w-96 h-96 rounded-full bg-brand-antiqueBronze/5 blur-3xl pointer-events-none" />

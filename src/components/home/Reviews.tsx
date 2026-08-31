@@ -53,7 +53,7 @@ export const Reviews: React.FC = () => {
     if (relIndex > 2) relIndex -= total; // map to -2, -1, 0, 1, 2
 
     // Shrink coordinates on mobile screen sizes to prevent horizontal viewport leaks
-    const factor = isMobile ? 0.36 : 1; 
+    const factor = isMobile ? 0.2 : 1; 
 
     let x = 0;
     let y = 0;
@@ -67,39 +67,39 @@ export const Reviews: React.FC = () => {
         x = 0;
         y = isMobile ? 8 : 25;
         z = 10;
-        scale = isMobile ? 1.02 : 1.1;
+        scale = isMobile ? 1.0 : 1.1;
         opacity = 1;
         rotate = 0;
         break;
       case 1: // Right Front
-        x = 240 * factor;
+        x = 220 * factor;
         y = 0;
         z = 5;
-        scale = isMobile ? 0.82 : 0.9;
+        scale = isMobile ? 0.78 : 0.9;
         opacity = 0.65;
         rotate = 6;
         break;
       case 2: // Right Back
-        x = 120 * factor;
+        x = 110 * factor;
         y = isMobile ? -8 : -25;
         z = 2;
-        scale = isMobile ? 0.68 : 0.75;
+        scale = isMobile ? 0.65 : 0.75;
         opacity = 0.35;
         rotate = 12;
         break;
       case -2: // Left Back
-        x = -120 * factor;
+        x = -110 * factor;
         y = isMobile ? -8 : -25;
         z = 2;
-        scale = isMobile ? 0.68 : 0.75;
+        scale = isMobile ? 0.65 : 0.75;
         opacity = 0.35;
         rotate = -12;
         break;
       case -1: // Left Front
-        x = -240 * factor;
+        x = -220 * factor;
         y = 0;
         z = 5;
-        scale = isMobile ? 0.82 : 0.9;
+        scale = isMobile ? 0.78 : 0.9;
         opacity = 0.65;
         rotate = -6;
         break;
@@ -119,7 +119,7 @@ export const Reviews: React.FC = () => {
   };
 
   return (
-    <section className="w-full py-10 md:py-20 px-4 md:px-12 lg:px-24 bg-brand-warmWhite overflow-hidden relative border-t border-brand-border/40 select-none">
+    <section className="w-full max-w-full py-10 md:py-20 px-4 md:px-12 lg:px-24 bg-brand-warmWhite overflow-hidden relative border-t border-brand-border/40 select-none">
       <div className="max-w-6xl mx-auto space-y-10 md:space-y-16">
         
         {/* Header Block */}

@@ -6,6 +6,7 @@ import { PRODUCTS, CATEGORIES, Product } from '../../data/mockData';
 import { ProductVisual } from '../ui/ProductVisual';
 import { Heart, ShoppingBag, Sparkles, Filter, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { NavigationControls } from '../ui/NavigationControls';
 
 export const NumismaticsHome: React.FC = () => {
   const { toggleWishlist, isInWishlist, setSelectedProduct, addToCart } = useApp();
@@ -35,8 +36,12 @@ export const NumismaticsHome: React.FC = () => {
   const rarityGrades = ['Scarce', 'Rare', 'Very Rare'];
 
   return (
-    <div className="w-full min-h-screen bg-brand-warmWhite pb-24 text-brand-espresso">
+    <div className="w-full max-w-full min-h-screen bg-brand-warmWhite pb-24 text-brand-espresso">
       
+      <div className="max-w-6xl mx-auto px-4 md:px-12 pt-6">
+        <NavigationControls className="justify-start border-b border-brand-border/30 pb-3" />
+      </div>
+
       {/* 1. Heritage Editorial Hero */}
       <section className="w-full py-16 md:py-24 px-6 md:px-12 lg:px-24 bg-brand-softBeige/40 border-b border-brand-border/60 relative overflow-hidden">
         {/* Floating Background coins */}
