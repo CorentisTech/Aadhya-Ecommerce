@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { PRODUCTS, CATEGORIES, Product, REVIEWS } from '@/data/mockData';
 import { ProductVisual } from '../ui/ProductVisual';
@@ -16,10 +16,11 @@ import {
   ShieldCheck, 
   Award, 
   Truck, 
-  Check, 
   Star,
   SlidersHorizontal,
-  X
+  X,
+  Minus,
+  Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -29,236 +30,196 @@ export const NumismaticsHome: React.FC = () => {
   const router = useRouter();
   const { toggleWishlist, isInWishlist, addToCart } = useApp();
 
-  // Numismatic Products source of truth (7 products for hero orbit & catalog)
+  // Numismatic Products source of truth
   const numProducts = PRODUCTS.filter((p) => p.department === 'numismatics');
-  const numCategories = CATEGORIES.filter((c) => c.department === 'numismatics');
 
   // --------------------------------------------------
-  // 1. HERO 3D ORBITAL ROTATION STATE & TIMERS
+  // 1. HERO HALF-CIRCLE ORBITAL SHOWCASE STATE (Matching Reference Image 2)
   // --------------------------------------------------
   const [activeIndex, setActiveIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
-  const [dragStartX, setDragStartX] = useState<number | null>(null);
+
   const activeProduct = numProducts[activeIndex] || numProducts[0];
 
-  // Continuous Orbital Autoplay Timer (4.5 seconds)
+  // Autoplay hero rotation every 5 seconds
   useEffect(() => {
     if (isPaused || numProducts.length === 0) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % numProducts.length);
-    }, 4500);
+    }, 5000);
     return () => clearInterval(interval);
   }, [isPaused, numProducts.length]);
 
-  // Pause autoplay temporarily on manual interaction
-  const triggerManualPause = () => {
+  const handlePrevHero = () => {
     setIsPaused(true);
-    setTimeout(() => setIsPaused(false), 3500);
-  };
-
-  const handlePrev = () => {
-    triggerManualPause();
     setActiveIndex((prev) => (prev - 1 + numProducts.length) % numProducts.length);
+    setTimeout(() => setIsPaused(false), 4000);
   };
 
-  const handleNext = () => {
-    triggerManualPause();
+  const handleNextHero = () => {
+    setIsPaused(true);
     setActiveIndex((prev) => (prev + 1) % numProducts.length);
-  };
-
-  // Touch / Drag Handlers for Orbital Stage
-  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    setDragStartX(clientX);
-    triggerManualPause();
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent | React.MouseEvent) => {
-    if (dragStartX === null) return;
-    const clientX = 'changedTouches' in e ? e.changedTouches[0].clientX : (e as React.MouseEvent).clientX;
-    const diff = clientX - dragStartX;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) {
-        setActiveIndex((prev) => (prev - 1 + numProducts.length) % numProducts.length);
-      } else {
-        setActiveIndex((prev) => (prev + 1) % numProducts.length);
-      }
-    }
-    setDragStartX(null);
+    setTimeout(() => setIsPaused(false), 4000);
   };
 
   // --------------------------------------------------
-  // 2. HERO CATEGORY PILLS FILTER & CATALOG FILTERS
+  // 2. EXPLORE PRODUCTS GRID & CONDITIONAL FILTERS
   // --------------------------------------------------
-  const [selectedHeroCategory, setSelectedHeroCategory] = useState('ALL');
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [selectedDenomination, setSelectedDenomination] = useState<string>('all');
-  const [selectedMaterial, setSelectedMaterial] = useState<string>('all');
-  const [selectedRarity, setSelectedRarity] = useState<string>('all');
-  const [selectedYearEra, setSelectedYearEra] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('Recommended');
-  const [priceMax, setPriceMax] = useState<number>(30000);
-  const [isMobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [hoveredCoinId, setHoveredCoinId] = useState<string | null>(null);
+  const [selectedPillCategory, setSelectedPillCategory] = useState<string>('all');
+  const [selectedMaterialFilter, setSelectedMaterialFilter] = useState<string>('all');
+  const [selectedRarityFilter, setSelectedRarityFilter] = useState<string>('all');
+  const [priceMaxFilter, setPriceMaxFilter] = useState<number>(30000);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
-  // Filter products for the main discovery section
-  const catalogFilteredProducts = numProducts.filter((product) => {
-    const matchesCategory =
-      activeCategory === 'all' ||
-      product.category.toLowerCase().includes(activeCategory.toLowerCase()) ||
-      (activeCategory === 'coins' && product.visualType === 'coin') ||
-      (activeCategory === 'notes' && product.visualType === 'note');
-
-    const matchesDenom =
-      selectedDenomination === 'all' || product.denomination === selectedDenomination;
-
-    const matchesMat =
-      selectedMaterial === 'all' || product.material?.toLowerCase() === selectedMaterial.toLowerCase();
-
-    const matchesRarity =
-      selectedRarity === 'all' || product.rarity?.toLowerCase() === selectedRarity.toLowerCase();
-
-    const matchesPrice = product.price <= priceMax;
-
-    return matchesCategory && matchesDenom && matchesMat && matchesRarity && matchesPrice;
-  });
-
-  // Sort products
-  const sortedCatalogProducts = [...catalogFilteredProducts].sort((a, b) => {
-    if (sortBy === 'Price Low to High') return a.price - b.price;
-    if (sortBy === 'Price High to Low') return b.price - a.price;
-    if (sortBy === 'Newest') return parseInt(b.year || '0') - parseInt(a.year || '0');
-    return 0;
-  });
-
-  const heroCategoryPills = [
-    'ALL',
-    'COINS',
-    'NOTES',
-    'RARE COINS',
-    'SILVER COINS',
-    'GOLD COINS',
-    'COMMEMORATIVE',
-    'VINTAGE NOTES'
+  const exploreCategoryPills = [
+    { id: 'all', label: 'All' },
+    { id: 'rare-coins', label: 'Rare Coins' },
+    { id: 'currency-notes', label: 'Vintage Notes' },
+    { id: 'indian-coins', label: 'Silver Coins' },
+    { id: 'gold-coins', label: 'Gold Coins' },
+    { id: 'commemorative', label: 'Commemorative' },
   ];
 
+  const filteredExploreProducts = numProducts.filter((product) => {
+    const matchesCategory =
+      selectedPillCategory === 'all' ||
+      product.category.toLowerCase().includes(selectedPillCategory.toLowerCase()) ||
+      (selectedPillCategory === 'rare-coins' && product.category === 'RARE COINS') ||
+      (selectedPillCategory === 'currency-notes' && product.visualType === 'note');
+
+    const matchesMat =
+      selectedMaterialFilter === 'all' || product.material?.toLowerCase() === selectedMaterialFilter.toLowerCase();
+
+    const matchesRarity =
+      selectedRarityFilter === 'all' || product.rarity?.toLowerCase() === selectedRarityFilter.toLowerCase();
+
+    const matchesPrice = product.price <= priceMaxFilter;
+
+    return matchesCategory && matchesMat && matchesRarity && matchesPrice;
+  });
+
+  // --------------------------------------------------
+  // 3. REVIEWS SLIDER CAROUSEL STATE
+  // --------------------------------------------------
   const numismaticReviews = REVIEWS.filter((r) => r.productName.toLowerCase().includes('rupee') || r.rating === 5);
+  const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveReviewIndex((prev) => (prev + 1) % numismaticReviews.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [numismaticReviews.length]);
 
   return (
-    <div className="w-full max-w-full min-h-screen bg-brand-warmWhite text-brand-espresso select-none overflow-x-hidden">
+    <div className="w-full max-w-full min-h-screen bg-[#F8F9FA] text-brand-espresso select-none overflow-x-hidden">
       
-      {/* Top Navigation Controls */}
-      <div className="max-w-6xl mx-auto px-4 md:px-12 pt-6">
+      {/* Top Header Navigation */}
+      <div className="max-w-7xl mx-auto px-4 md:px-12 pt-4">
         <NavigationControls className="justify-start border-b border-brand-border/30 pb-3" />
       </div>
 
       {/* ==================================================
-          1. SIGNATURE 3D ORBITAL ROTATING HERO SHOWCASE
+          1. HERO SECTION — HALF-CIRCLE ORBITAL SHOWCASE (Matching Reference Image 2)
          ================================================== */}
       <section 
-        className="w-full py-12 md:py-20 px-4 md:px-12 lg:px-24 bg-[#FAF7F2] border-b border-brand-border/60 relative overflow-hidden"
+        className="w-full py-12 md:py-16 px-4 md:px-12 lg:px-24 bg-[#F8F9FA] relative overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Background Ambient Lighting Glows */}
-        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 rounded-full bg-brand-gold/10 blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full bg-[#F26A2E]/5 blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center relative z-10">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
           
-          {/* LEFT CONTENT: Synchronized Dynamic Information Panel (6 cols) */}
-          <div className="lg:col-span-6 space-y-6 text-left flex flex-col justify-center">
+          {/* LEFT COLUMN: Dynamic Product Panel (Matching Reference Image 2) */}
+          <div className="lg:col-span-6 space-y-6 text-left flex flex-col justify-center pr-0 lg:pr-6">
             
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeProduct.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0, x: -15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 15 }}
+                transition={{ duration: 0.4 }}
                 className="space-y-4"
               >
-                {/* Collection Badge Tag */}
-                <div className="flex items-center space-x-2">
-                  <span className="text-[9px] font-extrabold tracking-[0.25em] bg-[#F26A2E]/10 border border-[#F26A2E]/25 text-[#F26A2E] px-3 py-1 rounded-full uppercase">
-                    {activeProduct.collectionLabel || activeProduct.category}
-                  </span>
-                  <span className="text-[9px] font-extrabold tracking-widest text-brand-warmGray uppercase">
-                    ✦ {activeProduct.rarity || 'RARE'}
-                  </span>
-                </div>
-
-                {/* Product Title */}
-                <h1 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl text-brand-espresso tracking-tight leading-tight uppercase">
+                {/* Main Product Title */}
+                <h1 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-[#1A1A1A] tracking-tight leading-tight uppercase">
                   {activeProduct.name}
                 </h1>
 
+                {/* Price Display (Bold Orange Text) */}
+                <div className="flex items-baseline space-x-3 pt-1">
+                  <span className="font-sans font-extrabold text-2xl sm:text-3xl text-[#F26A2E]">
+                    ₹{activeProduct.price.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-base text-brand-warmGray line-through font-semibold">
+                    ₹{activeProduct.mrp.toLocaleString('en-IN')}
+                  </span>
+                </div>
+
                 {/* Description */}
-                <p className="text-xs sm:text-sm text-brand-warmGray leading-relaxed font-semibold tracking-wider max-w-lg">
+                <p className="text-xs sm:text-sm text-[#555555] leading-relaxed font-medium max-w-lg">
                   {activeProduct.description}
                 </p>
 
-                {/* Price Display */}
-                <div className="flex items-baseline space-x-3 pt-1">
-                  <span className="font-sans font-extrabold text-2xl sm:text-3xl text-brand-espresso">
-                    ₹{activeProduct.price.toLocaleString('en-IN')}
-                  </span>
-                  <span className="text-sm sm:text-base text-brand-warmGray line-through font-semibold">
-                    ₹{activeProduct.mrp.toLocaleString('en-IN')}
-                  </span>
-                  <span className="text-[10px] bg-[#F26A2E]/10 text-[#F26A2E] font-extrabold px-2 py-0.5 rounded">
-                    SAVE {activeProduct.discount}%
-                  </span>
-                </div>
+                {/* Controls Row: Quantity Selector + Order Now / Add to Cart CTA */}
+                <div className="flex flex-wrap items-center gap-4 pt-2">
+                  
+                  {/* Quantity Stepper */}
+                  <div className="flex items-center space-x-3 bg-white border border-[#E5E5E5] px-3 py-2 rounded-full shadow-xs">
+                    <button
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      className="p-1 hover:text-[#F26A2E] text-brand-warmGray transition-colors"
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="font-sans font-extrabold text-xs text-[#1A1A1A] min-w-[20px] text-center">
+                      {String(quantity).padStart(2, '0')}
+                    </span>
+                    <button
+                      onClick={() => setQuantity((q) => q + 1)}
+                      className="p-1 hover:text-[#F26A2E] text-brand-warmGray transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
 
-                {/* Spec Sheet Grid Chips */}
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2 text-left">
-                  <div className="bg-brand-white border border-brand-border/60 p-2.5 rounded-xl">
-                    <span className="text-[8px] text-brand-warmGray font-bold tracking-widest uppercase block">YEAR</span>
-                    <span className="font-extrabold text-xs text-brand-espresso">{activeProduct.year || '1954'}</span>
-                  </div>
-                  <div className="bg-brand-white border border-brand-border/60 p-2.5 rounded-xl">
-                    <span className="text-[8px] text-brand-warmGray font-bold tracking-widest uppercase block">MATERIAL</span>
-                    <span className="font-extrabold text-xs text-brand-espresso">{activeProduct.material || 'Silver'}</span>
-                  </div>
-                  <div className="bg-brand-white border border-brand-border/60 p-2.5 rounded-xl">
-                    <span className="text-[8px] text-brand-warmGray font-bold tracking-widest uppercase block">WEIGHT</span>
-                    <span className="font-extrabold text-xs text-brand-espresso">{activeProduct.weight || '11.66 g'}</span>
-                  </div>
-                  <div className="bg-brand-white border border-brand-border/60 p-2.5 rounded-xl hidden sm:block">
-                    <span className="text-[8px] text-brand-warmGray font-bold tracking-widest uppercase block">DENOM</span>
-                    <span className="font-extrabold text-xs text-brand-espresso">{activeProduct.denomination || '₹1'}</span>
-                  </div>
-                </div>
-
-                {/* Action Buttons (Primary Add to Cart + Secondary Explore + Wishlist) */}
-                <div className="flex flex-wrap items-center gap-3 pt-4">
+                  {/* Primary Order Now / Add to Cart Button */}
                   <button
-                    onClick={() => addToCart(activeProduct, 1)}
-                    className="flex-grow sm:flex-grow-0 py-3.5 px-8 bg-[#F26A2E] text-white font-extrabold text-xs tracking-[0.2em] uppercase rounded-xl hover:bg-[#E0591D] transition-colors shadow-md flex items-center justify-center gap-2"
+                    onClick={() => addToCart(activeProduct, quantity)}
+                    className="py-3 px-8 bg-[#F26A2E] text-white font-extrabold text-xs tracking-widest uppercase rounded-full hover:bg-[#E0591D] transition-colors shadow-md flex items-center justify-center gap-2"
                   >
-                    <ShoppingBag className="w-4 h-4" />
-                    <span>ADD TO CART</span>
+                    <span>Order Now</span>
                   </button>
 
-                  <button
-                    onClick={() => router.push(`/numismatics/${activeProduct.name.toLowerCase().replace(/ /g, '-')}`)}
-                    className="py-3.5 px-6 border border-brand-espresso text-brand-espresso font-extrabold text-xs tracking-[0.2em] uppercase rounded-xl hover:bg-brand-espresso hover:text-white transition-all flex items-center justify-center gap-2"
-                  >
-                    <span>EXPLORE</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-
+                  {/* Wishlist Heart */}
                   <button
                     onClick={() => toggleWishlist(activeProduct)}
-                    className={`p-3.5 rounded-xl border transition-all flex items-center justify-center ${
+                    className={`p-3 rounded-full border transition-all ${
                       isInWishlist(activeProduct.id)
                         ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
-                        : 'bg-brand-white border-brand-border text-brand-warmGray hover:bg-brand-softBeige/40'
+                        : 'bg-white border-[#E5E5E5] text-brand-warmGray hover:bg-brand-softBeige/40'
                     }`}
                     aria-label="Wishlist"
                   >
                     <Heart className={`w-4 h-4 ${isInWishlist(activeProduct.id) ? 'fill-brand-dustyRose' : ''}`} />
+                  </button>
+                </div>
+
+                {/* Bottom Left Navigation Arrows (Previous / Next) */}
+                <div className="flex items-center space-x-4 pt-4 text-xs font-extrabold text-[#1A1A1A] tracking-wider">
+                  <button
+                    onClick={handlePrevHero}
+                    className="flex items-center gap-1.5 hover:text-[#F26A2E] transition-colors uppercase"
+                  >
+                    <span>← Previous</span>
+                  </button>
+                  <span className="text-brand-border">|</span>
+                  <button
+                    onClick={handleNextHero}
+                    className="flex items-center gap-1.5 hover:text-[#F26A2E] transition-colors uppercase"
+                  >
+                    <span>Next →</span>
                   </button>
                 </div>
 
@@ -267,105 +228,70 @@ export const NumismaticsHome: React.FC = () => {
 
           </div>
 
-          {/* RIGHT PRODUCT STAGE: 3D Elliptical Orbital Stage (6 cols) */}
-          <div 
-            className="lg:col-span-6 relative h-[380px] sm:h-[440px] w-full flex items-center justify-center touch-pan-y"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleTouchStart}
-            onMouseUp={handleTouchEnd}
-          >
-            {/* Stage Pedestal Shadow Glow */}
-            <div className="absolute bottom-4 w-72 h-12 rounded-full bg-brand-espresso/15 blur-xl pointer-events-none" />
+          {/* RIGHT COLUMN STAGE: Half-Circle Dashed Arc & Giant Active Dish (Matching Reference Image 2) */}
+          <div className="lg:col-span-6 relative h-[360px] sm:h-[440px] w-full flex items-center justify-center lg:justify-end">
+            
+            {/* Dashed Half-Circle Orbital Arc Path */}
+            <div className="absolute right-[-40px] sm:right-[-60px] top-1/2 -translate-y-1/2 w-[340px] sm:w-[460px] h-[340px] sm:h-[460px] rounded-full border-2 border-dashed border-[#F26A2E]/30 pointer-events-none" />
 
-            {/* Previous / Next Arrow Controls */}
-            <button
-              onClick={handlePrev}
-              className="absolute left-0 z-40 p-2.5 rounded-full bg-brand-white/90 border border-brand-border/60 text-brand-espresso hover:bg-brand-white transition-all shadow-md"
-              aria-label="Previous Collectible"
+            {/* Giant Center Stage Container for Active Product */}
+            <motion.div 
+              key={activeProduct.id}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              onClick={() => router.push(`/product/${activeProduct.name.toLowerCase().replace(/ /g, '-')}`)}
+              className="relative z-20 w-[260px] sm:w-[360px] h-[260px] sm:h-[360px] rounded-full bg-white border border-[#EBF0EF] shadow-2xl flex items-center justify-center p-6 cursor-pointer group"
             >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleNext}
-              className="absolute right-0 z-40 p-2.5 rounded-full bg-brand-white/90 border border-brand-border/60 text-brand-espresso hover:bg-brand-white transition-all shadow-md"
-              aria-label="Next Collectible"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+              {/* Product Graphic (No Rotation Animation, Clean High-Res Image) */}
+              {activeProduct.visualType === 'note' ? (
+                <img 
+                  src={activeProduct.image} 
+                  alt={activeProduct.name} 
+                  className="w-full h-auto object-contain rounded-lg shadow-md group-hover:scale-105 transition-transform duration-300"
+                />
+              ) : (
+                <div className="w-48 h-48 sm:w-64 sm:h-64 flex items-center justify-center">
+                  <ProductVisual 
+                    type="coin"
+                    color={activeProduct.visualColor || '#B89A67'}
+                    pattern={activeProduct.visualPattern || 'antique-metallic'}
+                    isRotating={false}
+                  />
+                </div>
+              )}
+            </motion.div>
 
-            {/* 7 Products 3D Orbit Loop */}
+            {/* Surrounding Orbital Items along the Half-Circle Arc */}
             {numProducts.map((product, i) => {
-              // Calculate relative offset from active index
               const n = numProducts.length;
               let offset = (i - activeIndex + n) % n;
               if (offset > n / 2) offset -= n;
+              if (offset === 0) return null; // Skip active center product
 
-              const isCenter = offset === 0;
-
-              // Compute 3D Orbital Positioning Coordinates
-              // Elliptical arc path: x = sin(angle) * rX, y = cos(angle) * rY
-              const angle = (offset / n) * (2 * Math.PI);
-              const radiusX = 170; // Horizontal orbit spread
-              const radiusY = 45;  // Vertical depth tilt
-
-              const translateX = Math.sin(angle) * radiusX;
-              const translateY = Math.cos(angle) * radiusY - 20;
-
-              // Scale & opacity depth steps
-              const absOffset = Math.abs(offset);
-              const scale = isCenter ? 1.15 : Math.max(0.42, 0.82 - absOffset * 0.16);
-              const opacity = isCenter ? 1 : Math.max(0.3, 0.85 - absOffset * 0.2);
-              const zIndex = isCenter ? 30 : 20 - absOffset * 3;
+              // Compute position along left arc of half circle
+              const arcAngle = (offset / (n - 1)) * (Math.PI * 0.8) - Math.PI * 0.4;
+              const radius = 200;
+              const posX = -Math.cos(arcAngle) * radius - 40;
+              const posY = Math.sin(arcAngle) * radius;
 
               return (
                 <motion.div
                   key={product.id}
                   onClick={() => {
-                    triggerManualPause();
+                    setIsPaused(true);
                     setActiveIndex(i);
+                    setTimeout(() => setIsPaused(false), 4000);
                   }}
-                  animate={{
-                    x: translateX,
-                    y: translateY,
-                    scale,
-                    opacity,
-                    zIndex,
-                  }}
-                  transition={{
-                    duration: 1.1,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  className={`absolute cursor-pointer transition-all duration-300 ${
-                    isCenter ? 'drop-shadow-2xl' : 'drop-shadow-md hover:opacity-100'
-                  }`}
-                  style={{
-                    transformStyle: 'preserve-3d',
-                  }}
+                  animate={{ x: posX, y: posY }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute z-30 cursor-pointer"
                 >
-                  <div className={`p-4 rounded-3xl transition-transform ${
-                    isCenter 
-                      ? 'bg-brand-white/95 border-2 border-[#F26A2E] shadow-2xl p-6 sm:p-8' 
-                      : 'bg-brand-white/70 border border-brand-border/50'
-                  }`}>
-                    {/* Render Collectible Image or Vector Visual */}
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white border border-[#E5E5E5] p-2 shadow-md hover:scale-110 transition-transform flex items-center justify-center overflow-hidden">
                     {product.visualType === 'note' ? (
-                      <div className="w-36 h-20 sm:w-48 sm:h-28 flex items-center justify-center overflow-hidden rounded-lg">
-                        <img 
-                          src={product.image} 
-                          alt={product.name} 
-                          className="w-full h-full object-contain shadow-xs"
-                        />
-                      </div>
+                      <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
                     ) : (
-                      <div className="w-24 h-24 sm:w-36 sm:h-36 flex items-center justify-center relative">
-                        <ProductVisual 
-                          type="coin"
-                          color={product.visualColor || '#B89A67'}
-                          pattern={product.visualPattern || 'antique-metallic'}
-                          isRotating={isCenter}
-                        />
-                      </div>
+                      <ProductVisual type="coin" color={product.visualColor || '#B89A67'} pattern={product.visualPattern || 'antique-metallic'} isRotating={false} />
                     )}
                   </div>
                 </motion.div>
@@ -375,225 +301,48 @@ export const NumismaticsHome: React.FC = () => {
           </div>
 
         </div>
-
-        {/* Integrated Category Pills Navigation */}
-        <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-brand-border/40 flex items-center justify-center gap-2 overflow-x-auto scrollbar-none py-1 px-4">
-          {heroCategoryPills.map((pill) => (
-            <button
-              key={pill}
-              onClick={() => {
-                setSelectedHeroCategory(pill);
-                setActiveCategory(pill.toLowerCase().replace(' ', '-'));
-              }}
-              className={`px-4 py-2 rounded-full text-[9px] sm:text-[10px] font-extrabold tracking-[0.18em] uppercase transition-all whitespace-nowrap border ${
-                selectedHeroCategory === pill
-                  ? 'bg-brand-espresso text-brand-white border-brand-espresso shadow-xs'
-                  : 'bg-brand-white text-brand-warmGray border-brand-border/60 hover:bg-brand-softBeige/40'
-              }`}
-            >
-              {pill}
-            </button>
-          ))}
-        </div>
-
       </section>
 
       {/* ==================================================
-          2. BEST SELLERS SECTION ("Most Collected Pieces")
+          2. SHOP BY CATEGORY WITH CATEGORY IMAGES
          ================================================== */}
-      <section className="w-full py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40">
-        <div className="max-w-6xl mx-auto space-y-8">
+      <section className="w-full py-14 px-4 md:px-12 lg:px-24 bg-white border-y border-[#EBF0EF]">
+        <div className="max-w-7xl mx-auto space-y-8 text-center">
           
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-brand-border/40 pb-4 gap-2">
-            <div className="text-left">
-              <span className="text-[10px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase block">
-                CURATED SELECTION
-              </span>
-              <h2 className="font-display font-bold text-3xl md:text-4xl text-brand-espresso tracking-tight uppercase">
-                BEST SELLERS
-              </h2>
-            </div>
-            <button
-              onClick={() => { setActiveCategory('all'); setSortBy('Recommended'); }}
-              className="text-[10px] font-extrabold tracking-widest text-brand-espresso hover:text-[#F26A2E] transition-colors flex items-center gap-1 uppercase self-start sm:self-auto"
-            >
-              <span>VIEW ALL PIECES</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {numProducts.filter(p => p.bestseller).slice(0, 4).map((product) => {
-              const inWish = isInWishlist(product.id);
-              const slug = product.name.toLowerCase().replace(/ /g, '-');
-
-              return (
-                <div
-                  key={product.id}
-                  onClick={() => router.push(`/numismatics/${slug}`)}
-                  className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/50 rounded-2xl p-3 hover:shadow-md transition-shadow relative"
-                >
-                  <div className="w-full aspect-[4/5] bg-[#FBF9F6] rounded-xl p-4 flex items-center justify-center relative overflow-hidden border border-brand-border/30">
-                    <span className="absolute top-2.5 left-2.5 text-[7px] bg-brand-espresso text-brand-gold font-extrabold tracking-widest px-2 py-0.5 rounded uppercase">
-                      {product.rarity || 'RARE'}
-                    </span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
-                      className={`absolute top-2.5 right-2.5 p-1.5 rounded-full border transition-all z-10 ${
-                        inWish ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose' : 'bg-white/90 border-brand-border/60 text-brand-warmGray'
-                      }`}
-                    >
-                      <Heart className={`w-3 h-3 ${inWish ? 'fill-brand-dustyRose' : ''}`} />
-                    </button>
-                    {product.visualType === 'note' ? (
-                      <img src={product.image} alt={product.name} className="w-full h-auto object-contain rounded" />
-                    ) : (
-                      <ProductVisual type="coin" color={product.visualColor || '#B89A67'} pattern={product.visualPattern || 'antique-metallic'} />
-                    )}
-                  </div>
-
-                  <div className="pt-3 space-y-1 flex-grow flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between text-[8px] text-brand-warmGray font-bold tracking-widest uppercase">
-                        <span>{product.year || '1954'}</span>
-                        <span className="text-brand-antiqueBronze">{product.material || 'Silver'}</span>
-                      </div>
-                      <h3 className="font-display font-bold text-xs text-brand-espresso group-hover:text-[#F26A2E] transition-colors line-clamp-1">
-                        {product.name}
-                      </h3>
-                    </div>
-                    <div className="flex items-center justify-between border-t border-brand-border/20 pt-2">
-                      <span className="font-sans font-extrabold text-xs text-brand-espresso">₹{product.price.toLocaleString('en-IN')}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
-                        className="p-1.5 bg-[#F26A2E] text-white rounded-lg hover:bg-[#E0591D] transition-colors"
-                        aria-label="Add to cart"
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ==================================================
-          3. NEW ARRIVALS SECTION ("Fresh Finds for Collectors")
-         ================================================== */}
-      <section className="w-full py-16 px-4 md:px-12 lg:px-24 bg-[#FAF7F2] border-b border-brand-border/40">
-        <div className="max-w-6xl mx-auto space-y-8">
-          
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-brand-border/40 pb-4 gap-2">
-            <div className="text-left">
-              <span className="text-[10px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase block">
-                RECENT VAULT ADDITIONS
-              </span>
-              <h2 className="font-display font-bold text-3xl md:text-4xl text-brand-espresso tracking-tight uppercase">
-                NEW ARRIVALS
-              </h2>
-            </div>
-          </div>
-
-          {/* Horizontal scroll container on mobile, row on desktop */}
-          <div className="flex overflow-x-auto pb-4 gap-4 md:grid md:grid-cols-4 md:gap-6 scrollbar-none snap-x snap-mandatory w-full">
-            {numProducts.slice(3, 7).map((product) => {
-              const inWish = isInWishlist(product.id);
-              const slug = product.name.toLowerCase().replace(/ /g, '-');
-
-              return (
-                <div
-                  key={product.id}
-                  onClick={() => router.push(`/numismatics/${slug}`)}
-                  className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/50 rounded-2xl p-3 hover:shadow-md transition-shadow relative flex-shrink-0 w-[200px] sm:w-[220px] md:w-auto snap-start"
-                >
-                  <div className="w-full aspect-[4/5] bg-[#FBF9F6] rounded-xl p-4 flex items-center justify-center relative overflow-hidden border border-brand-border/30">
-                    <span className="absolute top-2.5 left-2.5 text-[7px] bg-[#F26A2E] text-white font-extrabold tracking-widest px-2 py-0.5 rounded uppercase">
-                      NEW
-                    </span>
-                    {product.visualType === 'note' ? (
-                      <img src={product.image} alt={product.name} className="w-full h-auto object-contain rounded" />
-                    ) : (
-                      <ProductVisual type="coin" color={product.visualColor || '#B89A67'} pattern={product.visualPattern || 'antique-metallic'} />
-                    )}
-                  </div>
-
-                  <div className="pt-3 space-y-1 flex-grow flex flex-col justify-between">
-                    <div>
-                      <span className="text-[8px] font-bold text-brand-warmGray tracking-widest uppercase block">{product.era || 'HISTORIC'}</span>
-                      <h3 className="font-display font-bold text-xs text-brand-espresso group-hover:text-[#F26A2E] transition-colors line-clamp-1">
-                        {product.name}
-                      </h3>
-                    </div>
-                    <div className="flex items-center justify-between border-t border-brand-border/20 pt-2">
-                      <span className="font-sans font-extrabold text-xs text-brand-espresso">₹{product.price.toLocaleString('en-IN')}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
-                        className="p-1.5 bg-[#F26A2E] text-white rounded-lg hover:bg-[#E0591D] transition-colors"
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ==================================================
-          4. SHOP BY CATEGORY (Editorial Category Cards)
-         ================================================== */}
-      <section className="w-full py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40">
-        <div className="max-w-6xl mx-auto space-y-8">
-          
-          <div className="text-left space-y-1">
-            <span className="text-[10px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase block">
-              COLLECTION ERAS
-            </span>
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-brand-espresso tracking-tight uppercase">
+          <div className="space-y-1">
+            <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-[#1A1A1A] tracking-tight uppercase">
               SHOP BY CATEGORY
             </h2>
+            <p className="text-xs text-brand-warmGray font-medium">
+              Discover curated historical eras and numismatic artifacts
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Category Grid with Images */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { id: 'rare-coins', title: 'RARE COINS', desc: 'Exceedingly scarce mintages with royal provenance', icon: '🪙' },
-              { id: 'currency-notes', title: 'VINTAGE NOTES', desc: 'Preserved paper currency from British India & RBI', icon: '💵' },
-              { id: 'indian-coins', title: 'SILVER COINS', desc: 'Pure silver coinage from historic Indian mints', icon: '🥈' },
-              { id: 'gold-coins', title: 'GOLD COINS', desc: 'Exceedingly rare gold mohurs and sovereigns', icon: '👑' },
-              { id: 'commemorative', title: 'COMMEMORATIVE', desc: 'Special issue coinage celebrating national milestones', icon: '📜' },
-              { id: 'collectors-picks', title: 'COLLECTOR SETS', desc: 'Proof & uncirculated coin booklets with certificates', icon: '💎' }
+              { id: 'rare-coins', name: 'Rare Coins', img: '/coin_image_new.png' },
+              { id: 'currency-notes', name: 'Vintage Notes', img: '/images/inr-100-note.png' },
+              { id: 'indian-coins', name: 'Silver Coins', img: '/coin_image.jpg' },
+              { id: 'gold-coins', name: 'Gold Coins', img: '/coin_image_new.png' },
+              { id: 'commemorative', name: 'Commemorative', img: '/coin_image.jpg' },
+              { id: 'collectors-picks', name: 'Collector Sets', img: '/coin_image_new.png' },
             ].map((cat) => (
               <div
                 key={cat.id}
                 onClick={() => {
-                  setActiveCategory(cat.id);
-                  const el = document.getElementById('explore-catalog');
+                  setSelectedPillCategory(cat.id);
+                  const el = document.getElementById('explore-products');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="bg-[#FAF7F2] border border-brand-border/60 p-6 rounded-3xl text-left space-y-4 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                className="bg-[#F8F9FA] border border-[#EBF0EF] rounded-2xl p-4 text-center space-y-3 cursor-pointer group hover:shadow-md transition-all flex flex-col items-center justify-between"
               >
-                <div className="space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-white border border-brand-border/40 flex items-center justify-center text-2xl shadow-xs">
-                    {cat.icon}
-                  </div>
-                  <h3 className="font-display font-bold text-lg text-brand-espresso tracking-wide group-hover:text-[#F26A2E] transition-colors">
-                    {cat.title}
-                  </h3>
-                  <p className="text-xs text-brand-warmGray font-medium leading-relaxed">
-                    {cat.desc}
-                  </p>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white border border-[#E5E5E5] p-2 flex items-center justify-center overflow-hidden shadow-xs group-hover:scale-105 transition-transform">
+                  <img src={cat.img} alt={cat.name} className="w-full h-full object-contain" />
                 </div>
-                <div className="flex items-center gap-1 text-[10px] font-extrabold text-[#F26A2E] tracking-widest uppercase pt-2">
-                  <span>EXPLORE CATEGORY</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </div>
+                <span className="font-sans font-extrabold text-xs text-[#1A1A1A] group-hover:text-[#F26A2E] transition-colors">
+                  {cat.name}
+                </span>
               </div>
             ))}
           </div>
@@ -602,314 +351,233 @@ export const NumismaticsHome: React.FC = () => {
       </section>
 
       {/* ==================================================
-          5. EDITORIAL PROMOTIONAL BANNER
+          3. EXPLORE PRODUCTS (4-Column Web / 2-Column Mobile Grid) (Matching Reference Image 1)
          ================================================== */}
-      <section className="w-full py-16 px-6 bg-[#1C1816] text-white border-y border-brand-border/40 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
-          <span className="text-[10px] font-extrabold tracking-[0.3em] text-brand-gold uppercase block">
-            AADHYA PROVENANCE & AUTHENTICITY
-          </span>
-          <h2 className="font-display font-bold text-3xl md:text-5xl tracking-wide uppercase leading-tight text-[#FCFAF7]">
-            AUTHENTIC COLLECTIBLES. <br />
-            <span className="italic font-light text-brand-gold">DELIVERED SAFELY.</span>
-          </h2>
-          <p className="text-xs md:text-sm text-[#756E69] leading-relaxed max-w-xl mx-auto font-medium">
-            Every historical coin and banknote in our atelier is verified by expert numismatists and shipped in tamper-evident protective slabs with official certificate registers.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-[10px] font-extrabold tracking-widest text-[#B89A67] uppercase">
-            <div className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4" /> <span>256-BIT SSL SECURE</span></div>
-            <div className="flex items-center gap-1.5"><Award className="w-4 h-4" /> <span>VERIFIED PROVENANCE</span></div>
-            <div className="flex items-center gap-1.5"><Truck className="w-4 h-4" /> <span>FREE INSURED SHIPPING</span></div>
-          </div>
-        </div>
-      </section>
-
-      {/* ==================================================
-          6. EXPLORE PRODUCTS (Discovery Section + Left Filters)
-         ================================================== */}
-      <section id="explore-catalog" className="w-full py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite">
-        <div className="max-w-6xl mx-auto space-y-8">
+      <section id="explore-products" className="w-full py-16 px-4 md:px-12 lg:px-24 bg-[#F8F9FA]">
+        <div className="max-w-7xl mx-auto space-y-8 text-center">
           
-          <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-brand-border/40 pb-4 gap-4">
-            <div className="text-left space-y-1">
-              <span className="text-[10px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase block">
-                FULL VAULT DISCOVERY
-              </span>
-              <h2 className="font-display font-bold text-3xl md:text-4xl text-brand-espresso tracking-tight uppercase">
-                EXPLORE NUMISMATICS
-              </h2>
-            </div>
-
-            {/* Mobile Filter Toggle & Sort Dropdown */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setMobileFilterOpen(true)}
-                className="md:hidden px-4 py-2 bg-brand-white border border-brand-border/60 rounded-full text-xs font-bold flex items-center gap-2"
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5 text-[#F26A2E]" />
-                <span>FILTERS</span>
-              </button>
-
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-brand-white border border-brand-border/60 px-3 py-2 rounded-full text-xs font-bold text-brand-espresso outline-none cursor-pointer"
-              >
-                <option value="Recommended">Sort: Recommended</option>
-                <option value="Newest">Sort: Newest</option>
-                <option value="Price Low to High">Price: Low to High</option>
-                <option value="Price High to Low">Price: High to Low</option>
-              </select>
-            </div>
+          {/* Header Title & Subtitle */}
+          <div className="space-y-2">
+            <h2 className="font-display font-black text-3xl sm:text-4xl text-[#1A1A1A] tracking-tight uppercase">
+              Explore Numismatics
+            </h2>
+            <p className="text-xs sm:text-sm text-brand-warmGray max-w-xl mx-auto font-medium">
+              Discover our best-selling coins and notes, preserved for collectors with verified provenance registers.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-            
-            {/* LEFT FILTER SIDEBAR (3 cols) */}
-            <aside className="hidden md:block md:col-span-3 space-y-6 bg-brand-white border border-brand-border/60 p-5 rounded-3xl text-left">
-              <div className="flex items-center space-x-2 border-b border-brand-border pb-3">
-                <Filter className="w-4 h-4 text-[#F26A2E]" />
-                <span className="text-xs font-extrabold tracking-widest uppercase">FILTERS</span>
-              </div>
-
-              {/* Department */}
-              <div className="space-y-2">
-                <h4 className="text-[9px] font-extrabold text-brand-warmGray tracking-widest uppercase">DEPARTMENT</h4>
-                <div className="flex flex-col space-y-1 text-xs font-semibold text-brand-warmGray">
-                  {['all', 'coins', 'notes', 'rare-coins', 'currency-notes', 'commemorative'].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setActiveCategory(cat)}
-                      className={`text-left py-1 transition-colors ${activeCategory === cat ? 'text-[#F26A2E] font-extrabold border-l-2 border-[#F26A2E] pl-2' : 'hover:text-brand-espresso'}`}
-                    >
-                      {cat.toUpperCase().replace('-', ' ')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Material */}
-              <div className="space-y-2 pt-3 border-t border-brand-border/40">
-                <h4 className="text-[9px] font-extrabold text-brand-warmGray tracking-widest uppercase">MATERIAL</h4>
-                <div className="flex flex-col space-y-1 text-xs font-semibold text-brand-warmGray">
-                  {['all', 'silver', 'gold', 'paper', 'mixed metal'].map((mat) => (
-                    <button
-                      key={mat}
-                      onClick={() => setSelectedMaterial(mat)}
-                      className={`text-left py-1 transition-colors ${selectedMaterial === mat ? 'text-[#F26A2E] font-extrabold border-l-2 border-[#F26A2E] pl-2' : 'hover:text-brand-espresso'}`}
-                    >
-                      {mat.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Rarity */}
-              <div className="space-y-2 pt-3 border-t border-brand-border/40">
-                <h4 className="text-[9px] font-extrabold text-brand-warmGray tracking-widest uppercase">RARITY GRADE</h4>
-                <div className="flex flex-col space-y-1 text-xs font-semibold text-brand-warmGray">
-                  {['all', 'scarce', 'rare', 'very rare', 'extremely rare'].map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => setSelectedRarity(r)}
-                      className={`text-left py-1 transition-colors ${selectedRarity === r ? 'text-[#F26A2E] font-extrabold border-l-2 border-[#F26A2E] pl-2' : 'hover:text-brand-espresso'}`}
-                    >
-                      {r.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Max Price Slider */}
-              <div className="space-y-2 pt-3 border-t border-brand-border/40">
-                <div className="flex justify-between text-[9px] font-extrabold text-brand-warmGray uppercase">
-                  <span>MAX PRICE</span>
-                  <span className="text-brand-espresso">₹{priceMax.toLocaleString('en-IN')}</span>
-                </div>
-                <input
-                  type="range"
-                  min="2000"
-                  max="30000"
-                  step="1000"
-                  value={priceMax}
-                  onChange={(e) => setPriceMax(Number(e.target.value))}
-                  className="w-full accent-[#F26A2E] cursor-pointer"
-                />
-              </div>
-
+          {/* Category Pill Tabs (Matching Reference Image 1) */}
+          <div className="flex items-center justify-center gap-2 overflow-x-auto scrollbar-none py-1 px-4">
+            {exploreCategoryPills.map((pill) => (
               <button
-                onClick={() => {
-                  setActiveCategory('all');
-                  setSelectedMaterial('all');
-                  setSelectedRarity('all');
-                  setPriceMax(30000);
-                }}
-                className="w-full py-2 border border-brand-border text-[9px] font-extrabold tracking-widest text-brand-warmGray hover:text-brand-espresso rounded-xl uppercase"
+                key={pill.id}
+                onClick={() => setSelectedPillCategory(pill.id)}
+                className={`px-5 py-2 rounded-full text-xs font-extrabold transition-all whitespace-nowrap ${
+                  selectedPillCategory === pill.id
+                    ? 'bg-[#F26A2E] text-white shadow-sm'
+                    : 'bg-white text-brand-warmGray border border-[#E5E5E5] hover:bg-brand-softBeige/40'
+                }`}
               >
-                RESET FILTERS
+                {pill.label}
               </button>
+            ))}
+          </div>
 
-            </aside>
+          {/* 4-Column Web / 2-Column Mobile Product Grid (Matching Reference Image 1) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-4">
+            {filteredExploreProducts.map((product) => {
+              const inWish = isInWishlist(product.id);
+              const slug = product.name.toLowerCase().replace(/ /g, '-');
 
-            {/* RIGHT PRODUCT GRID (9 cols) */}
-            <main className="md:col-span-9 space-y-6">
-              {sortedCatalogProducts.length === 0 ? (
-                <div className="text-center py-20 bg-brand-white border border-brand-border/40 rounded-3xl text-brand-warmGray text-xs font-bold uppercase tracking-widest">
-                  NO COLLECTIBLES MATCH THE SELECTED FILTERS.
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {sortedCatalogProducts.map((product) => {
-                    const inWish = isInWishlist(product.id);
-                    const isHovered = hoveredCoinId === product.id;
-                    const slug = product.name.toLowerCase().replace(/ /g, '-');
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => router.push(`/product/${slug}`)}
+                  className="bg-white border border-[#EBF0EF] rounded-[24px] p-4 text-left flex flex-col justify-between cursor-pointer group hover:shadow-lg transition-all relative overflow-hidden"
+                >
+                  {/* Floating Circular Image Top Badge (Matching Reference Image 1) */}
+                  <div className="w-full flex justify-center pt-2 pb-4">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-[#FAF7F2] border border-[#E5E5E5] p-3 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform overflow-hidden">
+                      {product.visualType === 'note' ? (
+                        <img src={product.image} alt={product.name} className="w-full h-auto object-contain rounded" />
+                      ) : (
+                        <ProductVisual type="coin" color={product.visualColor || '#B89A67'} pattern={product.visualPattern || 'antique-metallic'} isRotating={false} />
+                      )}
+                    </div>
+                  </div>
 
-                    return (
-                      <div
-                        key={product.id}
-                        onClick={() => router.push(`/numismatics/${slug}`)}
-                        onMouseEnter={() => setHoveredCoinId(product.id)}
-                        onMouseLeave={() => setHoveredCoinId(null)}
-                        className="flex flex-col text-left group bg-brand-white border border-brand-border/50 rounded-2xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-                      >
-                        <div className="w-full aspect-[4/5] bg-[#FAF7F2] p-6 flex items-center justify-center relative overflow-hidden border-b border-brand-border/40">
-                          <div className="w-full h-full transform group-hover:scale-103 transition-transform duration-500 flex items-center justify-center">
-                            {product.visualType === 'note' ? (
-                              <img src={product.image} alt={product.name} className="w-full h-auto object-contain rounded" />
-                            ) : (
-                              <ProductVisual
-                                type="coin"
-                                color={product.visualColor || '#B89A67'}
-                                pattern={product.visualPattern || 'antique-metallic'}
-                                isRotating={isHovered}
-                              />
-                            )}
-                          </div>
+                  {/* Wishlist Heart */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
+                    className={`absolute top-3 right-3 p-1.5 rounded-full border transition-all z-10 ${
+                      inWish ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose' : 'bg-white/80 border-[#E5E5E5] text-brand-warmGray'
+                    }`}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${inWish ? 'fill-brand-dustyRose' : ''}`} />
+                  </button>
 
-                          <div className="absolute top-3 left-3">
-                            <span className="text-[8px] bg-brand-espresso text-brand-gold font-extrabold tracking-widest px-2.5 py-0.8 rounded shadow-xs uppercase">
-                              {product.rarity || 'RARE'}
-                            </span>
-                          </div>
-
-                          <button
-                            onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
-                            className={`absolute top-3 right-3 p-2 rounded-full border transition-all ${
-                              inWish ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose' : 'bg-white/80 border-brand-border/60 text-brand-warmGray'
-                            }`}
-                          >
-                            <Heart className={`w-3.5 h-3.5 ${inWish ? 'fill-brand-dustyRose' : ''}`} />
-                          </button>
-                        </div>
-
-                        <div className="p-4 space-y-1.5 flex-grow flex flex-col justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between text-[9px] text-brand-warmGray font-bold tracking-widest">
-                              <span>{product.category}</span>
-                              <span className="text-brand-antiqueBronze">{product.year}</span>
-                            </div>
-                            <h3 className="font-display font-bold text-sm text-brand-espresso leading-snug group-hover:text-[#F26A2E] transition-colors line-clamp-1">
-                              {product.name}
-                            </h3>
-                          </div>
-
-                          <div className="border-t border-brand-border/30 pt-3 flex items-center justify-between">
-                            <span className="text-[8px] text-brand-warmGray font-bold tracking-wider uppercase">
-                              {product.material || 'SILVER'}
-                            </span>
-                            <span className="text-xs font-extrabold text-brand-espresso">
-                              ₹{product.price.toLocaleString('en-IN')}
-                            </span>
-                          </div>
-                        </div>
+                  {/* Product Details */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-display font-extrabold text-xs sm:text-sm text-[#1A1A1A] group-hover:text-[#F26A2E] transition-colors line-clamp-1">
+                        {product.name}
+                      </h3>
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500">
+                        <Star className="w-3 h-3 fill-current" />
+                        <span>4.8</span>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </main>
+                    </div>
 
+                    <p className="text-[10px] text-brand-warmGray line-clamp-2 leading-relaxed">
+                      {product.description}
+                    </p>
+
+                    {/* Price & Add to Cart Action Row */}
+                    <div className="flex items-center justify-between border-t border-[#F0F0F0] pt-3">
+                      <span className="font-sans font-extrabold text-sm sm:text-base text-[#1A1A1A]">
+                        ₹{product.price.toLocaleString('en-IN')}
+                      </span>
+                      
+                      <button
+                        onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
+                        className="py-1.5 px-3 bg-[#F26A2E] text-white font-extrabold text-[10px] uppercase tracking-wider rounded-full hover:bg-[#E0591D] transition-colors shadow-xs flex items-center gap-1"
+                      >
+                        <span>+ Add</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Full Catalog Filters CTA Button */}
+          <div className="pt-6">
+            <button
+              onClick={() => setIsFilterDrawerOpen(true)}
+              className="py-3 px-8 bg-[#1A1A1A] text-white font-extrabold text-xs tracking-widest uppercase rounded-full hover:bg-black transition-colors shadow-md inline-flex items-center gap-2"
+            >
+              <SlidersHorizontal className="w-4 h-4 text-[#F26A2E]" />
+              <span>Full Catalog Filters</span>
+            </button>
           </div>
 
         </div>
       </section>
 
       {/* ==================================================
-          7. COLLECTOR REVIEWS SECTION
+          4. REVIEWS SLIDER CAROUSEL ANIMATION
          ================================================== */}
-      <section className="w-full py-16 px-4 md:px-12 lg:px-24 bg-[#FAF7F2] border-t border-brand-border/40">
-        <div className="max-w-6xl mx-auto space-y-8">
+      <section className="w-full py-16 px-4 md:px-12 lg:px-24 bg-white border-t border-[#EBF0EF]">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
           
-          <div className="text-left space-y-1">
+          <div className="space-y-1">
             <span className="text-[10px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase block">
               VERIFIED FEEDBACK
             </span>
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-brand-espresso tracking-tight uppercase">
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-[#1A1A1A] tracking-tight uppercase">
               COLLECTOR REVIEWS
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {numismaticReviews.map((rev) => (
-              <div key={rev.id} className="bg-brand-white border border-brand-border/60 p-6 rounded-3xl text-left space-y-3 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex text-amber-500 space-x-1">
-                    {[...Array(rev.rating)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                    ))}
-                  </div>
-                  <span className="text-[9px] text-brand-warmGray font-bold">{rev.date}</span>
+          {/* Review Slider Stage */}
+          <div className="relative bg-[#F8F9FA] border border-[#EBF0EF] p-8 sm:p-12 rounded-3xl min-h-[200px] flex flex-col justify-between shadow-xs">
+            
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeReviewIndex}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4 }}
+                className="space-y-4"
+              >
+                <div className="flex justify-center text-amber-500 space-x-1">
+                  {[...Array(numismaticReviews[activeReviewIndex]?.rating || 5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-current" />
+                  ))}
                 </div>
-                <p className="text-xs text-brand-espresso font-medium leading-relaxed italic">
-                  "{rev.text}"
+
+                <p className="text-sm sm:text-base text-[#1A1A1A] font-medium leading-relaxed italic max-w-2xl mx-auto">
+                  "{numismaticReviews[activeReviewIndex]?.text}"
                 </p>
-                <div className="flex items-center justify-between border-t border-brand-border/30 pt-3">
-                  <span className="text-xs font-extrabold text-brand-espresso">{rev.author}</span>
-                  <span className="text-[8px] bg-brand-success/10 text-brand-success font-extrabold px-2 py-0.5 rounded uppercase">
+
+                <div className="pt-2">
+                  <span className="font-sans font-extrabold text-sm text-[#1A1A1A] block">
+                    {numismaticReviews[activeReviewIndex]?.author}
+                  </span>
+                  <span className="text-[9px] bg-brand-success/10 text-brand-success font-extrabold px-2 py-0.5 rounded uppercase inline-block mt-1">
                     ✓ Verified Collector
                   </span>
                 </div>
-              </div>
-            ))}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Slider Dots */}
+            <div className="flex justify-center space-x-2 pt-6">
+              {numismaticReviews.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveReviewIndex(idx)}
+                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                    activeReviewIndex === idx ? 'bg-[#F26A2E] w-6' : 'bg-[#E5E5E5]'
+                  }`}
+                  aria-label={`Slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+
           </div>
 
         </div>
       </section>
 
-      {/* Mobile Slide-Over Filter Panel */}
+      {/* Conditional Full Catalog Filter Drawer */}
       <AnimatePresence>
-        {isMobileFilterOpen && (
+        {isFilterDrawerOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-brand-espresso/50 backdrop-blur-sm flex justify-end md:hidden"
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end"
           >
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="w-4/5 max-w-xs h-full bg-brand-white p-6 overflow-y-auto space-y-6 text-left"
+              transition={{ type: 'spring', damping: 26, stiffness: 240 }}
+              className="w-full max-w-md h-full bg-white p-6 overflow-y-auto space-y-6 text-left"
             >
-              <div className="flex items-center justify-between border-b border-brand-border pb-4">
-                <h3 className="font-display font-bold text-lg text-brand-espresso">FILTERS</h3>
-                <button onClick={() => setMobileFilterOpen(false)} className="p-1">
-                  <X className="w-5 h-5 text-brand-warmGray" />
+              <div className="flex items-center justify-between border-b border-brand-border/40 pb-4">
+                <h3 className="font-display font-bold text-lg text-[#1A1A1A] uppercase">Full Catalog Filters</h3>
+                <button onClick={() => setIsFilterDrawerOpen(false)} className="p-2 hover:bg-brand-softBeige rounded-full">
+                  <X className="w-5 h-5 text-brand-espresso" />
                 </button>
               </div>
 
-              {/* Mobile Filter Options */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <h4 className="text-[9px] font-extrabold text-brand-warmGray uppercase tracking-widest mb-2">CATEGORY</h4>
-                  {['all', 'coins', 'notes', 'rare-coins', 'currency-notes'].map((cat) => (
+                  <h4 className="text-[10px] font-extrabold text-brand-warmGray uppercase tracking-widest mb-2">MATERIAL</h4>
+                  {['all', 'silver', 'gold', 'paper', 'mixed metal'].map((mat) => (
                     <button
-                      key={cat}
-                      onClick={() => { setActiveCategory(cat); setMobileFilterOpen(false); }}
-                      className={`block text-xs py-1.5 w-full text-left font-semibold ${activeCategory === cat ? 'text-[#F26A2E] font-bold' : 'text-brand-warmGray'}`}
+                      key={mat}
+                      onClick={() => { setSelectedMaterialFilter(mat); setIsFilterDrawerOpen(false); }}
+                      className={`block text-xs py-1.5 w-full text-left font-semibold ${selectedMaterialFilter === mat ? 'text-[#F26A2E] font-bold' : 'text-brand-warmGray'}`}
                     >
-                      {cat.toUpperCase()}
+                      {mat.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="pt-4 border-t border-brand-border/40">
+                  <h4 className="text-[10px] font-extrabold text-brand-warmGray uppercase tracking-widest mb-2">RARITY GRADE</h4>
+                  {['all', 'scarce', 'rare', 'very rare', 'extremely rare'].map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => { setSelectedRarityFilter(r); setIsFilterDrawerOpen(false); }}
+                      className={`block text-xs py-1.5 w-full text-left font-semibold ${selectedRarityFilter === r ? 'text-[#F26A2E] font-bold' : 'text-brand-warmGray'}`}
+                    >
+                      {r.toUpperCase()}
                     </button>
                   ))}
                 </div>
