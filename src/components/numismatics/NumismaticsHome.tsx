@@ -148,10 +148,10 @@ export const NumismaticsHome: React.FC = () => {
                 {/* Collection Tag */}
                 <div className="flex items-center space-x-2">
                   <span className="text-[9px] font-extrabold tracking-[0.25em] bg-[#F26A2E]/10 border border-[#F26A2E]/25 text-[#F26A2E] px-3 py-1 rounded-full uppercase">
-                    {activeProduct.era || 'BRITISH INDIA'}
+                    BEST SELLER
                   </span>
                   <span className="text-[9px] font-extrabold tracking-widest text-brand-warmGray uppercase">
-                    ✦ {activeProduct.rarity || 'RARE'}
+                    ✦ {activeProduct.era || 'BRITISH INDIA'} — {activeProduct.rarity || 'RARE'}
                   </span>
                 </div>
 
@@ -595,8 +595,8 @@ export const NumismaticsHome: React.FC = () => {
             </h2>
           </div>
 
-          {/* Review Slider Stage */}
-          <div className="relative bg-white border border-[#EBF0EF] p-8 sm:p-12 rounded-3xl min-h-[200px] flex flex-col justify-between shadow-xs">
+          {/* Review Glassmorphic Stage */}
+          <div className="relative bg-white/70 backdrop-blur-md border border-white/80 p-8 sm:p-12 rounded-3xl min-h-[200px] flex flex-col justify-between shadow-xl shadow-brand-espresso/5">
             
             <AnimatePresence mode="wait">
               <motion.div

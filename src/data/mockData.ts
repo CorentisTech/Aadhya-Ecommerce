@@ -123,12 +123,19 @@ export const CATEGORIES: Category[] = [
     department: 'fashion'
   },
 
-  // Numismatics Categories (Curated)
-  { id: 'indian-coins', name: 'INDIAN COINS', description: 'Historic Indian coinage from ancient to modern eras.', visualType: 'coin', visualColor: '#9A7955', image: '/coin_image.jpg', department: 'numismatics' },
-  { id: 'rare-coins', name: 'RARE COINS', description: 'Exceedingly scarce mintages with historical provenance.', visualType: 'coin', visualColor: '#B89A67', image: '/coin_image.jpg', department: 'numismatics' },
-  { id: 'commemorative', name: 'COMMEMORATIVE COINS', description: 'Special issue coinage celebrating pivotal milestones.', visualType: 'coin', visualColor: '#756E69', image: '/coin_image.jpg', department: 'numismatics' },
-  { id: 'currency-notes', name: 'CURRENCY NOTES', description: 'Paper currency notes from British India and RBI.', visualType: 'note', visualColor: '#71836C', image: '/coin_image.jpg', department: 'numismatics' },
-  { id: 'collectors-picks', name: 'COLLECTOR\'S PICKS', description: 'Curated sets and graded numismatic treasures.', visualType: 'coin', visualColor: '#2C2522', image: '/coin_image.jpg', department: 'numismatics' }
+  // Numismatics Categories (Curated Content Reference)
+  { id: 'ancient-coins', name: 'ANCIENT COINS', description: 'Punched mark and ancient dynasty coins.', visualType: 'coin', visualColor: '#9A7955', image: '/coin_image.jpg', department: 'numismatics' },
+  { id: 'mughal-coins', name: 'MUGHAL COINS', description: 'Silver & gold coins from Mughal emperors.', visualType: 'coin', visualColor: '#B89A67', image: '/coin_image_new.png', department: 'numismatics' },
+  { id: 'british-india', name: 'BRITISH INDIA', description: 'Victoria and George VI coinage issues.', visualType: 'coin', visualColor: '#756E69', image: '/coin_image.jpg', department: 'numismatics' },
+  { id: 'princely-states', name: 'PRINCELY STATES', description: 'Coinage issued by royal Indian princely states.', visualType: 'coin', visualColor: '#9A7955', image: '/coin_image_new.png', department: 'numismatics' },
+  { id: 'republic-india', name: 'REPUBLIC INDIA', description: 'Post-1950 Indian coinage and proof sets.', visualType: 'coin', visualColor: '#B89A67', image: '/coin_image.jpg', department: 'numismatics' },
+  { id: 'foreign-coins', name: 'FOREIGN COINS', description: 'International historical coins.', visualType: 'coin', visualColor: '#756E69', image: '/coin_image_new.png', department: 'numismatics' },
+  { id: 'medals', name: 'MEDALS', description: 'Historical military & commemorative medals.', visualType: 'coin', visualColor: '#9A7955', image: '/coin_image.jpg', department: 'numismatics' },
+  { id: 'paper-money', name: 'PAPER MONEY', description: 'Banknotes from British India and RBI.', visualType: 'note', visualColor: '#71836C', image: '/images/inr-100-note.png', department: 'numismatics' },
+  { id: 'tokens-badges', name: 'TOKENS & BADGES', description: 'Trade tokens and heritage badges.', visualType: 'coin', visualColor: '#B89A67', image: '/coin_image_new.png', department: 'numismatics' },
+  { id: 'east-india-company', name: 'EAST INDIA COMPANY', description: 'Coins struck by EIC mints.', visualType: 'coin', visualColor: '#756E69', image: '/coin_image.jpg', department: 'numismatics' },
+  { id: 'sultanates', name: 'SULTANATES', description: 'Medieval Delhi and regional sultanate coins.', visualType: 'coin', visualColor: '#9A7955', image: '/coin_image_new.png', department: 'numismatics' },
+  { id: 'independent-kingdoms', name: 'INDEPENDENT KINGDOMS', description: 'Maratha, Sikh, and regional kingdom coinage.', visualType: 'coin', visualColor: '#B89A67', image: '/coin_image.jpg', department: 'numismatics' }
 ];
 
 export const PRODUCTS: Product[] = [
