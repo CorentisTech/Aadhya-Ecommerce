@@ -680,13 +680,13 @@ export const CheckoutPage: React.FC = () => {
             }}
             className="fixed inset-0 z-50 bg-brand-espresso/60 backdrop-blur-md flex items-center justify-center p-4 select-none"
           >
-            {/* Modal Body (Centered, zero empty gaps) */}
+            {/* Modal Body (Centered, tight wrapping, zero top white space) */}
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               transition={{ type: 'spring', damping: 26, stiffness: 240 }}
-              className="bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 relative shadow-2xl border border-brand-border/30 text-center flex flex-col items-center justify-center overflow-hidden my-auto"
+              className="bg-white w-full max-w-md rounded-3xl pt-5 pb-2 px-5 sm:px-6 relative shadow-2xl border border-brand-border/30 text-center flex flex-col items-center overflow-hidden my-auto max-h-fit"
               onClick={(e) => e.stopPropagation()}
             >
               
@@ -696,14 +696,14 @@ export const CheckoutPage: React.FC = () => {
                   setPaymentModalOpen(false);
                   setSelectedCard(null);
                 }}
-                className="absolute top-4 right-4 text-brand-espresso p-2 hover:bg-brand-softBeige rounded-full transition-colors border border-brand-border/40 z-50 shadow-xs"
+                className="absolute top-4 right-4 text-brand-espresso p-1.5 hover:bg-brand-softBeige rounded-full transition-colors border border-brand-border/40 z-50 shadow-xs"
                 aria-label="Close modal"
               >
                 <X className="w-4 h-4" />
               </button>
 
               {/* Header Title */}
-              <div className="space-y-1 pt-1 pb-3 text-center w-full px-4">
+              <div className="space-y-0.5 pt-1 pb-2 text-center w-full px-4">
                 <h3 className="font-display font-bold text-xl sm:text-2xl text-brand-espresso leading-tight">
                   Choose Payment Method
                 </h3>
@@ -712,8 +712,8 @@ export const CheckoutPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Stacked Wallet container (Centered, zero empty gaps) */}
-              <div className="relative h-[290px] w-full flex flex-col justify-end my-2 select-none">
+              {/* Stacked Wallet container (Starts immediately below title, zero top white gap) */}
+              <div className="relative h-[290px] w-full flex flex-col justify-start mt-2 mb-1 select-none">
                 
                 {paymentCards.map((card) => {
                   const Icon = card.icon;
@@ -726,10 +726,10 @@ export const CheckoutPage: React.FC = () => {
                   let zVal = card.zIndex;
 
                   if (isSelected) {
-                    yVal = -125; // Pop up to center of modal
+                    yVal = 0; // Pop up right at top of container below title
                     zVal = 100;
                   } else if (isHovered && !selectedCard) {
-                    yVal = card.yOffset - 22; // Smooth medium hover jump
+                    yVal = card.yOffset - 16; // Smooth medium hover jump
                     zVal = 80;
                   }
 
