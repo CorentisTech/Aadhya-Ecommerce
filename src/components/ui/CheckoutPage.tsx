@@ -674,30 +674,37 @@ export const CheckoutPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-[#121110]/70 backdrop-blur-md flex items-center justify-center p-4"
-            onClick={() => setPaymentModalOpen(false)}
+            onClick={() => {
+              setPaymentModalOpen(false);
+              setSelectedCard(null);
+            }}
+            className="fixed inset-0 z-50 bg-brand-espresso/60 backdrop-blur-md flex items-center justify-center p-4 select-none"
           >
-            {/* Modal Body */}
+            {/* Modal Body (Centered, zero empty gaps) */}
             <motion.div
-              initial={{ scale: 0.95, y: 30 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 30 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="bg-white w-full max-w-md rounded-3xl p-6 md:p-8 relative shadow-2xl border border-brand-border/30 text-center flex flex-col justify-between overflow-hidden min-h-[500px]"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 240 }}
+              className="bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 relative shadow-2xl border border-brand-border/30 text-center flex flex-col items-center justify-center overflow-hidden my-auto"
               onClick={(e) => e.stopPropagation()}
             >
               
-              {/* Close Button */}
+              {/* Close/Cut Button - Positioned top-right without overlapping text */}
               <button
-                onClick={() => setPaymentModalOpen(false)}
-                className="absolute top-4 right-4 text-brand-espresso p-1.5 hover:bg-brand-softBeige rounded-full transition-colors border border-brand-border/40"
+                onClick={() => {
+                  setPaymentModalOpen(false);
+                  setSelectedCard(null);
+                }}
+                className="absolute top-4 right-4 text-brand-espresso p-2 hover:bg-brand-softBeige rounded-full transition-colors border border-brand-border/40 z-50 shadow-xs"
+                aria-label="Close modal"
               >
-                <X className="w-4.5 h-4.5" />
+                <X className="w-4 h-4" />
               </button>
 
               {/* Header Title */}
-              <div className="space-y-1 mt-2">
-                <h3 className="font-display font-bold text-2xl text-brand-espresso leading-tight">
+              <div className="space-y-1 pt-1 pb-3 text-center w-full px-4">
+                <h3 className="font-display font-bold text-xl sm:text-2xl text-brand-espresso leading-tight">
                   Choose Payment Method
                 </h3>
                 <p className="text-[10px] text-brand-warmGray font-bold tracking-wider">
@@ -705,53 +712,71 @@ export const CheckoutPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Stacked Wallet container (300px height view box) */}
-              <div className="relative h-[320px] w-full flex flex-col justify-end mt-4 select-none">
+              {/* Stacked Wallet container (Centered, zero empty gaps) */}
+              <div className="relative h-[290px] w-full flex flex-col justify-end my-2 select-none">
                 
                 {paymentCards.map((card) => {
                   const Icon = card.icon;
                   const isHovered = hoveredCard === card.id;
                   const isSelected = selectedCard === card.id;
-                  
-                  // Compute dynamic coordinate slide heights on hover/selection
+                  const isOtherSelected = selectedCard !== null && !isSelected;
+
+                  // Smooth medium sensitivity offsets
                   let yVal = card.yOffset;
                   let zVal = card.zIndex;
-                  
+
                   if (isSelected) {
-                    yVal = -150; // Pop way up when selected
+                    yVal = -125; // Pop up to center of modal
                     zVal = 100;
-                  } else if (isHovered) {
-                    yVal = -110; // Pop up on hover
+                  } else if (isHovered && !selectedCard) {
+                    yVal = card.yOffset - 22; // Smooth medium hover jump
                     zVal = 80;
                   }
-                  
+
                   return (
                     <motion.div
                       key={card.id}
                       onClick={() => {
                         setSelectedCard(selectedCard === card.id ? null : card.id);
                       }}
-                      onMouseEnter={() => setHoveredCard(card.id)}
-                      onMouseLeave={() => setHoveredCard(null)}
+                      onMouseEnter={() => !selectedCard && setHoveredCard(card.id)}
+                      onMouseLeave={() => !selectedCard && setHoveredCard(null)}
                       animate={{
                         y: yVal,
-                        scale: isHovered || isSelected ? 1.03 : 1,
+                        scale: isSelected ? 1.04 : isHovered && !selectedCard ? 1.015 : 1,
+                        filter: isOtherSelected ? 'blur(4px)' : 'blur(0px)',
+                        opacity: isOtherSelected ? 0.35 : 1,
                         zIndex: zVal,
                       }}
-                      transition={{ type: 'spring', damping: 28, stiffness: 60 }}
-                      className={`absolute left-0 right-0 h-[170px] rounded-2xl p-4 flex flex-col justify-between text-white cursor-pointer shadow-lg border border-white/10 ${card.bgColor}`}
+                      transition={{ type: 'spring', damping: 28, stiffness: 180 }}
+                      className={`absolute left-0 right-0 h-[175px] rounded-2xl p-4 flex flex-col justify-between text-white cursor-pointer shadow-xl border border-white/15 transition-all ${card.bgColor}`}
                     >
                       {/* Top Header Row */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <Icon className="w-5 h-5 stroke-[1.5]" />
-                          <span className="font-display text-[13px] font-bold tracking-wider uppercase">
+                          <span className="font-display text-[12px] sm:text-[13px] font-bold tracking-wider uppercase">
                             {card.title}
                           </span>
                         </div>
-                        <span className="font-sans text-[13px] font-extrabold">
-                          {card.amount}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-sans text-[13px] font-extrabold">
+                            {card.amount}
+                          </span>
+                          {/* Close/Deselect cut option on popped-up selected card */}
+                          {isSelected && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCard(null);
+                              }}
+                              className="p-1 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors ml-1"
+                              aria-label="Deselect card"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       {/* Card Middle Mock Chip & dynamic layout inputs */}
@@ -760,7 +785,7 @@ export const CheckoutPage: React.FC = () => {
                           <motion.div 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            transition={{ duration: 0.35, delay: 0.15 }}
+                            transition={{ duration: 0.3, delay: 0.1 }}
                             className="w-full space-y-2 text-left"
                             onClick={(e) => e.stopPropagation()} // Keep focus on inputs
                           >
@@ -796,10 +821,9 @@ export const CheckoutPage: React.FC = () => {
                             {/* Option 2: UPI fields */}
                             {card.id === 'upi' && (
                               <div className="space-y-1.5 text-center flex flex-col items-center">
-                                {/* Small Mock QR code */}
-                                <div className="w-10 h-10 bg-white/25 rounded p-1 flex flex-col justify-between">
-                                  <div className="flex justify-between"><div className="w-2 h-2 bg-white rounded-xs"/><div className="w-2 h-2 bg-white rounded-xs"/></div>
-                                  <div className="flex justify-between"><div className="w-2 h-2 bg-white rounded-xs"/><div className="w-2 h-2 bg-white rounded-xs"/></div>
+                                <div className="w-9 h-9 bg-white/25 rounded p-1 flex flex-col justify-between">
+                                  <div className="flex justify-between"><div className="w-1.5 h-1.5 bg-white rounded-xs"/><div className="w-1.5 h-1.5 bg-white rounded-xs"/></div>
+                                  <div className="flex justify-between"><div className="w-1.5 h-1.5 bg-white rounded-xs"/><div className="w-1.5 h-1.5 bg-white rounded-xs"/></div>
                                 </div>
                                 <input
                                   type="text"
@@ -837,9 +861,9 @@ export const CheckoutPage: React.FC = () => {
 
                           </motion.div>
                         ) : (
-                          // Mock Card Chip layout
-                          <div className="w-8 h-6 bg-yellow-400/20 border border-yellow-400/30 rounded-md flex items-center justify-center self-start">
-                            <div className="w-4 h-3 bg-yellow-400/40 rounded-sm" />
+                          /* Mock Card Chip layout */
+                          <div className="w-8 h-5 bg-yellow-400/20 border border-yellow-400/30 rounded-md flex items-center justify-center self-start">
+                            <div className="w-4 h-2.5 bg-yellow-400/40 rounded-xs" />
                           </div>
                         )}
                       </div>
@@ -848,13 +872,13 @@ export const CheckoutPage: React.FC = () => {
                       {isSelected ? (
                         <button
                           onClick={handlePayNow}
-                          className="w-full py-2 bg-white text-brand-espresso font-extrabold text-[10px] tracking-wider rounded-xl uppercase hover:bg-opacity-90 transition-all"
+                          className="w-full py-2 bg-white text-brand-espresso font-extrabold text-[10px] tracking-wider rounded-xl uppercase hover:bg-opacity-90 transition-all shadow-sm"
                         >
                           PAY {card.amount} SECURELY
                         </button>
                       ) : (
-                        // Mock card footer network label
-                        <div className="flex items-center justify-between text-[7px] font-extrabold opacity-75 uppercase tracking-widest pt-2">
+                        /* Mock card footer network label */
+                        <div className="flex items-center justify-between text-[7px] font-extrabold opacity-75 uppercase tracking-widest pt-1">
                           <span>•••• CARD EMBLEM</span>
                           <span>AADHYA PAY</span>
                         </div>
@@ -863,8 +887,8 @@ export const CheckoutPage: React.FC = () => {
                   );
                 })}
 
-                {/* Stitched Wallet Bottom Pocket container (overlaps stack) */}
-                <div className="absolute bottom-0 left-0 right-0 h-[36px] bg-[#1C1816] rounded-t-2xl border-t border-dashed border-[#F26A2E]/50 shadow-inner flex items-center justify-center z-45">
+                {/* Stitched Wallet Bottom Pocket container */}
+                <div className="absolute bottom-0 left-0 right-0 h-[36px] bg-[#1C1816] rounded-t-2xl border-t border-dashed border-[#F26A2E]/50 shadow-inner flex items-center justify-center z-45 pointer-events-none">
                   <div className="text-[8px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase">
                     Aadhya Secure Wallet
                   </div>
