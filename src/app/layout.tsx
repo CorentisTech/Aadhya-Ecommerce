@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
+import { PageTransitionProvider } from '@/components/ui/PageTransitionOverlay';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { CartDrawer } from '@/components/layout/CartDrawer';
@@ -22,25 +23,27 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased min-h-screen bg-brand-warmWhite text-brand-espresso flex flex-col selection:bg-brand-blush selection:text-brand-espresso">
-        <AppProvider>
-          {/* Header Navigation */}
-          <Navbar />
-          
-          {/* Main Content Area */}
-          <main className="flex-grow">
-            {children}
-          </main>
-          
-          {/* Footer & Newsletter */}
-          <Footer />
+        <PageTransitionProvider>
+          <AppProvider>
+            {/* Header Navigation */}
+            <Navbar />
+            
+            {/* Main Content Area */}
+            <main className="flex-grow">
+              {children}
+            </main>
+            
+            {/* Footer & Newsletter */}
+            <Footer />
 
-          {/* Drawers and Overlays */}
-          <CartDrawer />
-          <SearchOverlay />
-          <ProductModal />
-          <AccountPage />
-          <MobileBottomNav />
-        </AppProvider>
+            {/* Drawers and Overlays */}
+            <CartDrawer />
+            <SearchOverlay />
+            <ProductModal />
+            <AccountPage />
+            <MobileBottomNav />
+          </AppProvider>
+        </PageTransitionProvider>
       </body>
     </html>
   );
