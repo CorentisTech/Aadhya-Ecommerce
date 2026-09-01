@@ -23,6 +23,12 @@ export interface Product {
   rarity?: 'Common' | 'Scarce' | 'Rare' | 'Very Rare' | 'Extremely Rare'; // For Numismatics
   era?: string; // For Numismatics e.g. "British India", "Mughal Empire"
   year?: string; // For Numismatics
+  denomination?: string; // For Numismatics e.g. "₹1", "₹100"
+  material?: string; // For Numismatics e.g. "Silver", "Gold", "Paper"
+  weight?: string; // For Numismatics e.g. "11.66 g"
+  condition?: string; // For Numismatics e.g. "Extremely Fine", "Uncirculated"
+  mint?: string; // For Numismatics e.g. "Mumbai", "Bombay", "Nasik"
+  collectionLabel?: string; // For Hero showcase
   rating?: number; // UI/UX star ratings (1-5)
   reviewsCount?: number; // UI/UX reviews count
   
@@ -548,6 +554,30 @@ export const PRODUCTS: Product[] = [
   // Numismatics Products (Coins & notes - Preserved exact business fields)
   {
     id: 'n-prod-1',
+    name: '1954 REPUBLIC OF INDIA ONE RUPEE SILVER COIN',
+    category: 'RARE COINS',
+    price: 12500,
+    mrp: 15000,
+    discount: 16,
+    description: 'A historic Indian silver coin preserved for collectors, featuring an archival-era Ashoka Lion Capital design and distinctive Bombay mint details.',
+    image: '/coin_image_new.png',
+    visualType: 'coin',
+    visualColor: '#B89A67',
+    visualPattern: 'antique-metallic',
+    bestseller: true,
+    department: 'numismatics',
+    rarity: 'Rare',
+    era: 'Republic India',
+    year: '1954',
+    denomination: '₹1',
+    material: 'Silver',
+    weight: '11.66 g',
+    condition: 'Extremely Fine',
+    mint: 'Mumbai',
+    collectionLabel: 'RARE COLLECTION'
+  },
+  {
+    id: 'n-prod-2',
     name: 'KING GEORGE VI SILVER RUPEE',
     category: 'INDIAN COINS',
     price: 3500,
@@ -562,10 +592,40 @@ export const PRODUCTS: Product[] = [
     department: 'numismatics',
     rarity: 'Scarce',
     era: 'British India',
-    year: '1940'
+    year: '1940',
+    denomination: '₹1',
+    material: 'Silver',
+    weight: '11.66 g',
+    condition: 'Very Fine',
+    mint: 'Bombay',
+    collectionLabel: 'COLLECTOR\'S EDIT'
   },
   {
-    id: 'n-prod-2',
+    id: 'n-prod-3',
+    name: 'BRITISH INDIA 100 RUPEE ASHOKA NOTE',
+    category: 'CURRENCY NOTES',
+    price: 18500,
+    mrp: 24000,
+    discount: 23,
+    description: 'Rare 100 Rupee paper currency note with purple watermark border and Ashoka emblem. Preserved crisp uncirculated paper fiber condition.',
+    image: '/images/inr-100-note.png',
+    visualType: 'note',
+    visualColor: '#71836C',
+    visualPattern: 'currency-green',
+    bestseller: true,
+    department: 'numismatics',
+    rarity: 'Very Rare',
+    era: 'Republic India',
+    year: '1950',
+    denomination: '₹100',
+    material: 'Paper',
+    weight: '1.2 g',
+    condition: 'Uncirculated',
+    mint: 'Nasik',
+    collectionLabel: 'HISTORIC CURRENCY'
+  },
+  {
+    id: 'n-prod-4',
     name: 'VICTORIA EMPRESS TWO ANNAS',
     category: 'RARE COINS',
     price: 8500,
@@ -580,17 +640,23 @@ export const PRODUCTS: Product[] = [
     department: 'numismatics',
     rarity: 'Rare',
     era: 'British India',
-    year: '1885'
+    year: '1885',
+    denomination: '2 Annas',
+    material: 'Silver',
+    weight: '1.46 g',
+    condition: 'Fine',
+    mint: 'Kolkata',
+    collectionLabel: 'ROYAL HERITAGE'
   },
   {
-    id: 'n-prod-3',
+    id: 'n-prod-5',
     name: 'MUGHAL SHAH ALAM II RUPEE',
     category: 'RARE COINS',
-    price: 12500,
-    mrp: 15000,
-    discount: 16,
+    price: 14200,
+    mrp: 18000,
+    discount: 21,
     description: 'Mughal Empire Shah Alam II Silver Rupee coin, minted at Murshidabad, RY 19. Complete inscriptions in Persian, high grading status.',
-    image: '/coin_image.jpg',
+    image: '/coin_image_new.png',
     visualType: 'coin',
     visualColor: '#9A7955',
     visualPattern: 'antique-metallic',
@@ -598,17 +664,23 @@ export const PRODUCTS: Product[] = [
     department: 'numismatics',
     rarity: 'Very Rare',
     era: 'Mughal Empire',
-    year: 'AH 1202 / RY 19'
+    year: '1785',
+    denomination: '1 Rupee',
+    material: 'Silver',
+    weight: '11.4 g',
+    condition: 'Very Fine',
+    mint: 'Murshidabad',
+    collectionLabel: 'DYNASTY SELECTION'
   },
   {
-    id: 'n-prod-4',
-    name: 'BRITISH INDIA 5 RUPEE PAPER NOTE',
+    id: 'n-prod-6',
+    name: 'BRITISH INDIA 5 RUPEE GEORGE VI NOTE',
     category: 'CURRENCY NOTES',
-    price: 9500,
-    mrp: 13000,
-    discount: 26,
+    price: 6500,
+    mrp: 8500,
+    discount: 23,
     description: 'King George VI Portrait 5 Rupee currency note. Issued in 1943, signed by CD Deshmukh. Remarkable condition, showing original crisp paper fibers.',
-    image: 'note_george.jpg',
+    image: '/images/inr-100-note.png',
     visualType: 'note',
     visualColor: '#71836C',
     visualPattern: 'currency-green',
@@ -616,43 +688,37 @@ export const PRODUCTS: Product[] = [
     department: 'numismatics',
     rarity: 'Rare',
     era: 'British India',
-    year: '1943'
+    year: '1943',
+    denomination: '₹5',
+    material: 'Paper',
+    weight: '1.0 g',
+    condition: 'Very Good',
+    mint: 'Nasik',
+    collectionLabel: 'VINTAGE BANKNOTE'
   },
   {
-    id: 'n-prod-5',
-    name: 'REPUBLIC INDIA FIRST ISSUES SET',
-    category: 'COLLECTOR\'S PICKS',
-    price: 4999,
-    mrp: 6500,
-    discount: 23,
+    id: 'n-prod-7',
+    name: 'REPUBLIC INDIA 1950 FIRST COINAGE PROOF SET',
+    category: 'COMMEMORATIVE COINS',
+    price: 22500,
+    mrp: 29000,
+    discount: 22,
     description: 'Republic of India 1950 First Coinage Set. Features the iconic Ashoka Lion capital emblem on 7 original coins. Housed in a custom velvet display booklet.',
-    image: '/coin_image.jpg',
+    image: '/coin_image_new.png',
     visualType: 'coin',
     visualColor: '#B89A67',
     visualPattern: 'antique-metallic',
     bestseller: false,
     department: 'numismatics',
-    rarity: 'Scarce',
+    rarity: 'Extremely Rare',
     era: 'Republic India',
-    year: '1950'
-  },
-  {
-    id: 'n-prod-6',
-    name: 'RBI 10 RUPEE BOAT NOTE',
-    category: 'CURRENCY NOTES',
-    price: 1800,
-    mrp: 2500,
-    discount: 28,
-    description: 'Early Reserve Bank of India 10 Rupee note featuring the dhow/boat illustration on reverse. Signed by Governor PC Bhattacharya.',
-    image: 'note_boat.jpg',
-    visualType: 'note',
-    visualColor: '#C98F91',
-    visualPattern: 'rupee-blue',
-    bestseller: false,
-    department: 'numismatics',
-    rarity: 'Common',
-    era: 'Republic India',
-    year: '1962'
+    year: '1950',
+    denomination: '7 Coin Set',
+    material: 'Mixed Metal',
+    weight: '45.0 g',
+    condition: 'Proof Uncirculated',
+    mint: 'Mumbai',
+    collectionLabel: 'PROOF COLLECTION'
   }
 ];
 
