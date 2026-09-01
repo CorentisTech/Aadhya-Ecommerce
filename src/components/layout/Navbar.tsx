@@ -18,10 +18,13 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import { usePageTransition } from '../ui/PageTransitionOverlay';
 
 export const Navbar: React.FC = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  const { triggerSectionTransition } = usePageTransition();
   const { 
     activePage, 
     setPage, 
@@ -168,29 +171,43 @@ export const Navbar: React.FC = () => {
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F26A2E] transition-all duration-300 group-hover:w-full" />
           </button>
 
-          {/* Numismatics Item with custom popup card */}
+          {/* Numismatics / Fashion Section Link */}
           <div
             className="relative"
             onMouseEnter={() => setNumismaticsHovered(true)}
             onMouseLeave={() => setNumismaticsHovered(false)}
           >
             <button
-              onClick={() => setPage('numismatics')}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full border transition-all duration-300 ${
-                activePage === 'numismatics' || numismaticsHovered
-                  ? 'border-brand-antiqueBronze/60 bg-brand-softBeige text-brand-antiqueBronze shadow-sm shadow-brand-antiqueBronze/10'
+              onClick={() => {
+                const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
+                if (isNumis) {
+                  setPage('home');
+                  triggerSectionTransition('fashion');
+                } else {
+                  setPage('numismatics');
+                  triggerSectionTransition('numismatics');
+                }
+              }}
+              className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 ${
+                (pathname?.includes('/numismatics') || activePage === 'numismatics') || numismaticsHovered
+                  ? 'border-[#F26A2E] bg-[#FFF3EC] text-[#F26A2E] shadow-sm'
                   : 'border-brand-border/80 text-brand-warmGray'
               }`}
             >
-              {/* Rotating Coin using User-provided 1957 Coin image */}
               <div className="relative w-4 h-4 rounded-full overflow-hidden border border-[#2C2522] shadow-sm flex items-center justify-center bg-[#2C2522]">
-                <img
-                  src="/coin_image_new.png"
-                  alt="Coin"
-                  className="w-full h-full object-cover"
-                />
+                {(pathname?.includes('/numismatics') || activePage === 'numismatics') ? (
+                  <span className="text-[9px]">👗</span>
+                ) : (
+                  <img
+                    src="/coin_image_new.png"
+                    alt="Coin"
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
-              <span className="tracking-[0.2em] font-extrabold text-[9px] uppercase">NUMISMATICS</span>
+              <span className="tracking-[0.2em] font-extrabold text-[9px] uppercase">
+                {(pathname?.includes('/numismatics') || activePage === 'numismatics') ? 'FASHION' : 'COINS & NOTES'}
+              </span>
             </button>
 
             {/* Premium Gold Accent Tooltip Popover */}
@@ -375,27 +392,41 @@ export const Navbar: React.FC = () => {
 
                 <div className="w-full h-px bg-brand-border/60" />
 
-                {/* Coin Special Drawer Link */}
+                {/* Coin / Fashion Special Drawer Link */}
                 <motion.div variants={itemVariants} className="px-3">
                   <button
                     onClick={() => {
-                      setPage('numismatics');
                       setSidebarOpen(false);
+                      const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
+                      if (isNumis) {
+                        setPage('home');
+                        triggerSectionTransition('fashion');
+                      } else {
+                        setPage('numismatics');
+                        triggerSectionTransition('numismatics');
+                      }
                     }}
-                    className={`flex items-center justify-between px-4 py-3 bg-brand-softBeige border border-brand-antiqueBronze/20 rounded-2xl text-brand-antiqueBronze text-left font-sans text-[11px] font-extrabold w-full shadow-sm hover:bg-brand-softBeige/70 transition-all ${
-                      activePage === 'numismatics' ? 'ring-2 ring-brand-antiqueBronze/40' : ''
+                    className={`flex items-center justify-between px-4 py-3 border rounded-2xl text-left font-sans text-[11px] font-extrabold w-full shadow-sm transition-all ${
+                      (pathname?.includes('/numismatics') || activePage === 'numismatics')
+                        ? 'bg-[#F26A2E] text-white border-[#E0591D]'
+                        : 'bg-[#FFF3EC] text-[#F26A2E] border-[#F9E1D3]'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      {/* Spinning coin */}
                       <div className="w-5 h-5 rounded-full overflow-hidden border border-[#2C2522] flex items-center justify-center bg-[#2C2522]">
-                        <img
-                          src="/coin_image_new.png"
-                          alt="Coin"
-                          className="w-full h-full object-cover"
-                        />
+                        {(pathname?.includes('/numismatics') || activePage === 'numismatics') ? (
+                          <span className="text-[10px]">👗</span>
+                        ) : (
+                          <img
+                            src="/coin_image_new.png"
+                            alt="Coin"
+                            className="w-full h-full object-cover"
+                          />
+                        )}
                       </div>
-                      <span className="tracking-widest">🪙 NUMISMATICS</span>
+                      <span className="tracking-widest">
+                        {(pathname?.includes('/numismatics') || activePage === 'numismatics') ? 'FASHION' : 'COINS & NOTES'}
+                      </span>
                     </div>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>

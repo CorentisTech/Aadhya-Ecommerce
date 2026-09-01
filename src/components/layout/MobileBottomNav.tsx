@@ -35,10 +35,10 @@ export const MobileBottomNav: React.FC = () => {
     animate(dragX, 0, { duration: 0.15 });
   }, [pathname, activePage]);
 
-  // Derived clip-path value for zero-zoom, progressive unmasking (Left → Right)
+  // Derived clip-path value for zero-gap unmasking (Left → Right)
   const noteClipPercentage = useTransform(dragX, [0, maxDrag], [100, 0]);
   const clipPathStyle = useTransform(noteClipPercentage, (v) => `inset(0 ${v}% 0 0)`);
-  const textOpacity = useTransform(dragX, [0, maxDrag * 0.7], [1, 0.35]);
+  const textOpacity = useTransform(dragX, [0, maxDrag * 0.7], [1, 0.25]);
 
   const isNumismaticsPage = pathname?.includes('/numismatics') || activePage === 'numismatics';
 
@@ -70,29 +70,39 @@ export const MobileBottomNav: React.FC = () => {
       {/* Outer Pill Capsule */}
       <div 
         ref={containerRef}
-        className="w-full h-14 bg-[#FFFDFC]/95 backdrop-blur-md border border-[#F4ECE3] rounded-full relative overflow-hidden flex items-center justify-between px-3 shadow-md shadow-brand-espresso/8"
+        className={`w-full h-14 rounded-full relative overflow-hidden flex items-center justify-between px-3 shadow-md transition-colors ${
+          isNumismaticsPage 
+            ? 'bg-[#F26A2E] text-white border border-[#E0591D]' 
+            : 'bg-[#FFFDFC]/95 backdrop-blur-md border border-[#F4ECE3] shadow-brand-espresso/8'
+        }`}
       >
         
-        {/* Layer 1: Banknote Progressive Unmasking Layer (Clip-path Left → Right, NO ZOOMING) */}
-        <motion.div 
-          style={{ clipPath: clipPathStyle }}
-          className="absolute inset-0 z-10 bg-[#7B75B8] flex items-center pointer-events-none rounded-full overflow-hidden"
-        >
-          <div className="w-full h-full relative overflow-hidden rounded-full flex items-center justify-center p-0.5">
-            {/* Full Un-zoomed Banknote image at 100% fixed size */}
-            <img 
-              src="/images/inr-100-note.png" 
-              alt="INR 100 Currency Note" 
-              className="w-full h-full object-contain rounded-full shadow-inner"
-            />
-            {/* Orange drag edge indicator matching reference UI */}
-            <div className="absolute right-0 top-0 bottom-0 w-3.5 bg-[#F26A2E] shadow-md rounded-r-full" />
-          </div>
-        </motion.div>
+        {/* Layer 1: Banknote Progressive Unmasking Layer (ONLY shown for switching to Numismatics, ZERO GAPS) */}
+        {!isNumismaticsPage && (
+          <motion.div 
+            style={{ clipPath: clipPathStyle }}
+            className="absolute inset-0 z-10 bg-[#7B75B8] flex items-center pointer-events-none rounded-full overflow-hidden"
+          >
+            <div className="w-full h-full relative overflow-hidden rounded-full flex items-center">
+              {/* Full Banknote image filling 100% capsule height and width with ZERO empty gaps */}
+              <img 
+                src="/images/inr-100-note.png" 
+                alt="INR 100 Currency Note" 
+                className="w-full h-full object-cover object-left rounded-full shadow-inner"
+              />
+              {/* Orange drag edge indicator matching reference UI */}
+              <div className="absolute right-0 top-0 bottom-0 w-3.5 bg-[#F26A2E] shadow-md rounded-r-full" />
+            </div>
+          </motion.div>
+        )}
 
         {/* Layer 2: Default Initial State Content & Text Overlay */}
         <div className="relative z-20 flex items-center space-x-2 pl-1 pointer-events-none">
-          <div className="w-8 h-8 rounded-full bg-[#FFF3EC] border border-[#F9E1D3] flex items-center justify-center text-sm shadow-xs flex-shrink-0">
+          <div className={`w-8 h-8 rounded-full border flex items-center justify-center text-sm shadow-xs flex-shrink-0 ${
+            isNumismaticsPage 
+              ? 'bg-white/20 border-white/30 text-white' 
+              : 'bg-[#FFF3EC] border-[#F9E1D3]'
+          }`}>
             {isNumismaticsPage ? '👗' : '🪙'}
           </div>
         </div>
@@ -101,7 +111,9 @@ export const MobileBottomNav: React.FC = () => {
           style={{ opacity: textOpacity }}
           className="relative z-20 flex items-center justify-center flex-grow px-2 text-center pointer-events-none"
         >
-          <span className="font-sans font-bold text-[10px] sm:text-xs text-[#F26A2E] tracking-[0.14em] uppercase whitespace-nowrap drop-shadow-xs">
+          <span className={`font-sans font-bold text-[10px] sm:text-xs tracking-[0.14em] uppercase whitespace-nowrap drop-shadow-xs ${
+            isNumismaticsPage ? 'text-white' : 'text-[#F26A2E]'
+          }`}>
             {isNumismaticsPage ? 'Swipe right to Fashion' : 'Swipe right to Coins & Notes'}
           </span>
         </motion.div>
@@ -110,7 +122,9 @@ export const MobileBottomNav: React.FC = () => {
           <motion.span 
             animate={{ x: [0, 4, 0] }}
             transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
-            className="font-mono font-bold text-xs sm:text-sm text-[#F26A2E] tracking-tighter"
+            className={`font-mono font-bold text-xs sm:text-sm tracking-tighter ${
+              isNumismaticsPage ? 'text-white' : 'text-[#F26A2E]'
+            }`}
           >
             &gt;&gt;
           </motion.span>

@@ -5,9 +5,11 @@ import { useApp } from '../../context/AppContext';
 import { ProductVisual } from '../ui/ProductVisual';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { usePageTransition } from '../ui/PageTransitionOverlay';
 
 export const NumismaticsPromo: React.FC = () => {
   const { setPage } = useApp();
+  const { triggerSectionTransition } = usePageTransition();
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -37,7 +39,10 @@ export const NumismaticsPromo: React.FC = () => {
           {/* Action CTAs */}
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full sm:w-auto">
             <button
-              onClick={() => setPage('numismatics')}
+              onClick={() => {
+                setPage('numismatics');
+                triggerSectionTransition('numismatics');
+              }}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
               className="w-full sm:w-auto py-3.5 px-8 bg-brand-espresso text-brand-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-brand-espresso/90 transition-colors shadow-lg flex items-center justify-center gap-2 rounded-xl border border-brand-espresso"
@@ -47,7 +52,10 @@ export const NumismaticsPromo: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setPage('numismatics')}
+              onClick={() => {
+                setPage('numismatics');
+                triggerSectionTransition('numismatics');
+              }}
               className="w-full sm:w-auto py-3.5 px-8 border border-brand-antiqueBronze text-brand-antiqueBronze text-xs font-bold tracking-[0.2em] uppercase hover:bg-brand-softBeige transition-colors flex items-center justify-center gap-2 rounded-xl"
             >
               <span>VIEW COINS & NOTES</span>
