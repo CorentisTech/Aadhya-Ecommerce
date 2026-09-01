@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { PRODUCTS, CATEGORIES, Product, REVIEWS } from '@/data/mockData';
 import { ProductVisual } from '../ui/ProductVisual';
@@ -19,8 +19,8 @@ import {
   Star,
   SlidersHorizontal,
   X,
-  Play,
-  Check
+  Check,
+  Tag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -29,12 +29,13 @@ import { NavigationControls } from '../ui/NavigationControls';
 export const NumismaticsHome: React.FC = () => {
   const router = useRouter();
   const { toggleWishlist, isInWishlist, addToCart } = useApp();
+  const exploreScrollRef = useRef<HTMLDivElement>(null);
 
   // Numismatic Products source of truth
   const numProducts = PRODUCTS.filter((p) => p.department === 'numismatics');
 
   // --------------------------------------------------
-  // 1. HERO BEST SELLER SHOWCASE STATE (Matching Reference Images)
+  // 1. HERO BEST SELLER SHOWCASE STATE (Matching Reference Image)
   // --------------------------------------------------
   const [heroActiveIndex, setHeroActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -99,47 +100,16 @@ export const NumismaticsHome: React.FC = () => {
     setTimeout(() => setAddedHero(false), 1500);
   };
 
-  // --------------------------------------------------
-  // 2. EXPLORE PRODUCTS GRID & FILTERS
-  // --------------------------------------------------
-  const [selectedPillCategory, setSelectedPillCategory] = useState<string>('all');
-  const [selectedMaterialFilter, setSelectedMaterialFilter] = useState<string>('all');
-  const [selectedRarityFilter, setSelectedRarityFilter] = useState<string>('all');
-  const [priceMaxFilter, setPriceMaxFilter] = useState<number>(30000);
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-
-  const exploreCategoryPills = [
-    { id: 'all', label: 'All' },
-    { id: 'coins', label: 'Coins' },
-    { id: 'notes', label: 'Notes' },
-    { id: 'rare-coins', label: 'Rare Coins' },
-    { id: 'british-india', label: 'British India' },
-    { id: 'republic-india', label: 'Republic India' },
-    { id: 'commemorative', label: 'Commemorative' },
-  ];
-
-  const filteredExploreProducts = numProducts.filter((product) => {
-    const matchesCategory =
-      selectedPillCategory === 'all' ||
-      product.category.toLowerCase().includes(selectedPillCategory.toLowerCase()) ||
-      (selectedPillCategory === 'coins' && product.visualType === 'coin') ||
-      (selectedPillCategory === 'notes' && product.visualType === 'note') ||
-      (selectedPillCategory === 'british-india' && product.era === 'British India') ||
-      (selectedPillCategory === 'republic-india' && product.era === 'Republic India');
-
-    const matchesMat =
-      selectedMaterialFilter === 'all' || product.material?.toLowerCase() === selectedMaterialFilter.toLowerCase();
-
-    const matchesRarity =
-      selectedRarityFilter === 'all' || product.rarity?.toLowerCase() === selectedRarityFilter.toLowerCase();
-
-    const matchesPrice = product.price <= priceMaxFilter;
-
-    return matchesCategory && matchesMat && matchesRarity && matchesPrice;
-  });
+  // Horizontal Scroll handlers for Explore Numismatics
+  const scrollExplore = (direction: 'left' | 'right') => {
+    if (exploreScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -320 : 320;
+      exploreScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   // --------------------------------------------------
-  // 3. REVIEWS SLIDER CAROUSEL STATE (Glassmorphic)
+  // 2. REVIEWS SLIDER CAROUSEL STATE (Glassmorphic)
   // --------------------------------------------------
   const numismaticReviews = REVIEWS.filter((r) => r.productName.toLowerCase().includes('rupee') || r.rating === 5);
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
@@ -216,7 +186,7 @@ export const NumismaticsHome: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Price & Rating Row (Enhanced with real prices & reviews) */}
+                  {/* Price & Rating Row */}
                   <div className="flex flex-wrap items-center gap-4 pt-1">
                     <div className="flex items-baseline space-x-2.5">
                       <span className="font-sans font-black text-2xl sm:text-3xl text-[#E0591D]">
@@ -241,11 +211,11 @@ export const NumismaticsHome: React.FC = () => {
                     {activeHeroProduct.description}
                   </p>
 
-                  {/* Action Buttons: Add to Cart + Wishlist + Collector Story */}
+                  {/* Action Buttons: Add to Cart + Wishlist (Collector Story removed per user request) */}
                   <div className="flex flex-wrap items-center gap-3 pt-2">
                     <button
                       onClick={handleHeroAddToCart}
-                      className="px-7 py-3 bg-[#E0591D] hover:bg-[#C84B15] text-white font-extrabold text-xs tracking-wider rounded-full transition-all shadow-md shadow-[#E0591D]/25 flex items-center gap-2"
+                      className="px-8 py-3.5 bg-[#E0591D] hover:bg-[#C84B15] text-white font-extrabold text-xs tracking-wider rounded-full transition-all shadow-md shadow-[#E0591D]/25 flex items-center gap-2"
                     >
                       {addedHero ? (
                         <>
@@ -262,7 +232,7 @@ export const NumismaticsHome: React.FC = () => {
 
                     <button
                       onClick={() => toggleWishlist(activeHeroProduct)}
-                      className={`p-3 rounded-full border transition-all shadow-sm ${
+                      className={`p-3.5 rounded-full border transition-all shadow-sm ${
                         isHeroInWish
                           ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
                           : 'bg-white border-[#EAE2D5] text-[#2B231D] hover:bg-[#FFF5EC]'
@@ -270,16 +240,6 @@ export const NumismaticsHome: React.FC = () => {
                       aria-label="Add to Wishlist"
                     >
                       <Heart className={`w-4 h-4 ${isHeroInWish ? 'fill-brand-dustyRose' : ''}`} />
-                    </button>
-
-                    <button
-                      onClick={() => router.push(`/product/${activeHeroProduct.name.toLowerCase().replace(/ /g, '-')}`)}
-                      className="flex items-center gap-2.5 text-xs font-extrabold text-[#2B231D] hover:text-[#E0591D] transition-colors group px-3 py-2"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-[#2B231D] text-white flex items-center justify-center group-hover:bg-[#E0591D] transition-colors shadow-sm">
-                        <Play className="w-3 h-3 fill-current ml-0.5" />
-                      </div>
-                      <span>Collector Story</span>
                     </button>
                   </div>
 
@@ -308,7 +268,7 @@ export const NumismaticsHome: React.FC = () => {
                     <span className="text-[8px] tracking-tight opacity-90">100% Genuine</span>
                   </div>
 
-                  {/* Main Circular Coin Presentation Stage (Full-Fit Coin without excess padding) */}
+                  {/* Main Circular Coin Presentation Stage */}
                   <div 
                     onClick={() => router.push(`/product/${activeHeroProduct.name.toLowerCase().replace(/ /g, '-')}`)}
                     className="w-[280px] sm:w-[380px] h-[280px] sm:h-[380px] rounded-full bg-[#FFFDFB] border-8 border-white p-3 sm:p-4 shadow-2xl flex items-center justify-center cursor-pointer group relative overflow-hidden"
@@ -350,7 +310,7 @@ export const NumismaticsHome: React.FC = () => {
 
           </div>
 
-          {/* LOWER HERO CAROUSEL: Floating White Container with 4 Vibrant Cards (Full-Fit Coin) */}
+          {/* LOWER HERO CAROUSEL: Floating White Container with 4 Vibrant Cards */}
           <div className="relative max-w-5xl mx-auto bg-white rounded-[32px] sm:rounded-[44px] p-6 sm:p-8 shadow-xl shadow-black/5 border border-[#F0EAE1]">
             
             {/* Outer Left Circular Navigation Button */}
@@ -392,7 +352,7 @@ export const NumismaticsHome: React.FC = () => {
                         : 'shadow-md hover:scale-[1.02] opacity-90 hover:opacity-100'
                     }`}
                   >
-                    {/* Floating Circular Coin on Top (Full-Fit Coin without excess white gap) */}
+                    {/* Floating Circular Coin on Top */}
                     <div className="w-full flex justify-center -mt-12 mb-2">
                       <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white p-1 shadow-lg flex items-center justify-center overflow-hidden border-2 border-white">
                         {prod.visualType === 'note' ? (
@@ -485,10 +445,7 @@ export const NumismaticsHome: React.FC = () => {
             
             <div className="flex justify-start md:justify-end flex-shrink-0">
               <button 
-                onClick={() => {
-                  const el = document.getElementById('explore-products');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => router.push('/catalog?department=numismatics&sort=newest')}
                 className="px-4 py-2 border border-brand-border rounded-full text-[10px] font-bold tracking-widest text-brand-espresso hover:bg-brand-softBeige/40 transition-colors flex items-center space-x-1 uppercase"
               >
                 <span>VIEW ALL</span>
@@ -497,7 +454,7 @@ export const NumismaticsHome: React.FC = () => {
             </div>
           </div>
 
-          {/* 4-Column Grid on Web, Horizontal Scroll on Mobile (Exact Fashion Card UI) */}
+          {/* 4-Column Grid on Web, Horizontal Scroll on Mobile */}
           <div className="flex overflow-x-auto pb-3 gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
             {numProducts.slice(2, 6).map((product, index) => {
               const inWishlist = isInWishlist(product.id);
@@ -509,7 +466,7 @@ export const NumismaticsHome: React.FC = () => {
                   onClick={() => router.push(`/product/${slug}`)}
                   className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 sm:p-3 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start"
                 >
-                  {/* Product Visual Container (Aspect 4/5 Matching Fashion Card) */}
+                  {/* Product Visual Container */}
                   <div className="w-full aspect-[4/5] bg-brand-softBeige/20 overflow-hidden relative rounded-lg p-3 flex items-center justify-center">
                     {product.visualType === 'note' ? (
                       <img 
@@ -553,7 +510,7 @@ export const NumismaticsHome: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* Details (Matching Fashion Card Anatomy) */}
+                  {/* Details */}
                   <div className="pt-2.5 space-y-1.5">
                     <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso tracking-wide leading-snug group-hover:text-[#E0591D] transition-colors line-clamp-1">
                       {product.name}
@@ -604,9 +561,9 @@ export const NumismaticsHome: React.FC = () => {
       </section>
 
       {/* ==================================================
-          3. SHOP BY CATEGORY (Matching Uploaded Category Design)
+          3. SHOP BY CATEGORY (Exact Match for Uploaded media_1788273362349.jpg Top Part)
          ================================================== */}
-      <section className="w-full py-12 md:py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40 overflow-hidden">
+      <section className="w-full py-12 md:py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite overflow-hidden">
         <div className="max-w-6xl mx-auto bg-white rounded-3xl p-6 sm:p-10 border border-brand-border/40 shadow-xs space-y-8">
           
           {/* Header Row */}
@@ -615,10 +572,7 @@ export const NumismaticsHome: React.FC = () => {
               Shop by Category
             </h2>
             <button
-              onClick={() => {
-                const el = document.getElementById('explore-products');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onClick={() => router.push('/catalog?department=numismatics')}
               className="text-xs font-bold text-brand-warmGray hover:text-[#E0591D] transition-colors flex items-center gap-1"
             >
               <span>Browse all</span>
@@ -638,14 +592,10 @@ export const NumismaticsHome: React.FC = () => {
             ].map((cat) => (
               <div
                 key={cat.id}
-                onClick={() => {
-                  setSelectedPillCategory(cat.id);
-                  const el = document.getElementById('explore-products');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => router.push(`/catalog?department=numismatics&category=${cat.id}`)}
                 className="flex flex-col items-center text-center group cursor-pointer space-y-2.5 flex-shrink-0 w-[110px] sm:w-[130px] md:w-auto snap-start"
               >
-                {/* Big Circular Image Badge (Full-Fit Coin) */}
+                {/* Big Circular Image Badge */}
                 <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-[#FAF7F2] border border-[#EAE2D5] p-1.5 flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
                   <img src={cat.img} alt={cat.name} className="w-full h-full object-contain rounded-full" />
                 </div>
@@ -667,41 +617,106 @@ export const NumismaticsHome: React.FC = () => {
       </section>
 
       {/* ==================================================
-          4. EXPLORE PRODUCTS (Exact Fashion Card Layout & Grid)
+          4. PROMOTIONAL HERITAGE SALE BANNER (Exact Match for media_1788273362349.jpg Bottom Part)
+         ================================================== */}
+      <section className="w-full py-6 px-4 md:px-12 lg:px-24 bg-brand-warmWhite">
+        <div className="max-w-6xl mx-auto rounded-[32px] sm:rounded-[36px] overflow-hidden bg-[#1B3832] text-white p-8 sm:p-12 relative flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
+          
+          {/* Left Text & CTA */}
+          <div className="space-y-4 text-left z-10 max-w-lg">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#E8A598]" />
+              <span className="text-[10px] font-extrabold tracking-[0.25em] text-[#E8A598] uppercase">
+                LIMITED TIME OFFER
+              </span>
+            </div>
+            
+            <h2 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight">
+              Heritage Sale is Live!
+            </h2>
+            
+            <p className="text-xs sm:text-sm text-white/80 font-medium leading-relaxed max-w-md">
+              Enjoy up to 40% off on selected museum-grade coins, rare Mughal rupees, and archival British India banknotes.
+            </p>
+
+            <div className="pt-2">
+              <button
+                onClick={() => router.push('/catalog?department=numismatics&discount=true')}
+                className="px-7 py-3.5 bg-[#E8A598] hover:bg-[#F2B6A9] text-[#1B3832] font-extrabold text-xs tracking-wider rounded-full transition-colors flex items-center gap-2 shadow-lg"
+              >
+                <span>Explore Deals</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Right Visual with Overlapping 40% Badge */}
+          <div className="relative flex items-center justify-center z-10">
+            {/* Circular Discount Pill Badge */}
+            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-[#E8A598] text-[#1B3832] flex flex-col items-center justify-center font-display font-black shadow-2xl text-center flex-shrink-0 z-20 -mr-6 sm:-mr-8">
+              <span className="text-[9px] sm:text-[10px] font-extrabold tracking-widest uppercase">UP TO</span>
+              <span className="text-2xl sm:text-4xl font-black leading-none my-0.5">40%</span>
+              <span className="text-[9px] sm:text-[10px] font-extrabold tracking-widest uppercase">OFF</span>
+            </div>
+
+            {/* Lifestyle Coin / Artifact Image Display */}
+            <div className="w-44 h-44 sm:w-56 sm:h-56 rounded-3xl overflow-hidden bg-white/10 border border-white/20 p-3 backdrop-blur-xs flex items-center justify-center shadow-lg">
+              <img 
+                src="/coin_image_new.png" 
+                alt="Heritage Numismatics Collection" 
+                className="w-full h-full object-contain rounded-2xl"
+              />
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ==================================================
+          5. EXPLORE NUMISMATICS (Horizontal Carousel with Mobile Swipe & Web Arrow Controls)
          ================================================== */}
       <section id="explore-products" className="w-full py-16 px-4 md:px-12 lg:px-24 bg-white border-t border-brand-border/40">
         <div className="max-w-6xl mx-auto space-y-8 text-center">
           
-          {/* Header Title & Subtitle */}
-          <div className="space-y-2">
-            <h2 className="font-display font-black text-3xl sm:text-4xl text-[#2B231D] tracking-tight uppercase">
-              Explore Numismatics
-            </h2>
-            <p className="text-xs sm:text-sm text-brand-warmGray max-w-xl mx-auto font-medium">
-              Discover our full archival catalogue of coins and banknotes with verified provenance registers.
-            </p>
-          </div>
+          {/* Header Row with Arrow Controls */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-brand-border/30 pb-4 text-left gap-4">
+            <div className="space-y-1">
+              <span className="text-xs sm:text-sm text-[#E0591D] font-extrabold tracking-[0.2em] uppercase block">
+                CURATED ARCHIVE
+              </span>
+              <h2 className="font-display font-black text-2xl sm:text-4xl text-[#2B231D] tracking-tight uppercase">
+                Explore Numismatics
+              </h2>
+              <p className="text-xs sm:text-sm text-brand-warmGray font-medium">
+                Swipe horizontally on mobile or use arrow controls on desktop.
+              </p>
+            </div>
 
-          {/* Category Pill Tabs */}
-          <div className="flex items-center justify-center gap-2 overflow-x-auto scrollbar-none py-1 px-4">
-            {exploreCategoryPills.map((pill) => (
+            {/* Desktop Navigation Arrows */}
+            <div className="flex items-center space-x-2">
               <button
-                key={pill.id}
-                onClick={() => setSelectedPillCategory(pill.id)}
-                className={`px-5 py-2 rounded-full text-xs font-extrabold transition-all whitespace-nowrap ${
-                  selectedPillCategory === pill.id
-                    ? 'bg-[#E0591D] text-white shadow-sm'
-                    : 'bg-[#FAF7F2] text-brand-warmGray border border-[#EAE2D5] hover:bg-[#F0EAE1]'
-                }`}
+                onClick={() => scrollExplore('left')}
+                className="w-10 h-10 rounded-full border border-brand-border bg-white text-brand-espresso hover:bg-brand-softBeige/40 flex items-center justify-center transition-colors shadow-xs"
+                aria-label="Scroll left"
               >
-                {pill.label}
+                <ChevronLeft className="w-5 h-5" />
               </button>
-            ))}
+              <button
+                onClick={() => scrollExplore('right')}
+                className="w-10 h-10 rounded-full border border-brand-border bg-white text-brand-espresso hover:bg-brand-softBeige/40 flex items-center justify-center transition-colors shadow-xs"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
-          {/* 4-Column Web / 2-Column Mobile Product Grid (Matching Fashion Card Layout) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-4">
-            {filteredExploreProducts.map((product) => {
+          {/* Horizontal Scroll Carousel (Exact Fashion Card Layout) */}
+          <div 
+            ref={exploreScrollRef}
+            className="flex overflow-x-auto pb-4 gap-4 sm:gap-6 scrollbar-none snap-x snap-mandatory w-full scroll-smooth pt-2 text-left"
+          >
+            {numProducts.map((product) => {
               const inWishlist = isInWishlist(product.id);
               const slug = product.name.toLowerCase().replace(/ /g, '-');
 
@@ -709,7 +724,7 @@ export const NumismaticsHome: React.FC = () => {
                 <div
                   key={product.id}
                   onClick={() => router.push(`/product/${slug}`)}
-                  className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 sm:p-3 hover:shadow-md transition-shadow relative"
+                  className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 sm:p-3 hover:shadow-md transition-shadow relative flex-shrink-0 w-[180px] sm:w-[220px] md:w-[240px] snap-start"
                 >
                   {/* Product Visual Container */}
                   <div className="w-full aspect-[4/5] bg-brand-softBeige/20 overflow-hidden relative rounded-lg p-3 flex items-center justify-center">
@@ -802,40 +817,17 @@ export const NumismaticsHome: React.FC = () => {
             })}
           </div>
 
-          {/* Full Catalog Filters CTA Button */}
+          {/* Bottom Redirect Link to Full Catalogue */}
           <div className="pt-6">
             <button
-              onClick={() => setIsFilterDrawerOpen(true)}
+              onClick={() => router.push('/catalog?department=numismatics')}
               className="py-3 px-8 bg-[#2B231D] text-white font-extrabold text-xs tracking-widest uppercase rounded-full hover:bg-black transition-colors shadow-md inline-flex items-center gap-2"
             >
-              <SlidersHorizontal className="w-4 h-4 text-[#E0591D]" />
-              <span>Full Catalog Filters</span>
+              <span>EXPLORE MORE NUMISMATIC PIECES</span>
+              <ArrowRight className="w-4 h-4 text-[#E0591D]" />
             </button>
           </div>
 
-        </div>
-      </section>
-
-      {/* ==================================================
-          5. PROMOTIONAL / INFORMATION BANNERS
-         ================================================== */}
-      <section className="w-full py-16 px-6 bg-[#1C1816] text-white border-y border-brand-border/40 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
-          <span className="text-[10px] font-extrabold tracking-[0.3em] text-brand-gold uppercase block">
-            AADHYA PROVENANCE & AUTHENTICITY
-          </span>
-          <h2 className="font-display font-bold text-3xl md:text-5xl tracking-wide uppercase leading-tight text-[#FCFAF7]">
-            AUTHENTIC COLLECTIBLES. <br />
-            <span className="italic font-light text-brand-gold">DELIVERED SAFELY.</span>
-          </h2>
-          <p className="text-xs md:text-sm text-[#756E69] leading-relaxed max-w-xl mx-auto font-medium">
-            Every historical coin and banknote in our atelier is verified by expert numismatists and shipped in tamper-evident protective slabs with official certificate registers.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-[10px] font-extrabold tracking-widest text-[#B89A67] uppercase">
-            <div className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4" /> <span>256-BIT SSL SECURE</span></div>
-            <div className="flex items-center gap-1.5"><Award className="w-4 h-4" /> <span>VERIFIED PROVENANCE</span></div>
-            <div className="flex items-center gap-1.5"><Truck className="w-4 h-4" /> <span>FREE INSURED SHIPPING</span></div>
-          </div>
         </div>
       </section>
 
@@ -905,61 +897,6 @@ export const NumismaticsHome: React.FC = () => {
 
         </div>
       </section>
-
-      {/* Conditional Full Catalog Filter Drawer */}
-      <AnimatePresence>
-        {isFilterDrawerOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end"
-          >
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 26, stiffness: 240 }}
-              className="w-full max-w-md h-full bg-white p-6 overflow-y-auto space-y-6 text-left"
-            >
-              <div className="flex items-center justify-between border-b border-brand-border/40 pb-4">
-                <h3 className="font-display font-bold text-lg text-[#2B231D] uppercase">Full Catalog Filters</h3>
-                <button onClick={() => setIsFilterDrawerOpen(false)} className="p-2 hover:bg-[#FAF7F2] rounded-full">
-                  <X className="w-5 h-5 text-[#2B231D]" />
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-[10px] font-extrabold text-brand-warmGray uppercase tracking-widest mb-2">MATERIAL</h4>
-                  {['all', 'silver', 'gold', 'paper', 'mixed metal'].map((mat) => (
-                    <button
-                      key={mat}
-                      onClick={() => { setSelectedMaterialFilter(mat); setIsFilterDrawerOpen(false); }}
-                      className={`block text-xs py-1.5 w-full text-left font-semibold ${selectedMaterialFilter === mat ? 'text-[#E0591D] font-bold' : 'text-brand-warmGray'}`}
-                    >
-                      {mat.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="pt-4 border-t border-brand-border/40">
-                  <h4 className="text-[10px] font-extrabold text-brand-warmGray uppercase tracking-widest mb-2">RARITY GRADE</h4>
-                  {['all', 'scarce', 'rare', 'very rare', 'extremely rare'].map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => { setSelectedRarityFilter(r); setIsFilterDrawerOpen(false); }}
-                      className={`block text-xs py-1.5 w-full text-left font-semibold ${selectedRarityFilter === r ? 'text-[#E0591D] font-bold' : 'text-brand-warmGray'}`}
-                    >
-                      {r.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
     </div>
   );
