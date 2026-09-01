@@ -19,7 +19,8 @@ import {
   Star,
   SlidersHorizontal,
   X,
-  Play
+  Play,
+  Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -33,10 +34,11 @@ export const NumismaticsHome: React.FC = () => {
   const numProducts = PRODUCTS.filter((p) => p.department === 'numismatics');
 
   // --------------------------------------------------
-  // 1. HERO BEST SELLER SHOWCASE STATE (Matching Reference Image)
+  // 1. HERO BEST SELLER SHOWCASE STATE (Matching Reference Images)
   // --------------------------------------------------
   const [heroActiveIndex, setHeroActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [addedHero, setAddedHero] = useState(false);
 
   // 4 Featured Hero Coins (Card Colors matching Reference Image)
   const heroFeaturedCoins = [
@@ -68,6 +70,7 @@ export const NumismaticsHome: React.FC = () => {
 
   const currentHeroItem = heroFeaturedCoins[heroActiveIndex] || heroFeaturedCoins[0];
   const activeHeroProduct = currentHeroItem.product;
+  const isHeroInWish = isInWishlist(activeHeroProduct.id);
 
   // Auto rotation every 5.5s
   useEffect(() => {
@@ -88,6 +91,12 @@ export const NumismaticsHome: React.FC = () => {
     setIsPaused(true);
     setHeroActiveIndex((prev) => (prev + 1) % heroFeaturedCoins.length);
     setTimeout(() => setIsPaused(false), 4500);
+  };
+
+  const handleHeroAddToCart = () => {
+    addToCart(activeHeroProduct, 1);
+    setAddedHero(true);
+    setTimeout(() => setAddedHero(false), 1500);
   };
 
   // --------------------------------------------------
@@ -142,33 +151,44 @@ export const NumismaticsHome: React.FC = () => {
     return () => clearInterval(timer);
   }, [numismaticReviews.length]);
 
+  const renderStars = (rating = 5) => (
+    <div className="flex items-center space-x-0.5 text-amber-500">
+      {[...Array(5)].map((_, i) => (
+        <Star
+          key={i}
+          className={`w-3 h-3 ${i < rating ? 'fill-current' : 'text-brand-border stroke-[1.5]'}`}
+        />
+      ))}
+    </div>
+  );
+
   return (
-    <div className="w-full max-w-full min-h-screen bg-[#FDF9F3] text-brand-espresso select-none overflow-x-hidden">
+    <div className="w-full max-w-full min-h-screen bg-[#FFFBF8] text-brand-espresso select-none overflow-x-hidden">
       
       {/* Top Header Navigation */}
       <div className="max-w-7xl mx-auto px-4 md:px-12 pt-4">
-        <NavigationControls className="justify-start border-b border-[#EFE8DC] pb-3" />
+        <NavigationControls className="justify-start border-b border-[#F0EAE1] pb-3" />
       </div>
 
       {/* ==================================================
           1. HERO SECTION — EXACT REFERENCE COMPOSITION (Matching Reference Image)
          ================================================== */}
       <section 
-        className="w-full pt-10 pb-16 px-4 md:px-12 lg:px-20 bg-[#FDF9F3] relative overflow-hidden"
+        className="w-full pt-10 pb-16 px-4 md:px-12 lg:px-20 bg-gradient-to-b from-[#FFF5EC] via-[#FFF8F3] to-[#FFFBF8] relative overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Soft Ambient Background Elements */}
-        <div className="absolute top-10 right-10 w-[500px] h-[500px] rounded-full bg-[#FCEFE0]/60 blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 left-4 w-72 h-72 rounded-full bg-[#FFF5EA]/80 blur-2xl pointer-events-none" />
+        {/* Soft Ambient Warm Glow Elements */}
+        <div className="absolute top-10 right-10 w-[550px] h-[550px] rounded-full bg-[#FCE5D3]/60 blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-4 w-80 h-80 rounded-full bg-[#FFF0E0]/80 blur-2xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto space-y-12 relative z-10">
           
-          {/* TOP SPLIT: Left Headline & CTA + Right Large Hero Coin */}
+          {/* TOP SPLIT: Left Headline, Price, Reviews & Actions + Right Large Hero Coin */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             {/* Left Content Area (6 cols) */}
-            <div className="lg:col-span-6 space-y-6 text-left flex flex-col justify-center pr-0 lg:pr-6">
+            <div className="lg:col-span-6 space-y-5 text-left flex flex-col justify-center pr-0 lg:pr-6">
               
               <AnimatePresence mode="wait">
                 <motion.div
@@ -179,36 +199,85 @@ export const NumismaticsHome: React.FC = () => {
                   transition={{ duration: 0.4 }}
                   className="space-y-4"
                 >
-                  {/* Catchy 2-Tone Headline (Matching Reference Image Style) */}
+                  {/* Catchy 2-Tone Headline */}
                   <h1 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#2B231D] tracking-tight leading-[1.12]">
                     Rare Coinage <span className="text-[#2B231D]">is</span> <br />
                     <span className="text-[#E0591D]">an Important Part</span> <br />
                     <span className="text-[#2B231D]">of Heritage</span>
                   </h1>
 
+                  {/* Active Coin Title & Spec Tag */}
+                  <div className="flex items-center space-x-2 pt-1">
+                    <span className="text-[10px] font-extrabold tracking-[0.2em] bg-[#E0591D]/10 text-[#E0591D] px-2.5 py-0.5 rounded-full uppercase">
+                      {activeHeroProduct.era || 'BRITISH INDIA'}
+                    </span>
+                    <span className="font-display font-bold text-sm text-[#2B231D] line-clamp-1">
+                      {activeHeroProduct.name}
+                    </span>
+                  </div>
+
+                  {/* Price & Rating Row (Enhanced with real prices & reviews) */}
+                  <div className="flex flex-wrap items-center gap-4 pt-1">
+                    <div className="flex items-baseline space-x-2.5">
+                      <span className="font-sans font-black text-2xl sm:text-3xl text-[#E0591D]">
+                        ₹{activeHeroProduct.price.toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-sm text-brand-warmGray line-through font-semibold">
+                        ₹{activeHeroProduct.mrp.toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-[9px] font-extrabold bg-[#E0591D]/10 text-[#E0591D] px-2 py-0.5 rounded">
+                        {activeHeroProduct.discount}% OFF
+                      </span>
+                    </div>
+
+                    <div className="flex items-center space-x-1.5 bg-white/80 border border-[#EFE8DC] px-2.5 py-1 rounded-full text-xs shadow-xs">
+                      {renderStars(5)}
+                      <span className="text-[10px] font-bold text-[#2B231D]">5.0 (48 Reviews)</span>
+                    </div>
+                  </div>
+
                   {/* Subtitle */}
-                  <p className="text-xs sm:text-sm text-[#7D736A] font-medium leading-relaxed max-w-md pt-1">
-                    We curate authentic historical coins and collectible banknotes with verified provenance for discerning collectors.
+                  <p className="text-xs sm:text-sm text-[#7D736A] font-medium leading-relaxed max-w-md pt-0.5">
+                    {activeHeroProduct.description}
                   </p>
 
-                  {/* Dual Action Buttons: Explore Now + Play Video/Story */}
-                  <div className="flex flex-wrap items-center gap-5 pt-3">
+                  {/* Action Buttons: Add to Cart + Wishlist + Collector Story */}
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
                     <button
-                      onClick={() => {
-                        const el = document.getElementById('explore-products');
-                        if (el) el.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="px-8 py-3.5 bg-[#E0591D] hover:bg-[#C84B15] text-white font-extrabold text-xs tracking-wider rounded-full transition-all shadow-md shadow-[#E0591D]/25"
+                      onClick={handleHeroAddToCart}
+                      className="px-7 py-3 bg-[#E0591D] hover:bg-[#C84B15] text-white font-extrabold text-xs tracking-wider rounded-full transition-all shadow-md shadow-[#E0591D]/25 flex items-center gap-2"
                     >
-                      Explore Now
+                      {addedHero ? (
+                        <>
+                          <Check className="w-4 h-4" />
+                          <span>ADDED TO BAG</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag className="w-4 h-4" />
+                          <span>ADD TO CART</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => toggleWishlist(activeHeroProduct)}
+                      className={`p-3 rounded-full border transition-all shadow-sm ${
+                        isHeroInWish
+                          ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
+                          : 'bg-white border-[#EAE2D5] text-[#2B231D] hover:bg-[#FFF5EC]'
+                      }`}
+                      aria-label="Add to Wishlist"
+                    >
+                      <Heart className={`w-4 h-4 ${isHeroInWish ? 'fill-brand-dustyRose' : ''}`} />
                     </button>
 
                     <button
                       onClick={() => router.push(`/product/${activeHeroProduct.name.toLowerCase().replace(/ /g, '-')}`)}
-                      className="flex items-center gap-3 text-xs font-extrabold text-[#2B231D] hover:text-[#E0591D] transition-colors group"
+                      className="flex items-center gap-2.5 text-xs font-extrabold text-[#2B231D] hover:text-[#E0591D] transition-colors group px-3 py-2"
                     >
-                      <div className="w-10 h-10 rounded-full bg-[#2B231D] text-white flex items-center justify-center group-hover:bg-[#E0591D] transition-colors shadow-sm">
-                        <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                      <div className="w-8 h-8 rounded-full bg-[#2B231D] text-white flex items-center justify-center group-hover:bg-[#E0591D] transition-colors shadow-sm">
+                        <Play className="w-3 h-3 fill-current ml-0.5" />
                       </div>
                       <span>Collector Story</span>
                     </button>
@@ -219,7 +288,7 @@ export const NumismaticsHome: React.FC = () => {
 
             </div>
 
-            {/* Right Large Hero Coin Visual (6 cols) (Matching Reference Image Style) */}
+            {/* Right Large Hero Coin Visual (6 cols) */}
             <div className="lg:col-span-6 relative flex items-center justify-center lg:justify-end">
               
               <AnimatePresence mode="wait">
@@ -231,7 +300,7 @@ export const NumismaticsHome: React.FC = () => {
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="relative flex items-center justify-center"
                 >
-                  {/* Scalloped Badge on Top-Right (Matching the '20% Off' Green Scalloped Badge in Reference Image) */}
+                  {/* Scalloped Badge on Top-Right */}
                   <div className="absolute -top-3 -right-2 sm:-right-4 z-30 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#85A947] text-white flex flex-col items-center justify-center shadow-lg font-display font-extrabold rotate-12">
                     <span className="text-[11px] sm:text-xs font-black tracking-wider leading-none">
                       {currentHeroItem.discountBadge}
@@ -239,23 +308,24 @@ export const NumismaticsHome: React.FC = () => {
                     <span className="text-[8px] tracking-tight opacity-90">100% Genuine</span>
                   </div>
 
-                  {/* Main Circular Coin Presentation Stage */}
+                  {/* Main Circular Coin Presentation Stage (Full-Fit Coin without excess padding) */}
                   <div 
                     onClick={() => router.push(`/product/${activeHeroProduct.name.toLowerCase().replace(/ /g, '-')}`)}
-                    className="w-[280px] sm:w-[380px] h-[280px] sm:h-[380px] rounded-full bg-[#FFFDFB] border-8 border-white p-6 sm:p-8 shadow-2xl flex items-center justify-center cursor-pointer group relative overflow-hidden"
+                    className="w-[280px] sm:w-[380px] h-[280px] sm:h-[380px] rounded-full bg-[#FFFDFB] border-8 border-white p-3 sm:p-4 shadow-2xl flex items-center justify-center cursor-pointer group relative overflow-hidden"
                   >
                     {activeHeroProduct.visualType === 'note' ? (
                       <img 
                         src={activeHeroProduct.image} 
                         alt={activeHeroProduct.name} 
-                        className="w-full h-auto object-contain rounded-lg shadow-md group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-contain rounded-lg shadow-md group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-56 h-56 sm:w-72 sm:h-72 flex items-center justify-center">
+                      <div className="w-full h-full flex items-center justify-center">
                         <ProductVisual 
                           type="coin"
                           color={activeHeroProduct.visualColor || '#B89A67'}
                           pattern={activeHeroProduct.visualPattern || 'antique-metallic'}
+                          className="w-full h-full scale-105"
                           isRotating={false}
                         />
                       </div>
@@ -280,7 +350,7 @@ export const NumismaticsHome: React.FC = () => {
 
           </div>
 
-          {/* LOWER HERO CAROUSEL: Floating White Container with 4 Vibrant Cards (Matching Reference Image) */}
+          {/* LOWER HERO CAROUSEL: Floating White Container with 4 Vibrant Cards (Full-Fit Coin) */}
           <div className="relative max-w-5xl mx-auto bg-white rounded-[32px] sm:rounded-[44px] p-6 sm:p-8 shadow-xl shadow-black/5 border border-[#F0EAE1]">
             
             {/* Outer Left Circular Navigation Button */}
@@ -302,7 +372,7 @@ export const NumismaticsHome: React.FC = () => {
             </button>
 
             {/* 4 Vibrant Rounded Cards Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-6">
               {heroFeaturedCoins.map((item, idx) => {
                 const isSelected = heroActiveIndex === idx;
                 const prod = item.product;
@@ -322,13 +392,21 @@ export const NumismaticsHome: React.FC = () => {
                         : 'shadow-md hover:scale-[1.02] opacity-90 hover:opacity-100'
                     }`}
                   >
-                    {/* Floating Circular Coin on Top (Matching Reference Image) */}
-                    <div className="w-full flex justify-center -mt-10 mb-2">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white p-2 shadow-lg flex items-center justify-center overflow-hidden border-2 border-white/60">
+                    {/* Floating Circular Coin on Top (Full-Fit Coin without excess white gap) */}
+                    <div className="w-full flex justify-center -mt-12 mb-2">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white p-1 shadow-lg flex items-center justify-center overflow-hidden border-2 border-white">
                         {prod.visualType === 'note' ? (
-                          <img src={prod.image} alt={prod.name} className="w-full h-auto object-contain rounded" />
+                          <img src={prod.image} alt={prod.name} className="w-full h-full object-cover rounded-full" />
                         ) : (
-                          <ProductVisual type="coin" color={prod.visualColor || '#B89A67'} pattern={prod.visualPattern || 'antique-metallic'} isRotating={false} />
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ProductVisual 
+                              type="coin" 
+                              color={prod.visualColor || '#B89A67'} 
+                              pattern={prod.visualPattern || 'antique-metallic'} 
+                              className="w-full h-full scale-110"
+                              isRotating={false} 
+                            />
+                          </div>
                         )}
                       </div>
                     </div>
@@ -386,69 +464,137 @@ export const NumismaticsHome: React.FC = () => {
       </section>
 
       {/* ==================================================
-          2. NEW ARRIVALS SECTION ("Fresh Vault Additions")
+          2. NEW ARRIVALS SECTION (Exact Fashion Card Layout & Grid)
          ================================================== */}
-      <section className="w-full py-16 px-4 md:px-12 lg:px-20 bg-white border-y border-[#EFE8DC]">
-        <div className="max-w-7xl mx-auto space-y-8">
+      <section className="w-full py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40 overflow-hidden">
+        <div className="max-w-6xl mx-auto space-y-8 md:space-y-12">
           
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-[#EFE8DC] pb-4 gap-2 text-left">
-            <div>
-              <span className="text-[10px] text-[#E0591D] font-extrabold tracking-[0.25em] uppercase block">
-                FRESH VAULT ADDITIONS
-              </span>
-              <h2 className="font-display font-bold text-2xl sm:text-3xl text-[#2B231D] tracking-tight uppercase">
+          {/* Header Grid */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-brand-border/40 text-left">
+            <div className="space-y-1">
+              <span className="text-xs sm:text-sm text-[#E0591D] font-extrabold tracking-[0.2em] uppercase block">
                 NEW ARRIVALS
+              </span>
+              <h2 className="font-display font-bold text-3xl md:text-5xl text-brand-espresso tracking-tight">
+                Fresh Vault Additions
               </h2>
+              <p className="text-[10px] sm:text-xs text-brand-warmGray font-medium">
+                Recently acquired rare coins and historical banknotes.
+              </p>
             </div>
-            <button
-              onClick={() => {
-                const el = document.getElementById('explore-products');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="text-[10px] font-extrabold tracking-widest text-[#2B231D] hover:text-[#E0591D] transition-colors flex items-center gap-1 uppercase"
-            >
-              <span>EXPLORE ALL</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            
+            <div className="flex justify-start md:justify-end flex-shrink-0">
+              <button 
+                onClick={() => {
+                  const el = document.getElementById('explore-products');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-4 py-2 border border-brand-border rounded-full text-[10px] font-bold tracking-widest text-brand-espresso hover:bg-brand-softBeige/40 transition-colors flex items-center space-x-1 uppercase"
+              >
+                <span>VIEW ALL</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
           </div>
 
-          {/* 4-Column Grid on Web, Horizontal Scroll on Mobile */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {numProducts.slice(2, 6).map((product) => {
-              const inWish = isInWishlist(product.id);
+          {/* 4-Column Grid on Web, Horizontal Scroll on Mobile (Exact Fashion Card UI) */}
+          <div className="flex overflow-x-auto pb-3 gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
+            {numProducts.slice(2, 6).map((product, index) => {
+              const inWishlist = isInWishlist(product.id);
               const slug = product.name.toLowerCase().replace(/ /g, '-');
 
               return (
                 <div
                   key={product.id}
                   onClick={() => router.push(`/product/${slug}`)}
-                  className="bg-[#FDF9F3] border border-[#EFE8DC] rounded-[24px] p-4 text-left flex flex-col justify-between cursor-pointer group hover:shadow-md transition-all relative overflow-hidden"
+                  className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 sm:p-3 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start"
                 >
-                  <div className="w-full flex justify-center pt-2 pb-4">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white border border-[#EAE2D5] p-3 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform overflow-hidden">
-                      {product.visualType === 'note' ? (
-                        <img src={product.image} alt={product.name} className="w-full h-auto object-contain rounded" />
-                      ) : (
-                        <ProductVisual type="coin" color={product.visualColor || '#B89A67'} pattern={product.visualPattern || 'antique-metallic'} isRotating={false} />
-                      )}
+                  {/* Product Visual Container (Aspect 4/5 Matching Fashion Card) */}
+                  <div className="w-full aspect-[4/5] bg-brand-softBeige/20 overflow-hidden relative rounded-lg p-3 flex items-center justify-center">
+                    {product.visualType === 'note' ? (
+                      <img 
+                        src={product.image} 
+                        alt={product.name} 
+                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" 
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ProductVisual 
+                          type="coin" 
+                          color={product.visualColor || '#B89A67'} 
+                          pattern={product.visualPattern || 'antique-metallic'} 
+                          className="w-full h-full scale-110"
+                          isRotating={false} 
+                        />
+                      </div>
+                    )}
+
+                    {/* Top left badge */}
+                    <div className="absolute top-2 left-2 pointer-events-none">
+                      <span className="text-[7px] bg-brand-white/95 border border-brand-border/60 text-brand-espresso font-extrabold tracking-widest px-1.5 py-0.5 rounded shadow-sm uppercase">
+                        {product.rarity || 'BEST'}
+                      </span>
                     </div>
+
+                    {/* Wishlist button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(product);
+                      }}
+                      className={`absolute top-2 right-2 p-1.5 rounded-full border transition-all shadow-sm pointer-events-auto ${
+                        inWishlist
+                          ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
+                          : 'bg-brand-white/95 border-brand-border/60 text-brand-warmGray hover:bg-brand-white'
+                      }`}
+                    >
+                      <Heart className={`w-2.5 h-2.5 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
+                    </button>
                   </div>
 
-                  <div className="space-y-2">
-                    <span className="text-[8px] font-bold text-brand-warmGray tracking-widest uppercase block">{product.era || 'HISTORIC'}</span>
-                    <h3 className="font-display font-bold text-xs sm:text-sm text-[#2B231D] group-hover:text-[#E0591D] transition-colors line-clamp-1">
+                  {/* Details (Matching Fashion Card Anatomy) */}
+                  <div className="pt-2.5 space-y-1.5">
+                    <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso tracking-wide leading-snug group-hover:text-[#E0591D] transition-colors line-clamp-1">
                       {product.name}
                     </h3>
-                    <div className="flex items-center justify-between border-t border-[#EFE8DC] pt-2">
-                      <span className="font-sans font-extrabold text-xs sm:text-sm text-[#2B231D]">₹{product.price.toLocaleString('en-IN')}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
-                        className="py-1 px-2.5 bg-[#E0591D] text-white rounded-full text-[9px] font-bold uppercase hover:bg-[#C84B15]"
-                      >
-                        + Add
-                      </button>
+
+                    {/* Ratings */}
+                    <div className="flex items-center space-x-1">
+                      {renderStars(product.rating || 5)}
+                      <span className="text-[9px] sm:text-[10px] text-brand-warmGray font-bold">
+                        ({product.reviewsCount || 128})
+                      </span>
                     </div>
+
+                    {/* Price Row with Discount Badge */}
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-baseline space-x-1.5">
+                        <span className="font-sans font-extrabold text-xs sm:text-sm text-brand-espresso">
+                          ₹{product.price.toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-[10px] text-brand-warmGray line-through font-medium">
+                          ₹{product.mrp.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <span className="text-[9px] bg-brand-sale/10 text-brand-sale font-bold px-1.5 py-0.5 rounded">
+                        {product.discount}%
+                      </span>
+                    </div>
+
+                    {/* Add to Bag CTA */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product, 1);
+                      }}
+                      className="w-full mt-2 py-1.5 bg-[#E0591D] hover:bg-[#C84B15] text-white text-[10px] font-extrabold tracking-wider uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                    >
+                      <ShoppingBag className="w-3 h-3" />
+                      <span>ADD TO BAG</span>
+                    </button>
                   </div>
+
                 </div>
               );
             })}
@@ -458,35 +604,37 @@ export const NumismaticsHome: React.FC = () => {
       </section>
 
       {/* ==================================================
-          3. SHOP BY CATEGORY (Curated 12 Categories with Images)
+          3. SHOP BY CATEGORY (Matching Uploaded Category Design)
          ================================================== */}
-      <section className="w-full py-16 px-4 md:px-12 lg:px-20 bg-[#FDF9F3]">
-        <div className="max-w-7xl mx-auto space-y-8 text-center">
+      <section className="w-full py-12 md:py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40 overflow-hidden">
+        <div className="max-w-6xl mx-auto bg-white rounded-3xl p-6 sm:p-10 border border-brand-border/40 shadow-xs space-y-8">
           
-          <div className="space-y-1">
-            <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-[#2B231D] tracking-tight uppercase">
-              SHOP BY CATEGORY
+          {/* Header Row */}
+          <div className="flex items-center justify-between border-b border-brand-border/30 pb-4 text-left">
+            <h2 className="font-display font-bold text-2xl sm:text-3xl text-brand-espresso tracking-tight">
+              Shop by Category
             </h2>
-            <p className="text-xs text-brand-warmGray font-medium">
-              Discover curated historical eras and numismatic artifacts from our archives
-            </p>
+            <button
+              onClick={() => {
+                const el = document.getElementById('explore-products');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-xs font-bold text-brand-warmGray hover:text-[#E0591D] transition-colors flex items-center gap-1"
+            >
+              <span>Browse all</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-          {/* 12 Categories Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4">
+          {/* 6 Clean Circular Categories Row */}
+          <div className="flex overflow-x-auto pb-2 gap-6 md:grid md:grid-cols-6 md:gap-4 scrollbar-none snap-x snap-mandatory w-full justify-between">
             {[
-              { id: 'ancient-coins', name: 'ANCIENT COINS', desc: 'Punched mark & dynastic coins', img: '/coin_image.jpg' },
-              { id: 'mughal-coins', name: 'MUGHAL COINS', desc: 'Silver & gold Mughal coins', img: '/coin_image_new.png' },
-              { id: 'british-india', name: 'BRITISH INDIA', desc: 'Victoria & George VI coin issues', img: '/coin_image.jpg' },
-              { id: 'princely-states', name: 'PRINCELY STATES', desc: 'Royal Indian princely state coins', img: '/coin_image_new.png' },
-              { id: 'republic-india', name: 'REPUBLIC INDIA', desc: 'Post-1950 Indian coinage & proof sets', img: '/coin_image.jpg' },
-              { id: 'foreign-coins', name: 'FOREIGN COINS', desc: 'International archival numismatics', img: '/coin_image_new.png' },
-              { id: 'medals', name: 'MEDALS', desc: 'Historic military & honorary medals', img: '/coin_image.jpg' },
-              { id: 'paper-money', name: 'PAPER MONEY', desc: 'Preserved banknotes & currency', img: '/images/inr-100-note.png' },
-              { id: 'tokens-badges', name: 'TOKENS & BADGES', desc: 'Trade tokens and heritage badges', img: '/coin_image_new.png' },
-              { id: 'east-india-company', name: 'EAST INDIA COMPANY', desc: 'Coins struck by early EIC mints', img: '/coin_image.jpg' },
-              { id: 'sultanates', name: 'SULTANATES', desc: 'Medieval Delhi & regional sultanates', img: '/coin_image_new.png' },
-              { id: 'independent-kingdoms', name: 'INDEPENDENT KINGDOMS', desc: 'Maratha, Sikh & regional kingdoms', img: '/coin_image.jpg' },
+              { id: 'coins', name: 'Coins', count: '120+ Items', img: '/coin_image_new.png' },
+              { id: 'notes', name: 'Paper Money', count: '95+ Items', img: '/images/inr-100-note.png' },
+              { id: 'ancient-coins', name: 'Ancient Coins', count: '150+ Items', img: '/coin_image.jpg' },
+              { id: 'british-india', name: 'British India', count: '80+ Items', img: '/coin_image_new.png' },
+              { id: 'republic-india', name: 'Republic India', count: '70+ Items', img: '/coin_image.jpg' },
+              { id: 'commemorative', name: 'Commemorative', count: '65+ Items', img: '/coin_image_new.png' },
             ].map((cat) => (
               <div
                 key={cat.id}
@@ -495,17 +643,20 @@ export const NumismaticsHome: React.FC = () => {
                   const el = document.getElementById('explore-products');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="bg-white border border-[#EFE8DC] rounded-3xl p-5 text-center space-y-3 cursor-pointer group hover:shadow-md transition-all flex flex-col items-center justify-between"
+                className="flex flex-col items-center text-center group cursor-pointer space-y-2.5 flex-shrink-0 w-[110px] sm:w-[130px] md:w-auto snap-start"
               >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#FDF9F3] border border-[#EAE2D5] p-3 flex items-center justify-center overflow-hidden shadow-xs group-hover:scale-105 transition-transform">
-                  <img src={cat.img} alt={cat.name} className="w-full h-full object-contain" />
+                {/* Big Circular Image Badge (Full-Fit Coin) */}
+                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-[#FAF7F2] border border-[#EAE2D5] p-1.5 flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
+                  <img src={cat.img} alt={cat.name} className="w-full h-full object-contain rounded-full" />
                 </div>
+
+                {/* Name and Count */}
                 <div>
-                  <span className="font-sans font-extrabold text-xs text-[#2B231D] group-hover:text-[#E0591D] transition-colors block">
+                  <span className="font-sans font-bold text-xs sm:text-sm text-brand-espresso group-hover:text-[#E0591D] transition-colors block">
                     {cat.name}
                   </span>
-                  <span className="text-[9px] text-brand-warmGray font-medium block pt-0.5">
-                    {cat.desc}
+                  <span className="text-[10px] text-brand-warmGray font-medium block pt-0.5">
+                    {cat.count}
                   </span>
                 </div>
               </div>
@@ -516,10 +667,10 @@ export const NumismaticsHome: React.FC = () => {
       </section>
 
       {/* ==================================================
-          4. EXPLORE PRODUCTS (4-Column Web / 2-Column Mobile Grid)
+          4. EXPLORE PRODUCTS (Exact Fashion Card Layout & Grid)
          ================================================== */}
-      <section id="explore-products" className="w-full py-16 px-4 md:px-12 lg:px-20 bg-white border-t border-[#EFE8DC]">
-        <div className="max-w-7xl mx-auto space-y-8 text-center">
+      <section id="explore-products" className="w-full py-16 px-4 md:px-12 lg:px-24 bg-white border-t border-brand-border/40">
+        <div className="max-w-6xl mx-auto space-y-8 text-center">
           
           {/* Header Title & Subtitle */}
           <div className="space-y-2">
@@ -527,7 +678,7 @@ export const NumismaticsHome: React.FC = () => {
               Explore Numismatics
             </h2>
             <p className="text-xs sm:text-sm text-brand-warmGray max-w-xl mx-auto font-medium">
-              Discover our best-selling coins and notes, preserved for collectors with verified provenance registers.
+              Discover our full archival catalogue of coins and banknotes with verified provenance registers.
             </p>
           </div>
 
@@ -540,7 +691,7 @@ export const NumismaticsHome: React.FC = () => {
                 className={`px-5 py-2 rounded-full text-xs font-extrabold transition-all whitespace-nowrap ${
                   selectedPillCategory === pill.id
                     ? 'bg-[#E0591D] text-white shadow-sm'
-                    : 'bg-[#FDF9F3] text-brand-warmGray border border-[#EAE2D5] hover:bg-[#F8EFE4]'
+                    : 'bg-[#FAF7F2] text-brand-warmGray border border-[#EAE2D5] hover:bg-[#F0EAE1]'
                 }`}
               >
                 {pill.label}
@@ -548,69 +699,104 @@ export const NumismaticsHome: React.FC = () => {
             ))}
           </div>
 
-          {/* 4-Column Web / 2-Column Mobile Product Grid */}
+          {/* 4-Column Web / 2-Column Mobile Product Grid (Matching Fashion Card Layout) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-4">
             {filteredExploreProducts.map((product) => {
-              const inWish = isInWishlist(product.id);
+              const inWishlist = isInWishlist(product.id);
               const slug = product.name.toLowerCase().replace(/ /g, '-');
 
               return (
                 <div
                   key={product.id}
                   onClick={() => router.push(`/product/${slug}`)}
-                  className="bg-[#FDF9F3] border border-[#EFE8DC] rounded-[24px] p-4 text-left flex flex-col justify-between cursor-pointer group hover:shadow-lg transition-all relative overflow-hidden"
+                  className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 sm:p-3 hover:shadow-md transition-shadow relative"
                 >
-                  {/* Floating Circular Image Top Badge */}
-                  <div className="w-full flex justify-center pt-2 pb-4">
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-white border border-[#EAE2D5] p-3 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform overflow-hidden">
-                      {product.visualType === 'note' ? (
-                        <img src={product.image} alt={product.name} className="w-full h-auto object-contain rounded" />
-                      ) : (
-                        <ProductVisual type="coin" color={product.visualColor || '#B89A67'} pattern={product.visualPattern || 'antique-metallic'} isRotating={false} />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Wishlist Heart */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
-                    className={`absolute top-3 right-3 p-1.5 rounded-full border transition-all z-10 ${
-                      inWish ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose' : 'bg-white/80 border-[#EAE2D5] text-brand-warmGray'
-                    }`}
-                  >
-                    <Heart className={`w-3.5 h-3.5 ${inWish ? 'fill-brand-dustyRose' : ''}`} />
-                  </button>
-
-                  {/* Product Details */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-display font-extrabold text-xs sm:text-sm text-[#2B231D] group-hover:text-[#E0591D] transition-colors line-clamp-1">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500">
-                        <Star className="w-3 h-3 fill-current" />
-                        <span>4.8</span>
+                  {/* Product Visual Container */}
+                  <div className="w-full aspect-[4/5] bg-brand-softBeige/20 overflow-hidden relative rounded-lg p-3 flex items-center justify-center">
+                    {product.visualType === 'note' ? (
+                      <img 
+                        src={product.image} 
+                        alt={product.name} 
+                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" 
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ProductVisual 
+                          type="coin" 
+                          color={product.visualColor || '#B89A67'} 
+                          pattern={product.visualPattern || 'antique-metallic'} 
+                          className="w-full h-full scale-110"
+                          isRotating={false} 
+                        />
                       </div>
-                    </div>
+                    )}
 
-                    <p className="text-[10px] text-brand-warmGray line-clamp-2 leading-relaxed">
-                      {product.description}
-                    </p>
-
-                    {/* Price & Add to Cart Action Row */}
-                    <div className="flex items-center justify-between border-t border-[#EFE8DC] pt-3">
-                      <span className="font-sans font-extrabold text-sm sm:text-base text-[#2B231D]">
-                        ₹{product.price.toLocaleString('en-IN')}
+                    {/* Top left badge */}
+                    <div className="absolute top-2 left-2 pointer-events-none">
+                      <span className="text-[7px] bg-brand-white/95 border border-brand-border/60 text-brand-espresso font-extrabold tracking-widest px-1.5 py-0.5 rounded shadow-sm uppercase">
+                        {product.rarity || 'RARE'}
                       </span>
-                      
-                      <button
-                        onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
-                        className="py-1.5 px-3 bg-[#E0591D] text-white font-extrabold text-[10px] uppercase tracking-wider rounded-full hover:bg-[#C84B15] transition-colors shadow-xs flex items-center gap-1"
-                      >
-                        <span>+ Add</span>
-                      </button>
                     </div>
+
+                    {/* Wishlist button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(product);
+                      }}
+                      className={`absolute top-2 right-2 p-1.5 rounded-full border transition-all shadow-sm pointer-events-auto ${
+                        inWishlist
+                          ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
+                          : 'bg-brand-white/95 border-brand-border/60 text-brand-warmGray hover:bg-brand-white'
+                      }`}
+                    >
+                      <Heart className={`w-2.5 h-2.5 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
+                    </button>
                   </div>
+
+                  {/* Details */}
+                  <div className="pt-2.5 space-y-1.5">
+                    <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso tracking-wide leading-snug group-hover:text-[#E0591D] transition-colors line-clamp-1">
+                      {product.name}
+                    </h3>
+
+                    {/* Ratings */}
+                    <div className="flex items-center space-x-1">
+                      {renderStars(product.rating || 5)}
+                      <span className="text-[9px] sm:text-[10px] text-brand-warmGray font-bold">
+                        ({product.reviewsCount || 128})
+                      </span>
+                    </div>
+
+                    {/* Price Row with Discount Badge */}
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-baseline space-x-1.5">
+                        <span className="font-sans font-extrabold text-xs sm:text-sm text-brand-espresso">
+                          ₹{product.price.toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-[10px] text-brand-warmGray line-through font-medium">
+                          ₹{product.mrp.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <span className="text-[9px] bg-brand-sale/10 text-brand-sale font-bold px-1.5 py-0.5 rounded">
+                        {product.discount}%
+                      </span>
+                    </div>
+
+                    {/* Add to Bag CTA */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product, 1);
+                      }}
+                      className="w-full mt-2 py-1.5 bg-[#E0591D] hover:bg-[#C84B15] text-white text-[10px] font-extrabold tracking-wider uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                    >
+                      <ShoppingBag className="w-3 h-3" />
+                      <span>ADD TO BAG</span>
+                    </button>
+                  </div>
+
                 </div>
               );
             })}
@@ -656,7 +842,7 @@ export const NumismaticsHome: React.FC = () => {
       {/* ==================================================
           6. GLASSMORPHIC COLLECTOR REVIEWS
          ================================================== */}
-      <section className="w-full py-16 px-4 md:px-12 lg:px-20 bg-[#FDF9F3]">
+      <section className="w-full py-16 px-4 md:px-12 lg:px-20 bg-[#FFF8F3]">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           
           <div className="space-y-1">
@@ -669,7 +855,7 @@ export const NumismaticsHome: React.FC = () => {
           </div>
 
           {/* Review Glassmorphic Stage */}
-          <div className="relative bg-white/70 backdrop-blur-md border border-white/80 p-8 sm:p-12 rounded-3xl min-h-[200px] flex flex-col justify-between shadow-xl shadow-black/5">
+          <div className="relative bg-white/75 backdrop-blur-md border border-white/80 p-8 sm:p-12 rounded-3xl min-h-[200px] flex flex-col justify-between shadow-xl shadow-black/5">
             
             <AnimatePresence mode="wait">
               <motion.div
@@ -738,7 +924,7 @@ export const NumismaticsHome: React.FC = () => {
             >
               <div className="flex items-center justify-between border-b border-brand-border/40 pb-4">
                 <h3 className="font-display font-bold text-lg text-[#2B231D] uppercase">Full Catalog Filters</h3>
-                <button onClick={() => setIsFilterDrawerOpen(false)} className="p-2 hover:bg-[#FDF9F3] rounded-full">
+                <button onClick={() => setIsFilterDrawerOpen(false)} className="p-2 hover:bg-[#FAF7F2] rounded-full">
                   <X className="w-5 h-5 text-[#2B231D]" />
                 </button>
               </div>
