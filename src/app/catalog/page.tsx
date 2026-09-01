@@ -7,7 +7,7 @@ import { useApp } from '@/context/AppContext';
 import { Heart, Star, SlidersHorizontal, X, Search, Check, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavigationControls } from '@/components/ui/NavigationControls';
-import { ZoomableImage } from '@/components/ui/ZoomableImage';
+import { ProductVisual } from '@/components/ui/ProductVisual';
 
 // Defined filter option lists matching the exact product dataset attributes
 const FILTER_CRITERIA = {
@@ -326,35 +326,33 @@ function CatalogContent() {
                   onClick={() => router.push(`/product/${slug}`)}
                   className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-2xl p-2.5 hover:shadow-md transition-shadow relative"
                 >
-                  {/* Image Aspect ratio container with Press & Hold Zoom */}
-                  <div className="w-full relative">
-                    <ZoomableImage
+                  {/* Image Aspect ratio container */}
+                  <div className="w-full aspect-[4/5] bg-brand-softBeige/20 overflow-hidden relative rounded-xl">
+                    <img
                       src={product.image}
                       alt={product.name}
-                      aspectRatio="aspect-[4/5]"
-                      className="rounded-xl bg-brand-softBeige/15"
-                      showHint={true}
-                      onClick={() => router.push(`/product/${slug}`)}
-                    >
-                      {/* Collection badge label */}
-                      <div className="absolute top-2 left-2 pointer-events-none">
-                        <span className="text-[7px] md:text-[8px] bg-[#FFFFFF]/90 border border-brand-border/40 text-brand-espresso font-extrabold tracking-widest px-2 py-0.5 rounded shadow-sm uppercase">
-                          {product.category}
-                        </span>
-                      </div>
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
 
-                      {/* Wishlist interactive button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleWishlist(product);
-                        }}
-                        className="absolute top-2 right-2 p-2 bg-brand-white/85 hover:bg-brand-white border border-brand-border/20 text-brand-warmGray rounded-full transition-all shadow-sm z-10 pointer-events-auto"
-                        aria-label="Wishlist"
-                      >
-                        <Heart className={`w-3.5 h-3.5 ${inWishlist ? 'fill-brand-dustyRose stroke-brand-dustyRose' : 'text-brand-warmGray'}`} />
-                      </button>
-                    </ZoomableImage>
+                    {/* Collection badge label */}
+                    <div className="absolute top-2 left-2 pointer-events-none">
+                      <span className="text-[7px] md:text-[8px] bg-[#FFFFFF]/90 border border-brand-border/40 text-brand-espresso font-extrabold tracking-widest px-2 py-0.5 rounded shadow-sm uppercase">
+                        {product.category}
+                      </span>
+                    </div>
+
+                    {/* Wishlist interactive button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(product);
+                      }}
+                      className="absolute top-2 right-2 p-2 bg-brand-white/85 hover:bg-brand-white border border-brand-border/20 text-brand-warmGray rounded-full transition-all shadow-sm z-10 pointer-events-auto"
+                      aria-label="Wishlist"
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${inWishlist ? 'fill-brand-dustyRose stroke-brand-dustyRose' : 'text-brand-warmGray'}`} />
+                    </button>
                   </div>
 
                   {/* Metadata underneath image */}

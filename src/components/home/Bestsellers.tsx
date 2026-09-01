@@ -6,11 +6,10 @@ import { useApp } from '../../context/AppContext';
 import { Heart, Star, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-
-import { ZoomableImage } from '../ui/ZoomableImage';
+import { ProductVisual } from '../ui/ProductVisual';
 
 export const Bestsellers: React.FC = () => {
-  const { toggleWishlist, isInWishlist, setSelectedProduct } = useApp();
+  const { toggleWishlist, isInWishlist } = useApp();
   const router = useRouter();
   
   // Filter bestseller fashion items
@@ -71,41 +70,39 @@ export const Bestsellers: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.04 }}
+                onClick={() => router.push(`/product/${slug}`)}
                 className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start"
               >
-                {/* Image panel with Press & Hold Zoom */}
-                <div className="w-full relative">
-                  <ZoomableImage
-                    src={product.image}
-                    alt={product.name}
-                    aspectRatio="aspect-[4/5]"
-                    className="rounded-lg bg-brand-softBeige/15"
-                    imgClassName="mix-blend-multiply"
-                    showHint={true}
-                    onClick={() => router.push(`/product/${slug}`)}
-                  >
-                    {/* Top left badge */}
-                    <div className="absolute top-2 left-2 pointer-events-none">
-                      <span className="text-[7px] bg-brand-white/95 border border-brand-border/60 text-brand-espresso font-extrabold tracking-widest px-1.5 py-0.5 rounded shadow-sm">
-                        BEST
-                      </span>
-                    </div>
+                {/* Product Visual Container */}
+                <div className="w-full aspect-[4/5] bg-brand-softBeige/20 overflow-hidden relative rounded-lg">
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                    loading="lazy"
+                  />
 
-                    {/* Wishlist button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWishlist(product);
-                      }}
-                      className={`absolute top-2 right-2 p-1.5 rounded-full border transition-all shadow-sm pointer-events-auto ${
-                        inWishlist
-                          ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
-                          : 'bg-brand-white/95 border-brand-border/60 text-brand-warmGray hover:bg-brand-white'
-                      }`}
-                    >
-                      <Heart className={`w-2.5 h-2.5 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
-                    </button>
-                  </ZoomableImage>
+                  {/* Top left badge */}
+                  <div className="absolute top-2 left-2 pointer-events-none">
+                    <span className="text-[7px] bg-brand-white/95 border border-brand-border/60 text-brand-espresso font-extrabold tracking-widest px-1.5 py-0.5 rounded shadow-sm">
+                      BEST
+                    </span>
+                  </div>
+
+                  {/* Wishlist button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleWishlist(product);
+                    }}
+                    className={`absolute top-2 right-2 p-1.5 rounded-full border transition-all shadow-sm pointer-events-auto ${
+                      inWishlist
+                        ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
+                        : 'bg-brand-white/95 border-brand-border/60 text-brand-warmGray hover:bg-brand-white'
+                    }`}
+                  >
+                    <Heart className={`w-2.5 h-2.5 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
+                  </button>
                 </div>
 
                 {/* Details */}

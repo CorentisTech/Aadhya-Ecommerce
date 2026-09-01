@@ -5,7 +5,6 @@ import { CATEGORIES } from '../../data/mockData';
 import { useApp } from '../../context/AppContext';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ZoomableImage } from '../ui/ZoomableImage';
 
 export const Categories: React.FC = () => {
   const { setPage } = useApp();
@@ -40,15 +39,19 @@ export const Categories: React.FC = () => {
               transition={{ duration: 0.5, delay: index * 0.04 }}
               className="flex flex-col text-center group cursor-pointer space-y-2 focus:outline-none flex-shrink-0 w-[125px] md:w-auto snap-start"
             >
-              {/* Arched Top Image with Press & Hold Zoom */}
-              <ZoomableImage
-                src={category.image}
-                alt={category.name}
-                aspectRatio="aspect-[2/3]"
-                className="rounded-t-full bg-brand-softBeige/30 border border-brand-border/40 shadow-sm"
-                showHint={true}
+              {/* Arched Top Image */}
+              <div 
                 onClick={() => router.push(`/catalog?category=${category.id}`)}
-              />
+                className="w-full aspect-[2/3] rounded-t-full overflow-hidden bg-brand-softBeige/30 border border-brand-border/40 relative shadow-sm"
+              >
+                <img
+                  src={category.image}
+                  alt={category.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-brand-espresso/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+              </div>
 
               {/* Label */}
               <div 

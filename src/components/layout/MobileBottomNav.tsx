@@ -35,10 +35,13 @@ export const MobileBottomNav: React.FC = () => {
     animate(dragX, 0, { duration: 0.15 });
   }, [pathname, activePage]);
 
-  // Derived clip-path value for zero-gap unmasking (Left → Right)
-  const noteClipPercentage = useTransform(dragX, [0, maxDrag], [100, 0]);
-  const clipPathStyle = useTransform(noteClipPercentage, (v) => `inset(0 ${v}% 0 0)`);
-  const textOpacity = useTransform(dragX, [0, maxDrag * 0.7], [1, 0.25]);
+  // Derived 3D Roll-Out Motion Animation values as user drags Left → Right
+  const rollWidth = useTransform(dragX, [0, maxDrag], ['12%', '100%']);
+  const unrollScaleX = useTransform(dragX, [0, maxDrag], [0.18, 1]);
+  const unrollRotateY = useTransform(dragX, [0, maxDrag], [-65, 0]);
+  const unrollSkewY = useTransform(dragX, [0, maxDrag * 0.5, maxDrag], [6, -2, 0]);
+  const unrollOpacity = useTransform(dragX, [0, 15, maxDrag], [0, 0.9, 1]);
+  const textOpacity = useTransform(dragX, [0, maxDrag * 0.65], [1, 0.2]);
 
   const isNumismaticsPage = pathname?.includes('/numismatics') || activePage === 'numismatics';
 
@@ -47,8 +50,8 @@ export const MobileBottomNav: React.FC = () => {
     const threshold = maxDrag * 0.4; // 40% swipe threshold to trigger section switch
 
     if (currentX >= threshold || info.velocity.x > 200) {
-      // Complete drag handle to right edge cleanly
-      animate(dragX, maxDrag, { type: 'spring', stiffness: 400, damping: 30 }).then(() => {
+      // Complete roll out animation cleanly to right edge
+      animate(dragX, maxDrag, { type: 'spring', stiffness: 380, damping: 28 }).then(() => {
         // Trigger smooth zoom rollout opening screen animation
         if (isNumismaticsPage) {
           setPage('home');
@@ -59,7 +62,7 @@ export const MobileBottomNav: React.FC = () => {
         }
       });
     } else {
-      // Released before threshold: animate smoothly back to 0
+      // Released before threshold: animate smoothly back to rolled up state
       animate(dragX, 0, { type: 'spring', stiffness: 400, damping: 28 });
     }
   };
@@ -77,22 +80,32 @@ export const MobileBottomNav: React.FC = () => {
         }`}
       >
         
-        {/* Layer 1: Banknote Progressive Unmasking Layer (ONLY shown for switching to Numismatics, ZERO GAPS) */}
+        {/* Layer 1: Banknote 3D Roll-Out Motion Unrolling Layer (ONLY for switching to Numismatics) */}
         {!isNumismaticsPage && (
           <motion.div 
-            style={{ clipPath: clipPathStyle }}
-            className="absolute inset-0 z-10 bg-[#7B75B8] flex items-center pointer-events-none rounded-full overflow-hidden"
+            style={{ width: rollWidth, opacity: unrollOpacity }}
+            className="absolute inset-y-1 left-1 z-10 flex items-center pointer-events-none rounded-full overflow-hidden bg-gradient-to-r from-[#6B66A6]/30 via-[#8A84C8]/40 to-[#9E98D8]/50 p-0.5 border border-[#8A84C8]/40 shadow-inner"
           >
-            <div className="w-full h-full relative overflow-hidden rounded-full flex items-center">
-              {/* Full Banknote image filling 100% capsule height and width with ZERO empty gaps */}
+            {/* 3D Perspective Roll-Out Container */}
+            <motion.div 
+              style={{ 
+                scaleX: unrollScaleX, 
+                rotateY: unrollRotateY, 
+                skewY: unrollSkewY,
+                transformOrigin: 'left center',
+                perspective: 800
+              }}
+              className="w-full h-full relative overflow-hidden rounded-full flex items-center justify-center bg-[#7B75B8]"
+            >
+              {/* Concise, Fully Visible Banknote image (Entire note fitted inside CTA, no cutting in half) */}
               <img 
                 src="/images/inr-100-note.png" 
                 alt="INR 100 Currency Note" 
-                className="w-full h-full object-cover object-left rounded-full shadow-inner"
+                className="h-[88%] max-w-[95%] object-contain rounded-md shadow-xs opacity-95"
               />
               {/* Orange drag edge indicator matching reference UI */}
-              <div className="absolute right-0 top-0 bottom-0 w-3.5 bg-[#F26A2E] shadow-md rounded-r-full" />
-            </div>
+              <div className="absolute right-0 top-0 bottom-0 w-3 bg-[#F26A2E] shadow-md rounded-r-full" />
+            </motion.div>
           </motion.div>
         )}
 

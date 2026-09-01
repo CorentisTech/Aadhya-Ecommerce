@@ -6,7 +6,7 @@ import { Heart, ShoppingBag, Flame, ChevronRight, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { NavigationControls } from './NavigationControls';
-import { ZoomableImage } from './ZoomableImage';
+import { ProductVisual } from './ProductVisual';
 
 export const WishlistPage: React.FC = () => {
   const { wishlist, toggleWishlist, addToCart, setPage } = useApp();
@@ -203,15 +203,13 @@ export const WishlistPage: React.FC = () => {
                           </div>
                         ) : null}
 
-                        {/* Image panel with Press & Hold Zoom */}
-                        <div className="w-[180px] mt-3">
-                          <ZoomableImage
+                        {/* Image panel */}
+                        <div className="w-[180px] aspect-[4/5] mt-3 rounded-2xl overflow-hidden relative bg-brand-softBeige/5">
+                          <img
                             src={product.image}
                             alt={product.name}
-                            aspectRatio="aspect-[4/5]"
-                            className="rounded-2xl bg-brand-softBeige/5"
-                            showHint={true}
-                            onClick={() => router.push(`/product/${product.name.toLowerCase().replace(/ /g, '-')}`)}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="lazy"
                           />
                         </div>
 

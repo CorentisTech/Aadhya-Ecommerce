@@ -6,15 +6,14 @@ import { useApp } from '../../context/AppContext';
 import { Heart, Star, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-
-import { ZoomableImage } from '../ui/ZoomableImage';
+import { ProductVisual } from '../ui/ProductVisual';
 
 export const NewArrivals: React.FC = () => {
-  const { toggleWishlist, isInWishlist, setSelectedProduct } = useApp();
+  const { toggleWishlist, isInWishlist } = useApp();
   const router = useRouter();
   
-  // Filter new arrival fashion items (excluding the 4 main bestsellers to show variety)
-  const newArrivals = PRODUCTS.filter((p) => !p.bestseller && p.department === 'fashion');
+  // Filter new arrivals fashion items
+  const newProducts = PRODUCTS.filter((p) => !p.bestseller && p.department === 'fashion');
 
   const renderStars = (rating = 4) => {
     return (
@@ -30,7 +29,7 @@ export const NewArrivals: React.FC = () => {
   };
 
   return (
-    <section id="new-arrivals" className="w-full max-w-full py-10 md:py-20 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40 overflow-hidden">
+    <section id="new-arrivals" className="w-full max-w-full py-10 md:py-20 px-4 md:px-12 lg:px-24 bg-brand-softBeige/30 border-b border-brand-border/40 overflow-hidden">
       <div className="max-w-6xl mx-auto space-y-8 md:space-y-12">
         
         {/* Header Grid */}
@@ -40,17 +39,17 @@ export const NewArrivals: React.FC = () => {
               NEW ARRIVALS
             </span>
             <h2 className="font-display font-bold text-3xl md:text-5xl text-brand-espresso tracking-tight">
-              Fresh From the Atelier
+              Fresh Off The Runway
             </h2>
             <p className="text-[10px] sm:text-xs text-brand-warmGray font-medium">
-              Discover the latest additions to our design curation.
+              Explore our latest silhouettes crafted for timeless elegance.
             </p>
           </div>
           
           <div className="flex justify-center md:justify-end flex-shrink-0">
             <button 
               onClick={() => router.push('/catalog?collection=new-arrivals')}
-              className="px-4 py-2 border border-brand-border rounded-full text-[10px] font-bold tracking-widest text-brand-espresso hover:bg-brand-softBeige/40 transition-colors flex items-center space-x-1"
+              className="px-4 py-2 border border-brand-border rounded-full text-[10px] font-bold tracking-widest text-brand-espresso hover:bg-brand-softBeige/60 transition-colors flex items-center space-x-1"
             >
               <span>VIEW ALL</span>
               <ArrowRight className="w-3 h-3" />
@@ -60,7 +59,7 @@ export const NewArrivals: React.FC = () => {
 
         {/* Horizontal scroll container */}
         <div className="flex overflow-x-auto pb-3 gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
-          {newArrivals.slice(0, 4).map((product, index) => {
+          {newProducts.slice(0, 4).map((product, index) => {
             const inWishlist = isInWishlist(product.id);
             const slug = product.name.toLowerCase().replace(/ /g, '-');
 
@@ -71,41 +70,39 @@ export const NewArrivals: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.04 }}
+                onClick={() => router.push(`/product/${slug}`)}
                 className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start"
               >
-                {/* Image panel with Press & Hold Zoom */}
-                <div className="w-full relative">
-                  <ZoomableImage
-                    src={product.image}
-                    alt={product.name}
-                    aspectRatio="aspect-[4/5]"
-                    className="rounded-lg bg-brand-softBeige/15"
-                    imgClassName="mix-blend-multiply"
-                    showHint={true}
-                    onClick={() => router.push(`/product/${slug}`)}
-                  >
-                    {/* Top left badge */}
-                    <div className="absolute top-2 left-2 pointer-events-none">
-                      <span className="text-[7px] bg-brand-sale text-brand-white font-extrabold tracking-widest px-2 py-0.5 rounded shadow-sm uppercase">
-                        NEW
-                      </span>
-                    </div>
+                {/* Product Visual Container */}
+                <div className="w-full aspect-[4/5] bg-brand-softBeige/20 overflow-hidden relative rounded-lg">
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                    loading="lazy"
+                  />
 
-                    {/* Wishlist heart */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWishlist(product);
-                      }}
-                      className={`absolute top-2 right-2 p-1.5 rounded-full border transition-all shadow-sm pointer-events-auto ${
-                        inWishlist
-                          ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
-                          : 'bg-brand-white/95 border-brand-border/60 text-brand-warmGray hover:bg-brand-white'
-                      }`}
-                    >
-                      <Heart className={`w-2.5 h-2.5 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
-                    </button>
-                  </ZoomableImage>
+                  {/* Top left badge */}
+                  <div className="absolute top-2 left-2 pointer-events-none">
+                    <span className="text-[7px] bg-[#F26A2E] text-white font-extrabold tracking-widest px-1.5 py-0.5 rounded shadow-sm uppercase">
+                      NEW
+                    </span>
+                  </div>
+
+                  {/* Wishlist button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleWishlist(product);
+                    }}
+                    className={`absolute top-2 right-2 p-1.5 rounded-full border transition-all shadow-sm pointer-events-auto ${
+                      inWishlist
+                        ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
+                        : 'bg-brand-white/95 border-brand-border/60 text-brand-warmGray hover:bg-brand-white'
+                    }`}
+                  >
+                    <Heart className={`w-2.5 h-2.5 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
+                  </button>
                 </div>
 
                 {/* Details */}
@@ -118,7 +115,7 @@ export const NewArrivals: React.FC = () => {
                   <div className="flex items-center space-x-1">
                     {renderStars(product.rating)}
                     <span className="text-[9px] sm:text-[10px] text-brand-warmGray font-bold">
-                      ({product.reviewsCount || 60})
+                      ({product.reviewsCount || 85})
                     </span>
                   </div>
 
