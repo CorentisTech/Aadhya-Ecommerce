@@ -1,36 +1,33 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp, UserDetails } from '@/context/AppContext';
 import { 
   User, 
-  ShoppingBag, 
   MapPin, 
-  CreditCard, 
-  HelpCircle, 
-  LifeBuoy, 
+  Bell, 
+  ShoppingBag, 
   Heart, 
-  Trash2, 
+  LifeBuoy, 
+  HelpCircle, 
   LogOut, 
   ArrowLeft,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
   ChevronRight,
-  Plus,
-  Edit,
-  Save,
-  CheckCircle,
-  HelpCircle as FaqIcon
+  Edit2,
+  Check,
+  X,
+  Mail,
+  Phone,
+  Lock,
+  Trash2,
+  Smartphone,
+  Key,
+  Globe
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { NavigationControls } from '@/components/ui/NavigationControls';
+import { motion, AnimatePresence } from 'framer-motion';
 
-type ScreenMode = 'landing' | 'email-verify' | 'register-form';
-type AccountTab = 'manage' | 'addresses' | 'payments' | 'orders' | 'help' | 'faqs' | 'delete';
-
-export default function AccountRoute() {
+export default function AccountPage() {
   const router = useRouter();
   const { 
     user, 
@@ -39,1097 +36,892 @@ export default function AccountRoute() {
     logoutUser, 
     registerUser, 
     updateUserDetails, 
-    deleteUserAccount 
+    deleteUserAccount,
+    cart,
+    wishlist
   } = useApp();
 
-  // Authentication screen states
-  const [screenMode, setScreenMode] = useState<ScreenMode>('landing');
-  const [authAction, setAuthAction] = useState<'login' | 'signup'>('login');
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  // Active greeting based on real-time hour
+  const [greeting, setGreeting] = useState('Good morning');
+  
+  useEffect(() => {
+    const updateGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour >= 4 && hour < 12) setGreeting('Good morning');
+      else if (hour >= 12 && hour < 17) setGreeting('Good afternoon');
+      else if (hour >= 17 && hour < 22) setGreeting('Good evening');
+      else setGreeting('Good night');
+    };
+    updateGreeting();
+    const timer = setInterval(updateGreeting, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Modal / Accordion Drawer States
+  const [activeModal, setActiveModal] = useState<'profile' | 'address' | 'orders' | 'notifications' | 'help' | null>(null);
+  const [isSavedToast, setIsSavedToast] = useState(false);
+
+  // Authentication screen states if user is not logged in
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authOtp, setAuthOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpError, setOtpError] = useState(false);
-  
-  // Registration form inputs
-  const [regForm, setRegForm] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    address: '',
-    zip: '',
-    state: 'Maharashtra',
-    city: '',
-    landmark: '',
-    streetName: '',
-    otherPhone: '',
-    avatar: 'male' as 'male' | 'female',
+
+  // Editable Profile Form State
+  const [profileForm, setProfileForm] = useState({
+    firstName: user?.firstName || 'Miranda',
+    lastName: user?.lastName || 'West',
+    email: user?.email || 'miranda.west@example.com',
+    phone: user?.phone || '+91 98765 43210',
+    avatar: (user?.avatar || 'female') as 'male' | 'female'
   });
 
-  // Account dashboard states
-  const [activeTab, setActiveTab] = useState<AccountTab>('manage');
-  const [editMode, setEditMode] = useState(false);
-  const [isSavedAlert, setIsSavedAlert] = useState(false);
-  const [supportTicket, setSupportTicket] = useState({ subject: '', message: '' });
-  const [ticketRaised, setTicketRaised] = useState(false);
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-
-  // Editable forms inside dashboard
-  const [accountForm, setAccountForm] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    phone: user?.phone || '',
-    email: user?.email || '',
-    avatar: user?.avatar || 'male'
-  });
-
+  // Editable Address Form State (keeping all previous details)
   const [addressForm, setAddressForm] = useState({
-    streetName: user?.streetName || '',
-    landmark: user?.landmark || '',
-    city: user?.city || '',
-    state: user?.state || '',
-    zip: user?.zip || ''
+    streetName: user?.streetName || 'Villa 42, Palm Avenue',
+    landmark: user?.landmark || 'Near Koregaon Park Garden',
+    city: user?.city || 'Pune',
+    state: user?.state || 'Maharashtra',
+    zip: user?.zip || '411001',
+    otherPhone: user?.otherPhone || '+91 91234 56789'
   });
 
-  // Initialize editable forms when user logs in
-  React.useEffect(() => {
+  // Sync state when user object updates
+  useEffect(() => {
     if (user) {
-      setAccountForm({
+      setProfileForm({
         firstName: user.firstName,
         lastName: user.lastName,
-        phone: user.phone,
         email: user.email,
-        avatar: user.avatar
+        phone: user.phone,
+        avatar: user.avatar || 'female'
       });
       setAddressForm({
-        streetName: user.streetName,
-        landmark: user.landmark || '',
-        city: user.city,
-        state: user.state,
-        zip: user.zip
+        streetName: user.streetName || 'Villa 42, Palm Avenue',
+        landmark: user.landmark || 'Near Koregaon Park Garden',
+        city: user.city || 'Pune',
+        state: user.state || 'Maharashtra',
+        zip: user.zip || '411001',
+        otherPhone: user.otherPhone || '+91 91234 56789'
       });
     }
   }, [user]);
 
-  // Auth Handlers
-  const handleSendOtp = (e: React.FormEvent) => {
+  // Handle saving basic profile details
+  const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    setOtpSent(true);
+    updateUserDetails({
+      firstName: profileForm.firstName,
+      lastName: profileForm.lastName,
+      email: profileForm.email,
+      phone: profileForm.phone,
+      avatar: profileForm.avatar
+    });
+    setActiveModal(null);
+    setIsSavedToast(true);
+    setTimeout(() => setIsSavedToast(false), 2500);
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  // Quick avatar switch
+  const handleSwitchAvatar = (newAvatar: 'male' | 'female') => {
+    setProfileForm(prev => ({ ...prev, avatar: newAvatar }));
+    updateUserDetails({ avatar: newAvatar });
+  };
+
+  // Handle saving address details
+  const handleSaveAddress = (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp === '1234') {
-      setOtpError(false);
-      if (authAction === 'login') {
-        loginUser(email);
+    const fullAddress = `${addressForm.streetName}, ${addressForm.landmark ? addressForm.landmark + ', ' : ''}${addressForm.city}, ${addressForm.state} - ${addressForm.zip}`;
+    updateUserDetails({
+      address: fullAddress,
+      streetName: addressForm.streetName,
+      landmark: addressForm.landmark,
+      city: addressForm.city,
+      state: addressForm.state,
+      zip: addressForm.zip,
+      otherPhone: addressForm.otherPhone
+    });
+    setActiveModal(null);
+    setIsSavedToast(true);
+    setTimeout(() => setIsSavedToast(false), 2500);
+  };
+
+  // Auth flow for non-logged in users
+  const handleAuthSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpSent) {
+      if (authEmail) setOtpSent(true);
+      return;
+    }
+    if (authOtp === '1234' || authOtp.length === 4) {
+      if (authMode === 'login') {
+        loginUser(authEmail);
       } else {
-        setScreenMode('register-form');
+        registerUser({
+          email: authEmail,
+          firstName: 'Miranda',
+          lastName: 'West',
+          phone: '+91 98765 43210',
+          address: 'Villa 42, Palm Avenue, Pune - 411001',
+          zip: '411001',
+          state: 'Maharashtra',
+          city: 'Pune',
+          streetName: 'Villa 42, Palm Avenue',
+          avatar: 'female'
+        });
       }
     } else {
       setOtpError(true);
     }
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newUser: UserDetails = {
-      email,
-      firstName: regForm.firstName,
-      lastName: regForm.lastName,
-      phone: regForm.phone,
-      address: regForm.address,
-      zip: regForm.zip,
-      state: regForm.state,
-      city: regForm.city,
-      landmark: regForm.landmark,
-      streetName: regForm.streetName,
-      otherPhone: regForm.otherPhone,
-      avatar: regForm.avatar
-    };
-    registerUser(newUser);
-  };
+  const currentAvatar = user?.avatar || profileForm.avatar;
+  const displayName = user ? `${user.firstName} ${user.lastName}` : `${profileForm.firstName} ${profileForm.lastName}`;
+  const displayFirstName = user?.firstName || profileForm.firstName;
+  const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-  const handleSaveAccount = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateUserDetails(accountForm);
-    setEditMode(false);
-    setIsSavedAlert(true);
-    setTimeout(() => setIsSavedAlert(false), 3000);
-  };
+  return (
+    <div className="min-h-screen bg-[#ECE8E1] py-4 sm:py-8 px-3 sm:px-4 flex items-center justify-center select-none text-[#2B231D]">
+      
+      {/* Toast Alert */}
+      {isSavedToast && (
+        <div className="fixed top-6 z-50 bg-[#1A1A1A] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2 animate-bounce">
+          <Check className="w-4 h-4 text-emerald-400" />
+          <span>Profile details saved successfully</span>
+        </div>
+      )}
 
-  const handleSaveAddress = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateUserDetails({
-      address: `${addressForm.streetName}, ${addressForm.landmark ? addressForm.landmark + ', ' : ''}${addressForm.city}, ${addressForm.state} - ${addressForm.zip}`,
-      streetName: addressForm.streetName,
-      landmark: addressForm.landmark,
-      city: addressForm.city,
-      state: addressForm.state,
-      zip: addressForm.zip
-    });
-    setEditMode(false);
-    setIsSavedAlert(true);
-    setTimeout(() => setIsSavedAlert(false), 3000);
-  };
+      {/* Main Mobile/App Container Frame (Exact layout from media_1788456191322.png) */}
+      <div className="w-full max-w-[420px] bg-[#F9F8F6] rounded-[36px] shadow-2xl overflow-hidden border border-[#DED7CB] flex flex-col relative">
 
-  const handleRaiseTicket = (e: React.FormEvent) => {
-    e.preventDefault();
-    setTicketRaised(true);
-    setSupportTicket({ subject: '', message: '' });
-    setTimeout(() => setTicketRaised(false), 4000);
-  };
+        {/* ==================================================
+            1. TOP HERO BANNER (Gradient colors & texture, NO bag/chair)
+           ================================================== */}
+        <div 
+          className="w-full h-64 sm:h-72 relative overflow-hidden flex flex-col items-center justify-between p-5 text-white"
+          style={{
+            background: 'radial-gradient(circle at 50% 15%, #544439 0%, #2E221B 55%, #18120F 100%)',
+          }}
+        >
+          {/* Subtle noise/texture overlay */}
+          <div 
+            className="absolute inset-0 opacity-15 pointer-events-none mix-blend-overlay"
+            style={{
+              backgroundImage: `radial-gradient(#F26A2E 0.75px, transparent 0.75px)`,
+              backgroundSize: '12px 12px'
+            }}
+          />
 
-  const faqs = [
-    { q: "How long does shipping take?", a: "Standard courier post takes 3-5 business days. Rare heritage coin packages are fully insured and require signature confirmation upon delivery." },
-    { q: "Can I edit custom sizing after ordering?", a: "Sizing details can be edited within 12 hours of placing your order. Reach out directly using our support ticket page." },
-    { q: "What is your return policy?", a: "We offer a 7-day hassle-free return window for unworn items in original packaging. Heritage coins and certified numismatic collections are subject to strict anti-tamper tag verification." }
-  ];
+          {/* Top Bar Actions (Matching Reference Image) */}
+          <div className="w-full flex items-center justify-between relative z-10">
+            {/* Back Button */}
+            <button
+              onClick={() => router.back()}
+              className="w-9 h-9 rounded-full bg-black/25 backdrop-blur-md flex items-center justify-center text-white/90 hover:text-white hover:bg-black/40 transition-all cursor-pointer"
+              aria-label="Go Back"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
 
-  // Helper avatar graphics (SVGs)
-  const AvatarIcon = ({ type, className = "w-16 h-16" }: { type: 'male' | 'female', className?: string }) => {
-    if (type === 'male') {
-      return (
-        <svg className={`${className} text-[#F26A2E] bg-[#FFF3EC] rounded-full p-1.5`} viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="12" cy="8" r="4" />
-          <path d="M12 14c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z" />
-        </svg>
-      );
-    }
-    return (
-      <svg className={`${className} text-[#F26A2E] bg-[#FFF3EC] rounded-full p-1.5`} viewBox="0 0 24 24" fill="currentColor">
-        <circle cx="12" cy="8" r="3.5" />
-        <path d="M12 13c-3.87 0-7 2.13-7 4.75v1.25h14v-1.25c0-2.62-3.13-4.75-7-4.75z" />
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-      </svg>
-    );
-  };
-
-  // --- RENDERING AUTHENTICATION FLOW ---
-  if (!isLoggedIn) {
-    return (
-      <div className="w-full min-h-screen bg-[#FCFAF7] flex items-center justify-center py-12 px-4 select-none">
-        <div className="bg-white w-full max-w-sm rounded-3xl p-6 md:p-8 shadow-xl border border-brand-border/30 text-center space-y-6">
-          
-          {/* Brand Logo Header */}
-          <div className="space-y-1">
-            <h1 className="font-display font-bold text-3xl text-brand-espresso tracking-widest uppercase">
-              AADHYA
-            </h1>
-            <span className="text-[9px] font-bold text-brand-warmGray tracking-[0.25em] uppercase block">
-              Heritage & Couture
-            </span>
-          </div>
-
-          {/* SCREEN 1: LANDING */}
-          {screenMode === 'landing' && (
-            <div className="space-y-6">
-              
-              {/* SVG illustration matching laptop coaching/welcome vector */}
-              <div className="w-full flex justify-center py-4">
-                <svg className="w-36 h-36 text-brand-espresso" viewBox="0 0 100 100" fill="none">
-                  {/* Laptop base */}
-                  <rect x="25" y="65" width="50" height="4" rx="2" fill="currentColor" />
-                  <path d="M28 69h44l-2 3H30l-2-3z" fill="currentColor" opacity="0.8" />
-                  {/* Laptop screen */}
-                  <rect x="30" y="35" width="40" height="28" rx="2" fill="none" stroke="currentColor" strokeWidth="2.5" />
-                  {/* Person Head & headphones */}
-                  <circle cx="50" cy="22" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
-                  <path d="M41 22a9 9 0 0 1 18 0M41 21v2M59 21v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  {/* Glasses */}
-                  <circle cx="47" cy="22" r="1.5" stroke="currentColor" strokeWidth="1" />
-                  <circle cx="53" cy="22" r="1.5" stroke="currentColor" strokeWidth="1" />
-                  <line x1="48.5" y1="22" x2="51.5" y2="22" stroke="currentColor" strokeWidth="1" />
-                  {/* Person body */}
-                  <path d="M38 48c0-8 6-10 12-10s12 2 12 10v12H38V48z" fill="none" stroke="currentColor" strokeWidth="2" />
-                  {/* Tiny hands */}
-                  <circle cx="35" cy="50" r="2" fill="currentColor" />
-                  <circle cx="65" cy="50" r="2" fill="currentColor" />
-                </svg>
-              </div>
-
-              <div className="space-y-1">
-                <h2 className="font-display font-bold text-lg text-brand-espresso tracking-tight">
-                  {authAction === 'signup' ? 'Welcome' : 'Welcome Back'}
-                </h2>
-                <p className="text-[10px] text-brand-warmGray font-bold tracking-wider leading-relaxed px-4">
-                  Discover fine custom silk couture and certified vintage collections.
-                </p>
-              </div>
-
-              {/* Social Buttons */}
-              <div className="space-y-2 pt-2">
-                <button 
-                  onClick={() => setScreenMode('email-verify')}
-                  className="w-full py-3 bg-brand-white border border-brand-border/60 text-brand-espresso text-[10px] font-extrabold tracking-widest uppercase hover:bg-brand-softBeige/20 rounded-xl transition-all flex items-center justify-center gap-2"
-                >
-                  <Mail className="w-3.5 h-3.5 text-[#F26A2E]" />
-                  <span>Continue with Email</span>
-                </button>
-
-                <button 
-                  onClick={() => alert("Google sign in triggered")}
-                  className="w-full py-3 bg-[#FCFAF7] border border-brand-border/30 text-brand-espresso text-[10px] font-extrabold tracking-widest uppercase hover:opacity-90 rounded-xl transition-all flex items-center justify-center gap-2"
-                >
-                  <span className="text-[#EA4335] font-bold">G</span>
-                  <span>Continue with Google</span>
-                </button>
-
-                <button 
-                  onClick={() => alert("Apple sign in triggered")}
-                  className="w-full py-3 bg-[#383230] text-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-95 rounded-xl transition-all flex items-center justify-center gap-2"
-                >
-                  <span className="text-white"></span>
-                  <span>Continue with Apple</span>
-                </button>
-
-                <button 
-                  onClick={() => {
-                    loginUser("guest@aadhya.com");
-                  }}
-                  className="w-full py-3 bg-brand-white border border-brand-border/40 text-brand-warmGray text-[10px] font-extrabold tracking-widest uppercase hover:bg-brand-softBeige/15 rounded-xl transition-all flex items-center justify-center"
-                >
-                  <span>Continue As Guest</span>
-                </button>
-              </div>
-
-              {/* Footer Switch */}
-              <div className="pt-2">
-                <button
-                  onClick={() => setAuthAction(authAction === 'login' ? 'signup' : 'login')}
-                  className="text-[10px] font-bold text-brand-warmGray hover:text-[#F26A2E] tracking-wider uppercase transition-colors"
-                >
-                  {authAction === 'login' 
-                    ? "Need an account? Sign up" 
-                    : "Already have an account? Log in"}
-                </button>
-              </div>
-
-            </div>
-          )}
-
-          {/* SCREEN 2: EMAIL & OTP VERIFICATION */}
-          {screenMode === 'email-verify' && (
-            <div className="space-y-6">
-              
-              <div className="space-y-1">
-                <h2 className="font-display font-bold text-lg text-brand-espresso tracking-tight">
-                  {authAction === 'signup' ? 'Welcome' : 'Welcome Back'}
-                </h2>
-                <p className="text-[10px] text-brand-warmGray font-bold tracking-wider uppercase">
-                  Please verify with OTP
-                </p>
-              </div>
-
-              {!otpSent ? (
-                // Step 1: Send OTP
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div className="space-y-1.5 text-left">
-                    <label className="text-[9px] font-extrabold text-brand-warmGray tracking-widest uppercase block">Email Address</label>
-                    <div className="relative">
-                      <input
-                        required
-                        type="email"
-                        placeholder="ananya.sharma@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-brand-warmWhite border border-brand-border/60 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold pl-10"
-                      />
-                      <Mail className="w-4 h-4 text-brand-warmGray absolute left-3 top-1/2 -translate-y-1/2" />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 bg-[#F26A2E] text-brand-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-90 rounded-xl transition-all shadow-sm"
-                  >
-                    Send Verification OTP
-                  </button>
-                </form>
-              ) : (
-                // Step 2: Input OTP
-                <form onSubmit={handleVerifyOtp} className="space-y-4">
-                  <div className="text-left bg-[#FFF3EC] p-3 rounded-xl border border-[#F9E1D3]/50 mb-3">
-                    <p className="text-[9px] font-bold text-[#F26A2E] tracking-wider uppercase">
-                      ✓ OTP sent to your inbox. Use code "1234" to test.
-                    </p>
-                  </div>
-
-                  <div className="space-y-1.5 text-left">
-                    <label className="text-[9px] font-extrabold text-brand-warmGray tracking-widest uppercase block">Verification Code (OTP)</label>
-                    <div className="relative">
-                      <input
-                        required
-                        type="text"
-                        placeholder="Enter 4-digit code"
-                        maxLength={4}
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                        className="w-full bg-brand-warmWhite border border-brand-border/60 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold pl-10 text-center tracking-[0.4em]"
-                      />
-                      <Lock className="w-4 h-4 text-brand-warmGray absolute left-3 top-1/2 -translate-y-1/2" />
-                    </div>
-                  </div>
-
-                  {otpError && (
-                    <span className="text-[9px] font-bold text-brand-sale text-left block">
-                      ✕ Invalid Verification Code. Use "1234" to test.
-                    </span>
-                  )}
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 bg-brand-espresso text-brand-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-90 rounded-xl transition-all shadow-sm"
-                  >
-                    Verify & Proceed
-                  </button>
-                </form>
-              )}
-
-              {/* Back Link */}
+            {/* Wishlist and Cart Bag with Red Dot */}
+            <div className="flex items-center space-x-2.5">
               <button
-                onClick={() => {
-                  setScreenMode('landing');
-                  setOtpSent(false);
-                }}
-                className="text-[9px] font-bold text-brand-warmGray hover:text-[#F26A2E] tracking-widest uppercase transition-colors flex items-center justify-center gap-1 mx-auto"
+                onClick={() => router.push('/wishlist')}
+                className="w-9 h-9 rounded-full bg-black/25 backdrop-blur-md flex items-center justify-center text-white/90 hover:text-white hover:bg-black/40 transition-all cursor-pointer relative"
+                aria-label="Wishlist"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Go Back</span>
+                <Heart className="w-4 h-4" />
+                {wishlist.length > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-[#E0591D] rounded-full ring-2 ring-black" />
+                )}
               </button>
 
+              <button
+                onClick={() => router.push('/cart')}
+                className="w-9 h-9 rounded-full bg-black/25 backdrop-blur-md flex items-center justify-center text-white/90 hover:text-white hover:bg-black/40 transition-all cursor-pointer relative"
+                aria-label="Shopping Cart"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                {cartCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-black" />
+                )}
+              </button>
             </div>
-          )}
+          </div>
 
-          {/* SCREEN 3: REGISTER NEW USER DETAILS FORM */}
-          {screenMode === 'register-form' && (
-            <form onSubmit={handleRegisterSubmit} className="space-y-4 text-left max-h-[75vh] overflow-y-auto pr-1">
-              
-              <div className="space-y-1 text-center pb-2">
-                <h2 className="font-display font-bold text-lg text-brand-espresso tracking-tight">
-                  Welcome to Aadhya
-                </h2>
-                <p className="text-[9px] text-brand-warmGray font-bold tracking-widest uppercase">
-                  Please enter your profile details
-                </p>
+          {/* Center Profile Avatar Placeholder (No photo upload, strictly male/female avatar) */}
+          <div className="flex flex-col items-center relative z-10 -mt-2">
+            <div className="relative">
+              <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full border-[3.5px] border-white/95 shadow-xl overflow-hidden bg-white flex items-center justify-center">
+                <img
+                  src={currentAvatar === 'male' ? '/images/avatar-male.png' : '/images/avatar-female.png'}
+                  alt={currentAvatar === 'male' ? 'Male Avatar' : 'Female Avatar'}
+                  className="w-full h-full object-cover"
+                />
               </div>
 
-              {/* Form Grid */}
-              <div className="space-y-3.5">
+              {/* Quick toggle indicator */}
+              <button
+                onClick={() => handleSwitchAvatar(currentAvatar === 'male' ? 'female' : 'male')}
+                className="absolute bottom-0 right-0 p-1.5 bg-[#1A1A1A] text-white rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform cursor-pointer"
+                title="Toggle Male/Female Avatar"
+              >
+                <Edit2 className="w-2.5 h-2.5" />
+              </button>
+            </div>
+
+            {/* Dynamic Greeting & User Name */}
+            <div className="text-center pt-2 space-y-0.5">
+              <h1 className="font-display font-bold text-lg sm:text-xl text-white tracking-tight drop-shadow-xs">
+                {greeting}, {displayFirstName}
+              </h1>
+              <p className="text-[10px] text-white/80 font-medium tracking-wide max-w-[260px] italic">
+                Work hard in silence. Let your success be the noise.
+              </p>
+            </div>
+          </div>
+
+          {/* Avatar Switcher Pills */}
+          <div className="flex items-center gap-2 pb-1 relative z-10">
+            <button
+              onClick={() => handleSwitchAvatar('male')}
+              className={`px-3 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase transition-all cursor-pointer ${
+                currentAvatar === 'male'
+                  ? 'bg-sky-500 text-white shadow-xs'
+                  : 'bg-black/30 text-white/70 hover:text-white'
+              }`}
+            >
+              Male
+            </button>
+            <button
+              onClick={() => handleSwitchAvatar('female')}
+              className={`px-3 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase transition-all cursor-pointer ${
+                currentAvatar === 'female'
+                  ? 'bg-pink-500 text-white shadow-xs'
+                  : 'bg-black/30 text-white/70 hover:text-white'
+              }`}
+            >
+              Female
+            </button>
+          </div>
+        </div>
+
+        {/* ==================================================
+            2. CARD LIST SECTIONS (Exact design from media_1788456191322.png)
+           ================================================== */}
+        <div className="p-4 sm:p-5 space-y-3.5 -mt-3 relative z-20">
+
+          {/* CARD GROUP 1: My Address & Account */}
+          <div className="bg-white rounded-2xl shadow-xs border border-[#EAE4D8] overflow-hidden divide-y divide-[#F2EDE4]">
+            
+            {/* My Address */}
+            <button
+              onClick={() => setActiveModal('address')}
+              className="w-full p-4 flex items-center justify-between hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer group"
+            >
+              <div className="flex items-center space-x-3.5">
+                <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center text-[#8C827A] group-hover:text-[#E0591D] transition-colors">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-xs sm:text-[13px] font-bold text-[#2B231D] block">
+                    My Address
+                  </span>
+                  <span className="text-[10px] text-[#8C827A] font-medium block truncate max-w-[200px]">
+                    {addressForm.streetName}, {addressForm.city}
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#B8AEA4] group-hover:text-[#2B231D] transition-colors" />
+            </button>
+
+            {/* Account Details */}
+            <button
+              onClick={() => setActiveModal('profile')}
+              className="w-full p-4 flex items-center justify-between hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer group"
+            >
+              <div className="flex items-center space-x-3.5">
+                <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center text-[#8C827A] group-hover:text-[#E0591D] transition-colors">
+                  <User className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-xs sm:text-[13px] font-bold text-[#2B231D] block">
+                    Account
+                  </span>
+                  <span className="text-[10px] text-[#8C827A] font-medium block truncate max-w-[200px]">
+                    {displayName} • {profileForm.phone}
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#B8AEA4] group-hover:text-[#2B231D] transition-colors" />
+            </button>
+
+          </div>
+
+          {/* CARD GROUP 2: Notifications, Orders, Passwords, Language */}
+          <div className="bg-white rounded-2xl shadow-xs border border-[#EAE4D8] overflow-hidden divide-y divide-[#F2EDE4]">
+            
+            {/* Notifications */}
+            <button
+              onClick={() => setActiveModal('notifications')}
+              className="w-full p-4 flex items-center justify-between hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer group"
+            >
+              <div className="flex items-center space-x-3.5">
+                <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center text-[#8C827A] group-hover:text-[#E0591D] transition-colors">
+                  <Bell className="w-4 h-4" />
+                </div>
+                <span className="text-xs sm:text-[13px] font-bold text-[#2B231D]">
+                  Notifications
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#B8AEA4] group-hover:text-[#2B231D] transition-colors" />
+            </button>
+
+            {/* Order History */}
+            <button
+              onClick={() => setActiveModal('orders')}
+              className="w-full p-4 flex items-center justify-between hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer group"
+            >
+              <div className="flex items-center space-x-3.5">
+                <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center text-[#8C827A] group-hover:text-[#E0591D] transition-colors">
+                  <ShoppingBag className="w-4 h-4" />
+                </div>
+                <span className="text-xs sm:text-[13px] font-bold text-[#2B231D]">
+                  Order History
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#B8AEA4] group-hover:text-[#2B231D] transition-colors" />
+            </button>
+
+            {/* Devices */}
+            <button
+              onClick={() => alert("Current device: Active Web Session (Secured)")}
+              className="w-full p-4 flex items-center justify-between hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer group"
+            >
+              <div className="flex items-center space-x-3.5">
+                <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center text-[#8C827A] group-hover:text-[#E0591D] transition-colors">
+                  <Smartphone className="w-4 h-4" />
+                </div>
+                <span className="text-xs sm:text-[13px] font-bold text-[#2B231D]">
+                  Devices
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#B8AEA4] group-hover:text-[#2B231D] transition-colors" />
+            </button>
+
+            {/* Passwords / Security */}
+            <button
+              onClick={() => alert("Passwordless OTP authentication is active on your email.")}
+              className="w-full p-4 flex items-center justify-between hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer group"
+            >
+              <div className="flex items-center space-x-3.5">
+                <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center text-[#8C827A] group-hover:text-[#E0591D] transition-colors">
+                  <Key className="w-4 h-4" />
+                </div>
+                <span className="text-xs sm:text-[13px] font-bold text-[#2B231D]">
+                  Passwords
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#B8AEA4] group-hover:text-[#2B231D] transition-colors" />
+            </button>
+
+            {/* Language */}
+            <button
+              onClick={() => alert("Language: English (US / India)")}
+              className="w-full p-4 flex items-center justify-between hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer group"
+            >
+              <div className="flex items-center space-x-3.5">
+                <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center text-[#8C827A] group-hover:text-[#E0591D] transition-colors">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <span className="text-xs sm:text-[13px] font-bold text-[#2B231D]">
+                  Language
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#B8AEA4] group-hover:text-[#2B231D] transition-colors" />
+            </button>
+
+          </div>
+
+          {/* CARD GROUP 3: Help & Support & Sign Out */}
+          <div className="bg-white rounded-2xl shadow-xs border border-[#EAE4D8] overflow-hidden divide-y divide-[#F2EDE4]">
+            
+            <button
+              onClick={() => setActiveModal('help')}
+              className="w-full p-4 flex items-center justify-between hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer group"
+            >
+              <div className="flex items-center space-x-3.5">
+                <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center text-[#8C827A] group-hover:text-[#E0591D] transition-colors">
+                  <LifeBuoy className="w-4 h-4" />
+                </div>
+                <span className="text-xs sm:text-[13px] font-bold text-[#2B231D]">
+                  Help & Support
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#B8AEA4] group-hover:text-[#2B231D] transition-colors" />
+            </button>
+
+            <button
+              onClick={() => {
+                logoutUser();
+                router.push('/');
+              }}
+              className="w-full p-4 flex items-center justify-between hover:bg-red-50/50 transition-colors text-left cursor-pointer group"
+            >
+              <div className="flex items-center space-x-3.5">
+                <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                  <LogOut className="w-4 h-4" />
+                </div>
+                <span className="text-xs sm:text-[13px] font-bold text-red-600">
+                  Log Out
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-red-400" />
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ==================================================
+          MODAL 1: EDIT ACCOUNT DETAILS
+         ================================================== */}
+      <AnimatePresence>
+        {activeModal === 'profile' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveModal(null)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-[#EAE4D8] space-y-5 text-left"
+            >
+              <div className="flex items-center justify-between border-b border-[#F0EAE1] pb-3">
+                <h3 className="font-display font-bold text-lg text-[#2B231D]">
+                  Basic Profile Details
+                </h3>
+                <button 
+                  onClick={() => setActiveModal(null)}
+                  className="p-1 rounded-full hover:bg-[#FAF7F2] text-[#7D736A]"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveProfile} className="space-y-4">
                 
+                {/* Avatar Selection */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                    Profile Avatar
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setProfileForm({ ...profileForm, avatar: 'male' })}
+                      className={`flex items-center gap-2 p-2 rounded-xl border transition-all cursor-pointer ${
+                        profileForm.avatar === 'male'
+                          ? 'border-sky-500 bg-sky-50/50 shadow-xs'
+                          : 'border-[#EAE4D8] hover:bg-[#FAF7F2]'
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-white shadow-xs">
+                        <img src="/images/avatar-male.png" alt="Male" className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-xs font-bold text-[#2B231D]">Male</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setProfileForm({ ...profileForm, avatar: 'female' })}
+                      className={`flex items-center gap-2 p-2 rounded-xl border transition-all cursor-pointer ${
+                        profileForm.avatar === 'female'
+                          ? 'border-pink-500 bg-pink-50/50 shadow-xs'
+                          : 'border-[#EAE4D8] hover:bg-[#FAF7F2]'
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-white shadow-xs">
+                        <img src="/images/avatar-female.png" alt="Female" className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-xs font-bold text-[#2B231D]">Female</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* First Name & Last Name */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[8px] font-extrabold text-brand-warmGray tracking-wider uppercase block">First Name</label>
+                    <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                      First Name
+                    </label>
                     <input
                       required
                       type="text"
-                      placeholder="e.g. Prem"
-                      value={regForm.firstName}
-                      onChange={(e) => setRegForm({ ...regForm, firstName: e.target.value })}
-                      className="w-full bg-brand-warmWhite border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                      value={profileForm.firstName}
+                      onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
+                      className="w-full bg-[#FAF8F5] border border-[#EAE4D8] p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#E0591D]"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[8px] font-extrabold text-brand-warmGray tracking-wider uppercase block">Last Name</label>
+                    <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                      Last Name
+                    </label>
                     <input
                       required
                       type="text"
-                      placeholder="e.g. Kumar"
-                      value={regForm.lastName}
-                      onChange={(e) => setRegForm({ ...regForm, lastName: e.target.value })}
-                      className="w-full bg-brand-warmWhite border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                      value={profileForm.lastName}
+                      onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
+                      className="w-full bg-[#FAF8F5] border border-[#EAE4D8] p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#E0591D]"
                     />
                   </div>
+                </div>
+
+                {/* Email Address */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                    Email Address
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    value={profileForm.email}
+                    onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                    className="w-full bg-[#FAF8F5] border border-[#EAE4D8] p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#E0591D]"
+                  />
                 </div>
 
                 {/* Phone Number */}
                 <div className="space-y-1">
-                  <label className="text-[8px] font-extrabold text-brand-warmGray tracking-wider uppercase block">Phone Number</label>
+                  <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                    Phone Number
+                  </label>
                   <input
                     required
                     type="tel"
-                    placeholder="9876543210"
-                    value={regForm.phone}
-                    onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
-                    className="w-full bg-brand-warmWhite border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                    value={profileForm.phone}
+                    onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                    className="w-full bg-[#FAF8F5] border border-[#EAE4D8] p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#E0591D]"
                   />
                 </div>
 
-                {/* Street Name & Landmark */}
+                <div className="pt-2 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal(null)}
+                    className="px-4 py-2 border border-[#EAE4D8] rounded-full text-xs font-bold text-[#7D736A] hover:bg-[#FAF8F5]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-[#E0591D] hover:bg-[#C84B15] text-white rounded-full text-xs font-bold shadow-sm"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ==================================================
+          MODAL 2: MY ADDRESS DETAILS (Preserves all previous details)
+         ================================================== */}
+      <AnimatePresence>
+        {activeModal === 'address' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveModal(null)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-[#EAE4D8] space-y-5 text-left max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-[#F0EAE1] pb-3">
+                <h3 className="font-display font-bold text-lg text-[#2B231D]">
+                  Saved Address Details
+                </h3>
+                <button 
+                  onClick={() => setActiveModal(null)}
+                  className="p-1 rounded-full hover:bg-[#FAF7F2] text-[#7D736A]"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveAddress} className="space-y-3.5">
+                
+                {/* Street Name / Flat No */}
                 <div className="space-y-1">
-                  <label className="text-[8px] font-extrabold text-brand-warmGray tracking-wider uppercase block">Street / Colony Name</label>
+                  <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                    Street Name / Flat No.
+                  </label>
                   <input
                     required
                     type="text"
-                    placeholder="e.g. MG Road"
-                    value={regForm.streetName}
-                    onChange={(e) => setRegForm({ ...regForm, streetName: e.target.value })}
-                    className="w-full bg-brand-warmWhite border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                    value={addressForm.streetName}
+                    onChange={(e) => setAddressForm({ ...addressForm, streetName: e.target.value })}
+                    className="w-full bg-[#FAF8F5] border border-[#EAE4D8] p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#E0591D]"
                   />
                 </div>
 
+                {/* Landmark */}
                 <div className="space-y-1">
-                  <label className="text-[8px] font-extrabold text-brand-warmGray tracking-wider uppercase block">Landmark (Optional)</label>
+                  <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                    Landmark
+                  </label>
                   <input
                     type="text"
-                    placeholder="e.g. Opposite Grand Mall"
-                    value={regForm.landmark}
-                    onChange={(e) => setRegForm({ ...regForm, landmark: e.target.value })}
-                    className="w-full bg-brand-warmWhite border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E] font-semibold text-[#121110]"
+                    value={addressForm.landmark}
+                    onChange={(e) => setAddressForm({ ...addressForm, landmark: e.target.value })}
+                    className="w-full bg-[#FAF8F5] border border-[#EAE4D8] p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#E0591D]"
                   />
                 </div>
 
                 {/* City & State */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[8px] font-extrabold text-brand-warmGray tracking-wider uppercase block">City</label>
+                    <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                      City
+                    </label>
                     <input
                       required
                       type="text"
-                      placeholder="e.g. Pune"
-                      value={regForm.city}
-                      onChange={(e) => setRegForm({ ...regForm, city: e.target.value })}
-                      className="w-full bg-brand-warmWhite border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                      value={addressForm.city}
+                      onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
+                      className="w-full bg-[#FAF8F5] border border-[#EAE4D8] p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#E0591D]"
                     />
                   </div>
+
                   <div className="space-y-1">
-                    <label className="text-[8px] font-extrabold text-brand-warmGray tracking-wider uppercase block">State</label>
-                    <select
-                      value={regForm.state}
-                      onChange={(e) => setRegForm({ ...regForm, state: e.target.value })}
-                      className="w-full bg-brand-warmWhite border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                    >
-                      <option value="Maharashtra">Maharashtra</option>
-                      <option value="Delhi">Delhi</option>
-                      <option value="Karnataka">Karnataka</option>
-                      <option value="Tamil Nadu">Tamil Nadu</option>
-                    </select>
+                    <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                      State
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      value={addressForm.state}
+                      onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
+                      className="w-full bg-[#FAF8F5] border border-[#EAE4D8] p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#E0591D]"
+                    />
                   </div>
                 </div>
 
-                {/* Postal Code & Other Phone */}
+                {/* Postal Code & Alternate Phone */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[8px] font-extrabold text-brand-warmGray tracking-wider uppercase block">Postal Code</label>
+                    <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                      PIN Code (ZIP)
+                    </label>
                     <input
                       required
                       type="text"
-                      placeholder="411001"
-                      value={regForm.zip}
-                      onChange={(e) => setRegForm({ ...regForm, zip: e.target.value })}
-                      className="w-full bg-brand-warmWhite border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                      value={addressForm.zip}
+                      onChange={(e) => setAddressForm({ ...addressForm, zip: e.target.value })}
+                      className="w-full bg-[#FAF8F5] border border-[#EAE4D8] p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#E0591D]"
                     />
                   </div>
+
                   <div className="space-y-1">
-                    <label className="text-[8px] font-extrabold text-brand-warmGray tracking-wider uppercase block">Alternate Phone</label>
+                    <label className="text-[10px] font-extrabold text-[#7D736A] tracking-wider uppercase block">
+                      Alternate Phone
+                    </label>
                     <input
                       type="tel"
-                      placeholder="Optional phone"
-                      value={regForm.otherPhone}
-                      onChange={(e) => setRegForm({ ...regForm, otherPhone: e.target.value })}
-                      className="w-full bg-brand-warmWhite border border-brand-border/60 p-2.5 rounded-lg text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
+                      value={addressForm.otherPhone}
+                      onChange={(e) => setAddressForm({ ...addressForm, otherPhone: e.target.value })}
+                      className="w-full bg-[#FAF8F5] border border-[#EAE4D8] p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#E0591D]"
                     />
                   </div>
                 </div>
 
-                {/* Avatar selection */}
-                <div className="space-y-2 pt-2 border-t border-brand-border/10">
-                  <label className="text-[9px] font-extrabold text-brand-warmGray tracking-widest uppercase block text-center">
-                    Select Profile Avatar
-                  </label>
-                  
-                  <div className="flex justify-center space-x-6">
-                    <div 
-                      onClick={() => setRegForm({ ...regForm, avatar: 'male' })}
-                      className={`flex flex-col items-center space-y-1.5 p-3 rounded-2xl cursor-pointer transition-all border ${
-                        regForm.avatar === 'male' ? 'border-[#F26A2E] bg-[#FFF3EC]' : 'border-transparent hover:bg-brand-softBeige/15'
-                      }`}
-                    >
-                      <AvatarIcon type="male" className="w-12 h-12" />
-                      <span className="text-[8px] font-extrabold text-brand-espresso uppercase tracking-wider">Male Avatar</span>
-                    </div>
-
-                    <div 
-                      onClick={() => setRegForm({ ...regForm, avatar: 'female' })}
-                      className={`flex flex-col items-center space-y-1.5 p-3 rounded-2xl cursor-pointer transition-all border ${
-                        regForm.avatar === 'female' ? 'border-[#F26A2E] bg-[#FFF3EC]' : 'border-transparent hover:bg-brand-softBeige/15'
-                      }`}
-                    >
-                      <AvatarIcon type="female" className="w-12 h-12" />
-                      <span className="text-[8px] font-extrabold text-brand-espresso uppercase tracking-wider">Female Avatar</span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-[#F26A2E] text-brand-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-90 rounded-xl transition-all shadow-md mt-4"
-              >
-                Save Profile & Register
-              </button>
-
-            </form>
-          )}
-
-        </div>
-      </div>
-    );
-  }
-
-  // --- RENDERING REGISTERED ACCOUNT DASHBOARD PANEL ---
-  return (
-    <div className="w-full max-w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left">
-      <div className="max-w-5xl mx-auto space-y-8">
-        
-        {/* Header navigation bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-brand-border/40 gap-3">
-          <NavigationControls className="py-0" />
-          
-          <span className="text-[10px] font-bold text-brand-warmGray tracking-[0.25em] uppercase">
-            Curated Member Space
-          </span>
-        </div>
-
-        {/* Dashboard Grid Container */}
-        <div className="bg-white rounded-3xl overflow-hidden shadow-sm flex flex-col md:flex-row border border-brand-border/30 min-h-[500px]">
-          
-          {/* Left Navigation Sidebar */}
-          <div className="w-full md:w-1/3 bg-brand-softBeige/20 border-b md:border-b-0 md:border-r border-brand-border/30 p-6 flex flex-col justify-between">
-            <div className="space-y-6">
-              
-              {/* Profile Avatar Header */}
-              <div className="flex items-center space-x-3.5 pb-4 border-b border-brand-border/30">
-                <AvatarIcon type={user?.avatar || 'male'} className="w-12 h-12 flex-shrink-0" />
-                <div>
-                  <h3 className="font-display font-extrabold text-sm text-brand-espresso uppercase tracking-wide">
-                    Hello {user?.firstName}!
-                  </h3>
-                  <span className="text-[8px] text-brand-warmGray font-extrabold tracking-widest block mt-0.5">
-                    ELITE COLLECTOR
-                  </span>
-                </div>
-              </div>
-
-              {/* Sidebar Menu items */}
-              <nav className="flex md:flex-col overflow-x-auto md:overflow-x-visible space-x-2 md:space-x-0 md:space-y-1 text-[10px] font-extrabold tracking-widest uppercase text-brand-warmGray">
-                
-                <button
-                  onClick={() => { setActiveTab('manage'); setEditMode(false); }}
-                  className={`flex items-center space-x-2 py-2.5 px-3.5 rounded-xl text-left w-full transition-colors ${
-                    activeTab === 'manage' ? 'bg-[#FFF3EC] text-[#F26A2E]' : 'hover:bg-brand-softBeige/10 hover:text-brand-espresso'
-                  }`}
-                >
-                  <User className="w-4 h-4 stroke-[2]" />
-                  <span>Manage Account</span>
-                </button>
-
-                <button
-                  onClick={() => { setActiveTab('addresses'); setEditMode(false); }}
-                  className={`flex items-center space-x-2 py-2.5 px-3.5 rounded-xl text-left w-full transition-colors ${
-                    activeTab === 'addresses' ? 'bg-[#FFF3EC] text-[#F26A2E]' : 'hover:bg-brand-softBeige/10 hover:text-brand-espresso'
-                  }`}
-                >
-                  <MapPin className="w-4 h-4 stroke-[2]" />
-                  <span>Saved Addresses</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('payments')}
-                  className={`flex items-center space-x-2 py-2.5 px-3.5 rounded-xl text-left w-full transition-colors ${
-                    activeTab === 'payments' ? 'bg-[#FFF3EC] text-[#F26A2E]' : 'hover:bg-brand-softBeige/10 hover:text-brand-espresso'
-                  }`}
-                >
-                  <CreditCard className="w-4 h-4 stroke-[2]" />
-                  <span>Payment Details</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('orders')}
-                  className={`flex items-center space-x-2 py-2.5 px-3.5 rounded-xl text-left w-full transition-colors ${
-                    activeTab === 'orders' ? 'bg-[#FFF3EC] text-[#F26A2E]' : 'hover:bg-brand-softBeige/10 hover:text-brand-espresso'
-                  }`}
-                >
-                  <ShoppingBag className="w-4 h-4 stroke-[2]" />
-                  <span>Order History</span>
-                </button>
-
-                <button
-                  onClick={() => router.push('/wishlist')}
-                  className="flex items-center space-x-2 py-2.5 px-3.5 rounded-xl text-left w-full hover:bg-brand-softBeige/10 hover:text-[#F26A2E] transition-colors"
-                >
-                  <Heart className="w-4 h-4 stroke-[2]" />
-                  <span>My Wishlist</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('help')}
-                  className={`flex items-center space-x-2 py-2.5 px-3.5 rounded-xl text-left w-full transition-colors ${
-                    activeTab === 'help' ? 'bg-[#FFF3EC] text-[#F26A2E]' : 'hover:bg-brand-softBeige/10 hover:text-brand-espresso'
-                  }`}
-                >
-                  <LifeBuoy className="w-4 h-4 stroke-[2]" />
-                  <span>Help & Support</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('faqs')}
-                  className={`flex items-center space-x-2 py-2.5 px-3.5 rounded-xl text-left w-full transition-colors ${
-                    activeTab === 'faqs' ? 'bg-[#FFF3EC] text-[#F26A2E]' : 'hover:bg-brand-softBeige/10 hover:text-brand-espresso'
-                  }`}
-                >
-                  <HelpCircle className="w-4 h-4 stroke-[2]" />
-                  <span>FAQs</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('delete')}
-                  className={`flex items-center space-x-2 py-2.5 px-3.5 rounded-xl text-left w-full transition-colors ${
-                    activeTab === 'delete' ? 'bg-red-50 text-brand-sale' : 'hover:bg-red-50/50 hover:text-brand-sale'
-                  }`}
-                >
-                  <Trash2 className="w-4 h-4 stroke-[2]" />
-                  <span>Delete Account</span>
-                </button>
-
-              </nav>
-            </div>
-
-            <button
-              onClick={logoutUser}
-              className="flex items-center justify-center space-x-2 py-3 bg-[#1C1816] text-white rounded-xl text-[10px] font-extrabold tracking-widest uppercase hover:bg-brand-espresso transition-colors shadow-sm w-full mt-6 flex-shrink-0"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>LOGOUT</span>
-            </button>
-          </div>
-
-          {/* Right Content Panels */}
-          <div className="flex-grow p-6 md:p-8 relative text-left">
-            
-            {/* Status alerts */}
-            {isSavedAlert && (
-              <div className="absolute top-4 right-4 bg-brand-success/10 border border-brand-success/20 text-brand-success px-3.5 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1.5 shadow-sm animate-pulse">
-                <CheckCircle className="w-3.5 h-3.5" />
-                <span>Changes saved successfully!</span>
-              </div>
-            )}
-
-            {/* TAB 1: MANAGE ACCOUNT */}
-            {activeTab === 'manage' && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center border-b border-brand-border/30 pb-2">
-                  <h4 className="text-xs font-extrabold tracking-[0.2em] text-brand-espresso uppercase">
-                    Profile Details
-                  </h4>
-                  {!editMode && (
-                    <button 
-                      onClick={() => setEditMode(true)}
-                      className="flex items-center gap-1 text-[10px] font-extrabold text-[#F26A2E] tracking-wider uppercase hover:opacity-80"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                      <span>Edit Info</span>
-                    </button>
-                  )}
-                </div>
-
-                {!editMode ? (
-                  // Read Mode
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-[11px] font-bold text-brand-espresso">
-                    <div className="space-y-1">
-                      <span className="text-[9px] text-brand-warmGray tracking-wider block">FIRST NAME</span>
-                      <p className="bg-[#FCFAF7] p-3 rounded-xl border border-brand-border/20 text-xs font-semibold">{user?.firstName}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[9px] text-brand-warmGray tracking-wider block">LAST NAME</span>
-                      <p className="bg-[#FCFAF7] p-3 rounded-xl border border-brand-border/20 text-xs font-semibold">{user?.lastName}</p>
-                    </div>
-                    <div className="space-y-1 col-span-1 sm:col-span-2">
-                      <span className="text-[9px] text-brand-warmGray tracking-wider block">EMAIL ADDRESS</span>
-                      <p className="bg-[#FCFAF7] p-3 rounded-xl border border-brand-border/20 text-xs font-semibold">{user?.email}</p>
-                    </div>
-                    <div className="space-y-1 col-span-1 sm:col-span-2">
-                      <span className="text-[9px] text-brand-warmGray tracking-wider block">PHONE NUMBER</span>
-                      <p className="bg-[#FCFAF7] p-3 rounded-xl border border-brand-border/20 text-xs font-semibold">{user?.phone}</p>
-                    </div>
-                  </div>
-                ) : (
-                  // Edit Mode Form
-                  <form onSubmit={handleSaveAccount} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1 text-left">
-                        <label className="text-[9px] font-bold text-brand-warmGray block">First Name</label>
-                        <input
-                          required
-                          type="text"
-                          value={accountForm.firstName}
-                          onChange={(e) => setAccountForm({ ...accountForm, firstName: e.target.value })}
-                          className="w-full bg-brand-warmWhite border border-brand-border/50 p-2.5 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                        />
-                      </div>
-                      <div className="space-y-1 text-left">
-                        <label className="text-[9px] font-bold text-brand-warmGray block">Last Name</label>
-                        <input
-                          required
-                          type="text"
-                          value={accountForm.lastName}
-                          onChange={(e) => setAccountForm({ ...accountForm, lastName: e.target.value })}
-                          className="w-full bg-brand-warmWhite border border-brand-border/50 p-2.5 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                        />
-                      </div>
-                      <div className="space-y-1 text-left col-span-1 sm:col-span-2">
-                        <label className="text-[9px] font-bold text-brand-warmGray block">Phone Number</label>
-                        <input
-                          required
-                          type="tel"
-                          value={accountForm.phone}
-                          onChange={(e) => setAccountForm({ ...accountForm, phone: e.target.value })}
-                          className="w-full bg-brand-warmWhite border border-brand-border/50 p-2.5 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                        />
-                      </div>
-                      
-                      {/* Avatar chooser */}
-                      <div className="col-span-1 sm:col-span-2 space-y-2 border-t border-brand-border/10 pt-4 text-left">
-                        <span className="text-[9px] font-bold text-brand-warmGray tracking-widest uppercase block text-center">Change Profile Avatar</span>
-                        <div className="flex justify-center space-x-6">
-                          <div 
-                            onClick={() => setAccountForm({ ...accountForm, avatar: 'male' })}
-                            className={`flex flex-col items-center space-y-1 p-2 rounded-xl cursor-pointer border ${
-                              accountForm.avatar === 'male' ? 'border-[#F26A2E] bg-[#FFF3EC]' : 'border-transparent'
-                            }`}
-                          >
-                            <AvatarIcon type="male" className="w-10 h-10" />
-                            <span className="text-[8px] font-extrabold uppercase">Male</span>
-                          </div>
-                          <div 
-                            onClick={() => setAccountForm({ ...accountForm, avatar: 'female' })}
-                            className={`flex flex-col items-center space-y-1 p-2 rounded-xl cursor-pointer border ${
-                              accountForm.avatar === 'female' ? 'border-[#F26A2E] bg-[#FFF3EC]' : 'border-transparent'
-                            }`}
-                          >
-                            <AvatarIcon type="female" className="w-10 h-10" />
-                            <span className="text-[8px] font-extrabold uppercase">Female</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex space-x-3 pt-2">
-                      <button
-                        type="submit"
-                        className="px-5 py-2.5 bg-[#F26A2E] text-white text-[10px] font-extrabold tracking-widest rounded-xl uppercase flex items-center gap-1"
-                      >
-                        <Save className="w-3.5 h-3.5" />
-                        <span>Save Changes</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditMode(false)}
-                        className="px-5 py-2.5 bg-brand-white border border-brand-border/50 text-brand-warmGray text-[10px] font-extrabold tracking-widest rounded-xl uppercase"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            )}
-
-            {/* TAB 2: SAVED ADDRESSES */}
-            {activeTab === 'addresses' && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center border-b border-brand-border/30 pb-2">
-                  <h4 className="text-xs font-extrabold tracking-[0.2em] text-brand-espresso uppercase">
-                    Saved Addresses
-                  </h4>
-                  {!editMode && (
-                    <button 
-                      onClick={() => setEditMode(true)}
-                      className="flex items-center gap-1 text-[10px] font-extrabold text-[#F26A2E] tracking-wider uppercase hover:opacity-80"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                      <span>Edit Address</span>
-                    </button>
-                  )}
-                </div>
-
-                {!editMode ? (
-                  // Read Address
-                  <div className="p-4 border border-brand-border/40 rounded-2xl bg-[#FCFAF7] text-[11px] font-bold text-brand-espresso relative">
-                    <div className="flex items-center space-x-2 font-extrabold text-xs mb-2">
-                      <MapPin className="w-4 h-4 text-[#F26A2E]" />
-                      <span>Primary Residence</span>
-                    </div>
-                    <div className="space-y-1 font-semibold text-brand-warmGray pl-6 leading-relaxed">
-                      <p>{user?.firstName} {user?.lastName}</p>
-                      {user?.streetName && <p>{user.streetName}</p>}
-                      {user?.landmark && <p>Landmark: {user.landmark}</p>}
-                      {user?.city && <p>{user.city}, {user.state} - {user.zip}</p>}
-                      <p>India</p>
-                    </div>
-                  </div>
-                ) : (
-                  // Edit Address Form
-                  <form onSubmit={handleSaveAddress} className="space-y-4">
-                    <div className="space-y-3.5">
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-brand-warmGray block">Street / Colony Name</label>
-                        <input
-                          required
-                          type="text"
-                          value={addressForm.streetName}
-                          onChange={(e) => setAddressForm({ ...addressForm, streetName: e.target.value })}
-                          className="w-full bg-brand-warmWhite border border-brand-border/50 p-2.5 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                        />
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-brand-warmGray block">Landmark (Optional)</label>
-                        <input
-                          type="text"
-                          value={addressForm.landmark}
-                          onChange={(e) => setAddressForm({ ...addressForm, landmark: e.target.value })}
-                          className="w-full bg-brand-warmWhite border border-brand-border/50 p-2.5 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-brand-warmGray block">City</label>
-                          <input
-                            required
-                            type="text"
-                            value={addressForm.city}
-                            onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
-                            className="w-full bg-brand-warmWhite border border-brand-border/50 p-2.5 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-brand-warmGray block">State</label>
-                          <input
-                            required
-                            type="text"
-                            value={addressForm.state}
-                            onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
-                            className="w-full bg-brand-warmWhite border border-brand-border/50 p-2.5 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-brand-warmGray block">Pincode</label>
-                        <input
-                          required
-                          type="text"
-                          value={addressForm.zip}
-                          onChange={(e) => setAddressForm({ ...addressForm, zip: e.target.value })}
-                          className="w-full bg-brand-warmWhite border border-[#FCFAF7] p-2.5 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex space-x-3 pt-2">
-                      <button
-                        type="submit"
-                        className="px-5 py-2.5 bg-[#F26A2E] text-white text-[10px] font-extrabold tracking-widest rounded-xl uppercase flex items-center gap-1"
-                      >
-                        <Save className="w-3.5 h-3.5" />
-                        <span>Save Address</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditMode(false)}
-                        className="px-5 py-2.5 bg-brand-white border border-brand-border/50 text-brand-warmGray text-[10px] font-extrabold tracking-widest rounded-xl uppercase"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            )}
-
-            {/* TAB 3: PAYMENT DETAILS */}
-            {activeTab === 'payments' && (
-              <div className="space-y-6">
-                <h4 className="text-xs font-extrabold tracking-[0.2em] text-brand-espresso border-b border-brand-border/30 pb-2 uppercase">
-                  Saved Wallet Options
-                </h4>
-                
-                <div className="space-y-3">
-                  <div className="p-4 border border-brand-border/20 rounded-2xl bg-gradient-to-r from-[#C45E2E] to-[#802611] text-white flex items-center justify-between shadow-sm relative overflow-hidden">
-                    <div className="space-y-1 text-left">
-                      <span className="text-[7px] font-extrabold opacity-75 uppercase tracking-widest">Saved Credit Card</span>
-                      <h5 className="text-xs font-extrabold tracking-[0.15em]">•••• •••• •••• 9812</h5>
-                      <p className="text-[8px] opacity-90 font-bold uppercase">{user?.firstName} {user?.lastName}</p>
-                    </div>
-                    <CreditCard className="w-8 h-8 opacity-45 stroke-[1.5]" />
-                  </div>
-
-                  <div className="p-4 border border-brand-border/20 rounded-2xl bg-[#FCFAF7] text-brand-espresso flex items-center justify-between">
-                    <div className="space-y-0.5 text-left font-semibold">
-                      <span className="text-[7px] font-extrabold text-[#F26A2E] tracking-widest uppercase block">Saved UPI Handle</span>
-                      <h5 className="text-xs font-bold text-brand-espresso">{user?.firstName.toLowerCase()}@upi</h5>
-                    </div>
-                    <span className="text-[8px] bg-brand-success/15 border border-brand-success/20 text-brand-success font-extrabold tracking-widest px-2 py-0.5 rounded uppercase">Primary</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 4: ORDER HISTORY */}
-            {activeTab === 'orders' && (
-              <div className="space-y-6">
-                <h4 className="text-xs font-extrabold tracking-[0.2em] text-brand-espresso border-b border-brand-border/30 pb-2 uppercase">
-                  Consignment Archives
-                </h4>
-
-                <div className="space-y-4">
-                  <div className="p-4 border border-brand-border/20 rounded-2xl bg-[#FCFAF7] text-[11px] font-semibold space-y-1 text-left relative">
-                    <div className="flex justify-between items-baseline font-extrabold text-xs">
-                      <span>#AD-981240</span>
-                      <span className="text-brand-success font-extrabold text-[8px] bg-brand-success/10 border border-brand-success/20 px-2 py-0.5 rounded uppercase tracking-wider">Delivered</span>
-                    </div>
-                    <p className="text-brand-warmGray">Chanderi Silk Anarkali Suit (x1)</p>
-                    <div className="flex justify-between text-brand-warmGray pt-2 border-t border-brand-border/10 mt-1">
-                      <span>August 10, 2026</span>
-                      <span className="font-extrabold text-brand-espresso">₹5,849</span>
-                    </div>
-                  </div>
-
-                  <div className="p-4 border border-brand-border/20 rounded-2xl bg-[#FCFAF7] text-[11px] font-semibold space-y-1 text-left relative">
-                    <div className="flex justify-between items-baseline font-extrabold text-xs">
-                      <span>#AD-543190</span>
-                      <span className="text-brand-success font-extrabold text-[8px] bg-brand-success/10 border border-brand-success/20 px-2 py-0.5 rounded uppercase tracking-wider">Delivered</span>
-                    </div>
-                    <p className="text-brand-warmGray">1918 Silver King George Rupee (x1)</p>
-                    <div className="flex justify-between text-brand-warmGray pt-2 border-t border-brand-border/10 mt-1">
-                      <span>July 28, 2026</span>
-                      <span className="font-extrabold text-brand-espresso">₹990</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 5: HELP & SUPPORT */}
-            {activeTab === 'help' && (
-              <div className="space-y-6">
-                <h4 className="text-xs font-extrabold tracking-[0.2em] text-brand-espresso border-b border-brand-border/30 pb-2 uppercase">
-                  Raise Support Ticket
-                </h4>
-
-                {ticketRaised && (
-                  <div className="p-4 border border-brand-success/25 bg-brand-success/10 rounded-2xl text-xs font-bold text-brand-success text-center">
-                    ✓ Support Ticket raised! A member of team Aadhya will respond within 4 hours.
-                  </div>
-                )}
-
-                <form onSubmit={handleRaiseTicket} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-brand-warmGray block">Subject of Query</label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="e.g. Sizing adjustment request"
-                      value={supportTicket.subject}
-                      onChange={(e) => setSupportTicket({ ...supportTicket, subject: e.target.value })}
-                      className="w-full bg-[#FCFAF7] border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-brand-warmGray block">Message Details</label>
-                    <textarea
-                      required
-                      rows={4}
-                      placeholder="Explain your issue in detail..."
-                      value={supportTicket.message}
-                      onChange={(e) => setSupportTicket({ ...supportTicket, message: e.target.value })}
-                      className="w-full bg-[#FCFAF7] border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso resize-none"
-                    />
-                  </div>
-
+                <div className="pt-3 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal(null)}
+                    className="px-4 py-2 border border-[#EAE4D8] rounded-full text-xs font-bold text-[#7D736A] hover:bg-[#FAF8F5]"
+                  >
+                    Cancel
+                  </button>
                   <button
                     type="submit"
-                    className="w-full py-3 bg-[#F26A2E] text-white text-[10px] font-extrabold tracking-widest rounded-xl uppercase hover:opacity-90 transition-all shadow-sm"
+                    className="px-6 py-2 bg-[#E0591D] hover:bg-[#C84B15] text-white rounded-full text-xs font-bold shadow-sm"
                   >
-                    Submit Support Ticket
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* TAB 6: FAQS */}
-            {activeTab === 'faqs' && (
-              <div className="space-y-6">
-                <h4 className="text-xs font-extrabold tracking-[0.2em] text-[#1C1816] border-b border-brand-border/30 pb-2 uppercase">
-                  FAQs & Curated Help
-                </h4>
-
-                <div className="space-y-3">
-                  {faqs.map((faq, index) => {
-                    const isOpen = expandedFaq === index;
-                    return (
-                      <div 
-                        key={index} 
-                        className="border border-brand-border/35 rounded-2xl overflow-hidden bg-[#FCFAF7]"
-                      >
-                        <button
-                          onClick={() => setExpandedFaq(isOpen ? null : index)}
-                          className="w-full p-4 flex items-center justify-between text-left font-bold text-xs text-brand-espresso hover:bg-brand-softBeige/20 transition-colors"
-                        >
-                          <span>{faq.q}</span>
-                          <ChevronRight className={`w-4 h-4 text-[#F26A2E] transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-                        </button>
-                        {isOpen && (
-                          <div className="p-4 pt-0 text-[11px] text-brand-warmGray font-semibold leading-relaxed border-t border-brand-border/10 bg-white">
-                            {faq.a}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* TAB 7: DELETE ACCOUNT */}
-            {activeTab === 'delete' && (
-              <div className="space-y-6">
-                <h4 className="text-xs font-extrabold tracking-[0.2em] text-brand-sale border-b border-brand-border/30 pb-2 uppercase">
-                  Delete Account Registry
-                </h4>
-
-                <div className="p-4 border border-brand-sale/20 bg-brand-sale/10 rounded-2xl text-[11px] font-semibold text-brand-sale leading-relaxed space-y-3">
-                  <p className="font-extrabold">⚠️ Warning: This action is irreversible.</p>
-                  <p>
-                    Deleting your account will permanently remove all profile details, saved addresses, wallet options, and order history from Aadhya registers.
-                  </p>
-                </div>
-
-                <div className="pt-2 text-left">
-                  <button
-                    onClick={() => {
-                      if (confirm("Are you sure you want to permanently delete your Aadhya account? This cannot be undone.")) {
-                        deleteUserAccount();
-                      }
-                    }}
-                    className="px-6 py-3 bg-brand-sale text-white text-[10px] font-extrabold tracking-widest rounded-xl uppercase hover:bg-opacity-90 shadow-sm flex items-center gap-1.5"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span>PERMANENTLY DELETE ACCOUNT</span>
+                    Update Address
                   </button>
                 </div>
-              </div>
-            )}
-
+              </form>
+            </motion.div>
           </div>
+        )}
+      </AnimatePresence>
 
-        </div>
+      {/* ==================================================
+          MODAL 3: ORDER HISTORY
+         ================================================== */}
+      <AnimatePresence>
+        {activeModal === 'orders' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveModal(null)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+            />
 
-      </div>
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-[#EAE4D8] space-y-4 text-left"
+            >
+              <div className="flex items-center justify-between border-b border-[#F0EAE1] pb-3">
+                <h3 className="font-display font-bold text-lg text-[#2B231D]">
+                  Order History
+                </h3>
+                <button 
+                  onClick={() => setActiveModal(null)}
+                  className="p-1 rounded-full hover:bg-[#FAF7F2] text-[#7D736A]"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div className="p-3.5 bg-[#FAF8F5] border border-[#EAE4D8] rounded-2xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#E0591D]">#ORD-98242</span>
+                    <span className="text-[9px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">Delivered</span>
+                  </div>
+                  <p className="text-xs font-bold text-[#2B231D]">Rose Silk Saree & King George V Silver Rupee</p>
+                  <span className="text-[10px] text-[#7D736A] block">Delivered to Pune • Total: ₹14,999</span>
+                </div>
+
+                <div className="p-3.5 bg-[#FAF8F5] border border-[#EAE4D8] rounded-2xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#E0591D]">#ORD-94101</span>
+                    <span className="text-[9px] font-bold px-2 py-0.5 bg-sky-100 text-sky-800 rounded-full">Shipped</span>
+                  </div>
+                  <p className="text-xs font-bold text-[#2B231D]">Fine Cotton Blazer Dress</p>
+                  <span className="text-[10px] text-[#7D736A] block">In Transit • Total: ₹5,499</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ==================================================
+          MODAL 4: NOTIFICATIONS
+         ================================================== */}
+      <AnimatePresence>
+        {activeModal === 'notifications' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveModal(null)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-[#EAE4D8] space-y-4 text-left"
+            >
+              <div className="flex items-center justify-between border-b border-[#F0EAE1] pb-3">
+                <h3 className="font-display font-bold text-lg text-[#2B231D]">
+                  Notifications
+                </h3>
+                <button 
+                  onClick={() => setActiveModal(null)}
+                  className="p-1 rounded-full hover:bg-[#FAF7F2] text-[#7D736A]"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div className="p-3 bg-[#FAF8F5] border border-[#EAE4D8] rounded-xl space-y-1">
+                  <span className="text-[9px] font-extrabold text-[#E0591D] uppercase">Vault Addition</span>
+                  <p className="text-xs font-semibold text-[#2B231D]">New 1835 William IV Double Mohur acquired.</p>
+                </div>
+                <div className="p-3 bg-[#FAF8F5] border border-[#EAE4D8] rounded-xl space-y-1">
+                  <span className="text-[9px] font-extrabold text-emerald-600 uppercase">Order Update</span>
+                  <p className="text-xs font-semibold text-[#2B231D]">Your package #ORD-94101 is out for delivery.</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ==================================================
+          MODAL 5: HELP & SUPPORT
+         ================================================== */}
+      <AnimatePresence>
+        {activeModal === 'help' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveModal(null)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-[#EAE4D8] space-y-4 text-left"
+            >
+              <div className="flex items-center justify-between border-b border-[#F0EAE1] pb-3">
+                <h3 className="font-display font-bold text-lg text-[#2B231D]">
+                  Help & Support Desk
+                </h3>
+                <button 
+                  onClick={() => setActiveModal(null)}
+                  className="p-1 rounded-full hover:bg-[#FAF7F2] text-[#7D736A]"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-2 text-xs text-[#2B231D]">
+                <p className="font-semibold">Concierge Support Available 24/7:</p>
+                <div className="p-3 bg-[#FAF8F5] rounded-xl border border-[#EAE4D8] space-y-1">
+                  <p className="font-bold">Email: support@aadhya.com</p>
+                  <p className="font-bold">Direct Line: +91 (020) 4122-8900</p>
+                  <p className="text-[10px] text-[#7D736A]">Response within 1-2 hours.</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
