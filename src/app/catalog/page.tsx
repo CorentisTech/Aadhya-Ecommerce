@@ -4,25 +4,28 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PRODUCTS, Product } from '@/data/mockData';
 import { useApp } from '@/context/AppContext';
-import { Heart, Star, SlidersHorizontal, X, Search, ChevronDown, Grid3X3, LayoutGrid } from 'lucide-react';
+import { Heart, Star, SlidersHorizontal, X, Search, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavigationControls } from '@/components/ui/NavigationControls';
 import { ProductVisual } from '@/components/ui/ProductVisual';
 
-// Filter option lists
+// Exact filter criteria from media_1788429391390.png
 const FASHION_FILTER_CRITERIA = {
-  fabric: ['Cotton', 'Silk', 'Wool Blend', 'Raw Silk', 'Chiffon', 'Linen'],
-  neckType: ['Collared', 'V-Neck', 'Round Neck', 'Sweetheart', 'Boat Neck'],
-  sleeves: ['Full Sleeves', 'Long Sleeves', 'Three-Quarter', 'Half Sleeves', 'Sleeveless'],
-  occasion: ['Casual', 'Formal', 'Festive', 'Wedding', 'Evening'],
-  fit: ['Relaxed', 'Slim Fit', 'Flared', 'Tailored', 'Oversized']
+  fabric: { label: 'FABRIC', options: ['Cotton', 'Silk', 'Wool Blend', 'Raw Silk', 'Chiffon'] },
+  neckType: { label: 'NECK TYPE', options: ['Collared', 'V-Neck Lapel', 'Round Neck', 'Sweetheart', 'Boat Neck'] },
+  sleeves: { label: 'SLEEVES', options: ['Full Sleeves', 'Long Sleeves', 'Three-Quarter', 'Half Sleeves', 'Sleeveless'] },
+  occasion: { label: 'OCCASION', options: ['Casual', 'Formal', 'Festive', 'Wedding', 'Evening'] },
+  length: { label: 'LENGTH', options: ['Short', 'Midi', 'Maxi', 'Crop'] },
+  fit: { label: 'FIT', options: ['Relaxed', 'Slim Fit', 'Flared', 'Tailored', 'Oversized'] }
 };
 
+// Exact numismatics filter criteria specified by user
 const NUMISMATICS_FILTER_CRITERIA = {
-  material: ['Silver', 'Gold', 'Paper', 'Mixed Metal', 'Copper'],
-  era: ['British India', 'Republic India', 'Mughal Empire', 'Ancient', 'East India Company'],
-  rarity: ['Rare', 'Scarce', 'Very Rare', 'Extremely Rare', 'Standard'],
-  visualType: ['coin', 'note']
+  material: { label: 'MATERIAL', options: ['Silver', 'Gold', 'Paper', 'Mixed Metal', 'Copper'] },
+  era: { label: 'ERA / PERIOD', options: ['British India', 'Republic India', 'Mughal Empire', 'Ancient', 'East India Company'] },
+  rarity: { label: 'RARITY', options: ['Rare', 'Scarce', 'Very Rare', 'Extremely Rare', 'Standard'] },
+  visualType: { label: 'TYPE', options: ['Coins', 'Notes'] },
+  priceRange: { label: 'PRICE RANGE', options: ['Under ₹5,000', '₹5,000 - ₹15,000', '₹15,000 - ₹30,000', 'Above ₹30,000'] }
 };
 
 const FASHION_PILLS = ['ALL', 'WESTERN', 'ETHNIC', 'DRESSES', 'BLOUSE', 'TROUSERS', 'TOPS'];
@@ -39,7 +42,7 @@ function CatalogContent() {
 
   const { toggleWishlist, isInWishlist, addToCart } = useApp();
 
-  // Toolbar & Filtering States
+  // Department state
   const [department, setDepartment] = useState<'fashion' | 'numismatics'>(
     initialDepartment === 'numismatics' ? 'numismatics' : 'fashion'
   );
@@ -48,22 +51,21 @@ function CatalogContent() {
   const [activeSortTab, setActiveSortTab] = useState<string>(
     initialSort === 'newest' ? 'Newest' : initialSort === 'best-selling' ? 'Best Sellers' : 'Recommended'
   );
-  const [gridColumns, setGridColumns] = useState<3 | 4>(4);
   const [isFilterOpen, setFilterOpen] = useState(false);
 
-  // Top Dropdown Filters State for Numismatics
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string>('all');
-  const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
-  const [selectedMaterial, setSelectedMaterial] = useState<string>('all');
-  const [selectedEra, setSelectedEra] = useState<string>('all');
-
-  // Selected Checkbox Filters
+  // Selected Filter Pills State
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({
     fabric: [],
+    neckType: [],
+    sleeves: [],
+    occasion: [],
+    length: [],
+    fit: [],
     material: [],
     era: [],
-    rarity: []
+    rarity: [],
+    visualType: [],
+    priceRange: []
   });
 
   useEffect(() => {
@@ -72,11 +74,9 @@ function CatalogContent() {
     } else if (searchParams.get('department') === 'fashion') {
       setDepartment('fashion');
     }
-    if (initialCategory) {
-      setSelectedType(initialCategory);
-    }
-  }, [searchParams, initialCategory]);
+  }, [searchParams]);
 
+  // Toggle filter option
   const handleToggleFilter = (group: string, value: string) => {
     setSelectedFilters(prev => {
       const current = prev[group] || [];
@@ -87,7 +87,26 @@ function CatalogContent() {
     });
   };
 
-  // Filter products by department, search, category, dropdowns, and checkboxes
+  // Reset all filters
+  const handleResetFilters = () => {
+    setSelectedFilters({
+      fabric: [],
+      neckType: [],
+      sleeves: [],
+      occasion: [],
+      length: [],
+      fit: [],
+      material: [],
+      era: [],
+      rarity: [],
+      visualType: [],
+      priceRange: []
+    });
+    setSelectedFashionPill('ALL');
+    setSearchQuery('');
+  };
+
+  // Filter products by department, search, category pill, and filter criteria
   const filteredProducts = PRODUCTS.filter(product => {
     // 1. Department match: strictly isolated
     if (product.department !== department) return false;
@@ -101,11 +120,10 @@ function CatalogContent() {
       if (!matchesName && !matchesDesc && !matchesCat) return false;
     }
 
-    // 3. Fashion Pill filtering
+    // 3. Fashion Pills
     if (department === 'fashion' && selectedFashionPill !== 'ALL') {
       const pill = selectedFashionPill.toLowerCase();
       const cat = product.category.toLowerCase();
-      const desc = product.description.toLowerCase();
       const name = product.name.toLowerCase();
       const visual = product.visualType?.toLowerCase() || '';
 
@@ -130,37 +148,55 @@ function CatalogContent() {
       }
     }
 
-    // 4. Numismatics Dropdowns
-    if (department === 'numismatics') {
-      if (selectedType !== 'all') {
-        if (selectedType === 'coins' && product.visualType !== 'coin') return false;
-        if (selectedType === 'notes' && product.visualType !== 'note') return false;
-        if (selectedType === 'rare-coins' && product.rarity !== 'Rare') return false;
-        if (selectedType === 'british-india' && product.era !== 'British India') return false;
-        if (selectedType === 'republic-india' && product.era !== 'Republic India') return false;
+    // 4. Drawer Filter Checks for Fashion
+    if (department === 'fashion') {
+      if (selectedFilters.fabric.length > 0 && product.fabric) {
+        if (!selectedFilters.fabric.some(f => product.fabric?.toLowerCase().includes(f.toLowerCase()))) return false;
       }
-
-      if (selectedPriceRange === 'under-5k' && product.price >= 5000) return false;
-      if (selectedPriceRange === '5k-15k' && (product.price < 5000 || product.price > 15000)) return false;
-      if (selectedPriceRange === '15k-30k' && (product.price < 15000 || product.price > 30000)) return false;
-      if (selectedPriceRange === 'above-30k' && product.price <= 30000) return false;
-
-      if (selectedMaterial !== 'all' && product.material?.toLowerCase() !== selectedMaterial.toLowerCase()) {
-        return false;
+      if (selectedFilters.neckType.length > 0 && product.neckType) {
+        if (!selectedFilters.neckType.some(n => product.neckType?.toLowerCase().includes(n.toLowerCase()))) return false;
       }
-
-      if (selectedEra !== 'all' && product.era?.toLowerCase() !== selectedEra.toLowerCase()) {
-        return false;
+      if (selectedFilters.sleeves.length > 0 && product.sleeves) {
+        if (!selectedFilters.sleeves.some(s => product.sleeves?.toLowerCase().includes(s.toLowerCase()))) return false;
+      }
+      if (selectedFilters.occasion.length > 0 && product.occasion) {
+        if (!selectedFilters.occasion.some(o => product.occasion?.toLowerCase().includes(o.toLowerCase()))) return false;
+      }
+      if (selectedFilters.length.length > 0 && product.length) {
+        if (!selectedFilters.length.some(l => product.length?.toLowerCase().includes(l.toLowerCase()))) return false;
+      }
+      if (selectedFilters.fit.length > 0 && product.fit) {
+        if (!selectedFilters.fit.some(f => product.fit?.toLowerCase().includes(f.toLowerCase()))) return false;
       }
     }
 
-    // 5. Checkbox Filters
-    for (const [key, selectedValues] of Object.entries(selectedFilters)) {
-      if (selectedValues.length > 0) {
-        const productValue = product[key as keyof Product];
-        if (!productValue || !selectedValues.includes(String(productValue))) {
-          return false;
-        }
+    // 5. Drawer Filter Checks for Numismatics
+    if (department === 'numismatics') {
+      if (selectedFilters.material.length > 0 && product.material) {
+        if (!selectedFilters.material.some(m => product.material?.toLowerCase().includes(m.toLowerCase()))) return false;
+      }
+      if (selectedFilters.era.length > 0 && product.era) {
+        if (!selectedFilters.era.some(e => product.era?.toLowerCase().includes(e.toLowerCase()))) return false;
+      }
+      if (selectedFilters.rarity.length > 0 && product.rarity) {
+        if (!selectedFilters.rarity.some(r => product.rarity?.toLowerCase().includes(r.toLowerCase()))) return false;
+      }
+      if (selectedFilters.visualType.length > 0) {
+        const matchesType = selectedFilters.visualType.some(vt => 
+          (vt === 'Coins' && product.visualType === 'coin') || 
+          (vt === 'Notes' && product.visualType === 'note')
+        );
+        if (!matchesType) return false;
+      }
+      if (selectedFilters.priceRange.length > 0) {
+        const matchesPrice = selectedFilters.priceRange.some(pr => {
+          if (pr === 'Under ₹5,000') return product.price < 5000;
+          if (pr === '₹5,000 - ₹15,000') return product.price >= 5000 && product.price <= 15000;
+          if (pr === '₹15,000 - ₹30,000') return product.price >= 15000 && product.price <= 30000;
+          if (pr === 'Above ₹30,000') return product.price > 30000;
+          return true;
+        });
+        if (!matchesPrice) return false;
       }
     }
 
@@ -186,7 +222,7 @@ function CatalogContent() {
         <NavigationControls className="justify-start border-b border-[#EFE8DC] pb-3" />
 
         {/* ==================================================
-            1. FASHION CATALOG HEADER (Exact Match: media_1788426604546.png)
+            1. CATALOG HEADER (Matching media_1788426604546.png for Fashion)
            ================================================== */}
         {isFashion ? (
           <div className="space-y-6 text-left">
@@ -207,7 +243,7 @@ function CatalogContent() {
                 {/* Filters Pill Button */}
                 <button
                   onClick={() => setFilterOpen(true)}
-                  className="px-4 py-2 bg-[#1A1A1A] text-white rounded-full text-xs font-bold hover:bg-black transition-colors flex items-center gap-1.5 shadow-xs"
+                  className="px-4 py-2 bg-[#1A1A1A] text-white rounded-full text-xs font-bold hover:bg-black transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
                   <SlidersHorizontal className="w-3.5 h-3.5" />
                   <span>Filters</span>
@@ -251,7 +287,7 @@ function CatalogContent() {
                   <button
                     key={pill}
                     onClick={() => setSelectedFashionPill(pill)}
-                    className={`px-5 py-1.5 sm:py-2 rounded-full text-xs font-bold tracking-wider uppercase transition-all whitespace-nowrap shadow-xs ${
+                    className={`px-5 py-1.5 sm:py-2 rounded-full text-xs font-bold tracking-wider uppercase transition-all whitespace-nowrap shadow-xs cursor-pointer ${
                       isSelected
                         ? 'bg-[#1A1A1A] text-white'
                         : 'bg-white border border-[#EAE2D5] text-[#2B231D] hover:bg-[#FAF7F2]'
@@ -282,93 +318,36 @@ function CatalogContent() {
                 </p>
               </div>
 
-              {/* Department Switcher Pill */}
-              <div className="flex items-center bg-[#FDF9F3] p-1.5 rounded-full border border-[#EAE2D5] shadow-xs">
+              {/* Filters Button and Search */}
+              <div className="flex flex-wrap items-center gap-3">
                 <button
-                  onClick={() => setDepartment('numismatics')}
-                  className="px-5 py-2 rounded-full text-xs font-extrabold bg-[#E0591D] text-white shadow-xs"
+                  onClick={() => setFilterOpen(true)}
+                  className="px-5 py-2.5 bg-[#E0591D] hover:bg-[#C84B15] text-white rounded-full text-xs font-extrabold transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
                 >
-                  Coins & Notes
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <span>Filters</span>
                 </button>
-                <button
-                  onClick={() => setDepartment('fashion')}
-                  className="px-5 py-2 rounded-full text-xs font-extrabold text-brand-warmGray hover:text-[#2B231D]"
-                >
-                  Fashion
-                </button>
-              </div>
-            </div>
 
-            {/* Numismatics Filter Dropdowns Row */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <div className="relative">
-                <button
-                  onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
-                  className="px-4 py-2 bg-white border border-[#EAE2D5] rounded-full text-xs font-extrabold text-[#2B231D] hover:bg-[#FAF7F2] transition-colors flex items-center gap-1.5 shadow-xs"
-                >
-                  <span>Type {selectedType !== 'all' ? `(${selectedType})` : ''}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-brand-warmGray" />
-                </button>
-                {activeDropdown === 'type' && (
-                  <div className="absolute left-0 mt-2 w-48 bg-white border border-[#EAE2D5] rounded-2xl shadow-xl z-30 p-2 space-y-1">
-                    {['all', 'coins', 'notes', 'rare-coins', 'british-india', 'republic-india'].map(t => (
-                      <button
-                        key={t}
-                        onClick={() => { setSelectedType(t); setActiveDropdown(null); }}
-                        className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg uppercase ${selectedType === t ? 'bg-[#FFF3EC] text-[#E0591D]' : 'hover:bg-brand-softBeige/40 text-[#2B231D]'}`}
-                      >
-                        {t.replace('-', ' ')}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-warmGray" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search coins, banknotes, eras..."
+                    className="pl-9 pr-4 py-2 text-xs bg-white border border-[#EAE2D5] rounded-full focus:outline-none focus:border-[#E0591D] w-52 sm:w-64 text-[#2B231D] shadow-xs placeholder:text-[#A09890]"
+                  />
+                </div>
               </div>
-
-              <div className="relative">
-                <button
-                  onClick={() => setActiveDropdown(activeDropdown === 'price' ? null : 'price')}
-                  className="px-4 py-2 bg-white border border-[#EAE2D5] rounded-full text-xs font-extrabold text-[#2B231D] hover:bg-[#FAF7F2] transition-colors flex items-center gap-1.5 shadow-xs"
-                >
-                  <span>Price {selectedPriceRange !== 'all' ? `(${selectedPriceRange})` : ''}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-brand-warmGray" />
-                </button>
-                {activeDropdown === 'price' && (
-                  <div className="absolute left-0 mt-2 w-48 bg-white border border-[#EAE2D5] rounded-2xl shadow-xl z-30 p-2 space-y-1">
-                    {[
-                      { id: 'all', label: 'All Prices' },
-                      { id: 'under-5k', label: 'Under ₹5,000' },
-                      { id: '5k-15k', label: '₹5,000 - ₹15,000' },
-                      { id: '15k-30k', label: '₹15,000 - ₹30,000' },
-                      { id: 'above-30k', label: 'Above ₹30,000' },
-                    ].map(p => (
-                      <button
-                        key={p.id}
-                        onClick={() => { setSelectedPriceRange(p.id); setActiveDropdown(null); }}
-                        className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg ${selectedPriceRange === p.id ? 'bg-[#FFF3EC] text-[#E0591D]' : 'hover:bg-brand-softBeige/40 text-[#2B231D]'}`}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={() => setFilterOpen(true)}
-                className="px-4 py-2 bg-[#2B231D] text-white border border-[#2B231D] rounded-full text-xs font-extrabold hover:bg-black transition-colors flex items-center gap-1.5 shadow-xs ml-auto"
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5 text-[#E0591D]" />
-                <span>All filters</span>
-              </button>
             </div>
           </div>
         )}
 
         {/* ==================================================
-            2. PRODUCT GRID (Exact Layout: media_1788426604546.png for Fashion, Numismatics for Coins)
+            2. PRODUCT GRID
            ================================================== */}
         {isFashion ? (
-          /* FASHION CARDS GRID: 4-COLUMNS, STRICTLY DRESSES */
+          /* FASHION CARDS GRID: STRICTLY DRESSES */
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-2">
             {sortedProducts.map((product) => {
               const inWishlist = isInWishlist(product.id);
@@ -549,7 +528,7 @@ function CatalogContent() {
                         e.stopPropagation();
                         addToCart(product, 1);
                       }}
-                      className="w-full mt-2 py-1.5 bg-white hover:bg-[#2B231D] text-[#2B231D] hover:text-white border border-[#2B231D] font-extrabold text-[9px] tracking-wider uppercase rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5"
+                      className="w-full mt-2 py-1.5 bg-white hover:bg-[#2B231D] text-[#2B231D] hover:text-white border border-[#2B231D] font-extrabold text-[9px] tracking-wider uppercase rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <span>Buy now</span>
                     </button>
@@ -562,92 +541,128 @@ function CatalogContent() {
 
       </div>
 
-      {/* Slide-over Filter Drawer */}
+      {/* ==================================================
+          SLIDE-OVER FILTERS DRAWER (Exact Match: media_1788429391390.png)
+         ================================================== */}
       <AnimatePresence>
         {isFilterOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end"
-          >
+          <div className="fixed inset-0 z-50 flex justify-start">
+            
+            {/* Backdrop Dark Tint Overlay */}
             <motion.div
-              initial={{ x: '100%' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setFilterOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-xs"
+            />
+
+            {/* Left Slide-over Panel */}
+            <motion.div
+              initial={{ x: '-100%' }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 26, stiffness: 240 }}
-              className="w-full max-w-md h-full bg-white p-6 overflow-y-auto space-y-6 text-left"
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+              className="relative z-10 w-full max-w-[320px] sm:max-w-[360px] md:max-w-[390px] h-full bg-white shadow-2xl flex flex-col justify-between text-left select-none"
             >
-              <div className="flex items-center justify-between border-b border-[#EFE8DC] pb-4">
-                <h3 className="font-display font-bold text-lg text-[#2B231D] uppercase">
-                  {isFashion ? 'Fashion Filters' : 'Numismatic Filters'}
-                </h3>
-                <button onClick={() => setFilterOpen(false)} className="p-2 hover:bg-[#FAF7F2] rounded-full">
+              {/* Header */}
+              <div className="p-6 border-b border-[#EAE2D5] flex items-center justify-between">
+                <div>
+                  <h3 className="font-display font-bold text-2xl text-[#1A1A1A]">
+                    Filters
+                  </h3>
+                  <p className="text-xs text-[#7D736A] pt-0.5">
+                    {filteredProducts.length} Products Available
+                  </p>
+                </div>
+                
+                <button
+                  onClick={() => setFilterOpen(false)}
+                  className="p-1.5 hover:bg-[#FAF7F2] rounded-full transition-colors cursor-pointer"
+                  aria-label="Close Filters"
+                >
                   <X className="w-5 h-5 text-[#2B231D]" />
                 </button>
               </div>
 
-              <div className="space-y-6">
+              {/* Scrollable Filter Body */}
+              <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-none">
                 {isFashion ? (
-                  <>
-                    <div>
-                      <h4 className="text-[10px] font-extrabold text-brand-warmGray uppercase tracking-widest mb-2">FABRIC</h4>
-                      {FASHION_FILTER_CRITERIA.fabric.map(fab => (
-                        <button
-                          key={fab}
-                          onClick={() => handleToggleFilter('fabric', fab)}
-                          className={`block text-xs py-1.5 w-full text-left font-semibold ${selectedFilters.fabric?.includes(fab) ? 'text-[#1A1A1A] font-bold' : 'text-brand-warmGray'}`}
-                        >
-                          {fab}
-                        </button>
-                      ))}
+                  /* Fashion Filter Criteria (Exact pills from media_1788429391390.png) */
+                  Object.entries(FASHION_FILTER_CRITERIA).map(([key, group]) => (
+                    <div key={key} className="space-y-2.5">
+                      <span className="text-[11px] font-extrabold text-[#1A1A1A] tracking-wider uppercase block">
+                        {group.label}
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {group.options.map(option => {
+                          const isSelected = selectedFilters[key]?.includes(option);
+                          return (
+                            <button
+                              key={option}
+                              onClick={() => handleToggleFilter(key, option)}
+                              className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#1A1A1A] text-white border border-[#1A1A1A] font-bold shadow-xs'
+                                  : 'bg-white text-[#2B231D] border border-[#EAE2D5] font-medium hover:border-[#1A1A1A]'
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-
-                    <div className="pt-4 border-t border-[#EFE8DC]">
-                      <h4 className="text-[10px] font-extrabold text-brand-warmGray uppercase tracking-widest mb-2">OCCASION</h4>
-                      {FASHION_FILTER_CRITERIA.occasion.map(occ => (
-                        <button
-                          key={occ}
-                          onClick={() => handleToggleFilter('occasion', occ)}
-                          className={`block text-xs py-1.5 w-full text-left font-semibold ${selectedFilters.occasion?.includes(occ) ? 'text-[#1A1A1A] font-bold' : 'text-brand-warmGray'}`}
-                        >
-                          {occ}
-                        </button>
-                      ))}
-                    </div>
-                  </>
+                  ))
                 ) : (
-                  <>
-                    <div>
-                      <h4 className="text-[10px] font-extrabold text-brand-warmGray uppercase tracking-widest mb-2">MATERIAL</h4>
-                      {NUMISMATICS_FILTER_CRITERIA.material.map(mat => (
-                        <button
-                          key={mat}
-                          onClick={() => handleToggleFilter('material', mat)}
-                          className={`block text-xs py-1.5 w-full text-left font-semibold ${selectedFilters.material?.includes(mat) ? 'text-[#E0591D] font-bold' : 'text-brand-warmGray'}`}
-                        >
-                          {mat}
-                        </button>
-                      ))}
+                  /* Numismatics Filter Criteria (Exact pills for Coins & Currency) */
+                  Object.entries(NUMISMATICS_FILTER_CRITERIA).map(([key, group]) => (
+                    <div key={key} className="space-y-2.5">
+                      <span className="text-[11px] font-extrabold text-[#1A1A1A] tracking-wider uppercase block">
+                        {group.label}
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {group.options.map(option => {
+                          const isSelected = selectedFilters[key]?.includes(option);
+                          return (
+                            <button
+                              key={option}
+                              onClick={() => handleToggleFilter(key, option)}
+                              className={`px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#E0591D] text-white border border-[#E0591D] font-bold shadow-xs'
+                                  : 'bg-white text-[#2B231D] border border-[#EAE2D5] font-medium hover:border-[#E0591D]'
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-
-                    <div className="pt-4 border-t border-[#EFE8DC]">
-                      <h4 className="text-[10px] font-extrabold text-brand-warmGray uppercase tracking-widest mb-2">ERA / PERIOD</h4>
-                      {NUMISMATICS_FILTER_CRITERIA.era.map(era => (
-                        <button
-                          key={era}
-                          onClick={() => handleToggleFilter('era', era)}
-                          className={`block text-xs py-1.5 w-full text-left font-semibold ${selectedFilters.era?.includes(era) ? 'text-[#E0591D] font-bold' : 'text-brand-warmGray'}`}
-                        >
-                          {era}
-                        </button>
-                      ))}
-                    </div>
-                  </>
+                  ))
                 )}
               </div>
+
+              {/* Fixed Footer Buttons (Reset & Show Results) */}
+              <div className="p-5 border-t border-[#EAE2D5] flex items-center gap-3 bg-white">
+                <button
+                  onClick={handleResetFilters}
+                  className="px-6 py-3 border border-[#EAE2D5] rounded-full text-xs font-bold text-[#2B231D] hover:bg-[#FAF7F2] transition-colors cursor-pointer"
+                >
+                  Reset
+                </button>
+
+                <button
+                  onClick={() => setFilterOpen(false)}
+                  className="flex-1 py-3 bg-[#E0591D] hover:bg-[#C84B15] text-white rounded-full text-xs font-extrabold text-center transition-colors shadow-sm cursor-pointer"
+                >
+                  Show Results ({filteredProducts.length})
+                </button>
+              </div>
+
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

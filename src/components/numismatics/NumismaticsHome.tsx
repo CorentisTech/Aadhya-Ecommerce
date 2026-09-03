@@ -958,18 +958,26 @@ export const NumismaticsHome: React.FC = () => {
               </p>
             </div>
 
-            {/* Desktop Navigation Arrows */}
+            {/* Desktop Navigation & Filters */}
             <div className="flex items-center space-x-2">
               <button
+                onClick={() => router.push('/catalog?department=numismatics')}
+                className="px-4 py-2 bg-[#2B231D] text-white rounded-full text-xs font-bold hover:bg-black transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer mr-1"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 text-[#E0591D]" />
+                <span>Filters</span>
+              </button>
+
+              <button
                 onClick={() => scrollExplore('left')}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-brand-border bg-white text-brand-espresso hover:bg-brand-softBeige/40 flex items-center justify-center transition-colors shadow-xs"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-brand-border bg-white text-brand-espresso hover:bg-brand-softBeige/40 flex items-center justify-center transition-colors shadow-xs cursor-pointer"
                 aria-label="Scroll left"
               >
                 <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <button
                 onClick={() => scrollExplore('right')}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-brand-border bg-white text-brand-espresso hover:bg-brand-softBeige/40 flex items-center justify-center transition-colors shadow-xs"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-brand-border bg-white text-brand-espresso hover:bg-brand-softBeige/40 flex items-center justify-center transition-colors shadow-xs cursor-pointer"
                 aria-label="Scroll right"
               >
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />

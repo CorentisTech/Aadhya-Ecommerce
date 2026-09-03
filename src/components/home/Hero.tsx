@@ -19,8 +19,9 @@ const IMAGE_CONFIGS: Record<string, { scale: number; x: number; y: number }> = {
 export const Hero: React.FC = () => {
   const { addToCart, toggleWishlist, isInWishlist, setSelectedProduct } = useApp();
   
-  // Filter bestsellers for the hero showcase (synced to custom public images)
-  const bestsellers = PRODUCTS.filter((p) => p.bestseller && p.department === 'fashion');
+  // Filter bestsellers for the hero showcase (strictly the 5 original cutout models with IMAGE_CONFIGS)
+  const HERO_PRODUCT_IDS = ['f-prod-7', 'f-prod-1', 'f-prod-3', 'f-prod-8', 'f-prod-2'];
+  const bestsellers = HERO_PRODUCT_IDS.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean) as (typeof PRODUCTS)[0][];
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
