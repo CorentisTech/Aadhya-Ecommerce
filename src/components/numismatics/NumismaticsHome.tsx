@@ -222,6 +222,87 @@ export const NumismaticsHome: React.FC = () => {
     }
   ];
 
+  // --------------------------------------------------
+  // 4. PROMOTIONAL BANNER CAROUSEL STATE (Loop, Swipe & Arrows)
+  // --------------------------------------------------
+  const numismaticBanners = [
+    {
+      id: 'heritage-treasures',
+      title: 'Indian Heritage. Timeless Treasures.',
+      subtitle: 'Authentic Coins • Rare Notes • Historic Value',
+      img: '/images/banners/banner-heritage-treasures.png',
+      link: '/catalog?department=numismatics'
+    },
+    {
+      id: 'authenticity-trust',
+      title: 'Authenticity. Assurance. Trust.',
+      subtitle: 'Every piece is verified by experts for genuine value and authenticity.',
+      img: '/images/banners/banner-authenticity-trust.jpg',
+      link: '/catalog?department=numismatics'
+    },
+    {
+      id: 'secure-delivery',
+      title: 'Secure Delivery. Safe Arrival.',
+      subtitle: 'Your collectibles are packed with care and delivered with complete safety.',
+      img: '/images/banners/banner-secure-delivery.png',
+      link: '/catalog?department=numismatics'
+    },
+    {
+      id: 'numismatic-events',
+      title: 'Join Our Numismatic Events',
+      subtitle: 'Connect. Learn. Collect.',
+      img: '/images/banners/banner-numismatic-events.jpg',
+      link: '/catalog?department=numismatics'
+    }
+  ];
+
+  const [activeBannerIdx, setActiveBannerIdx] = useState(0);
+  const [isBannerPaused, setIsBannerPaused] = useState(false);
+  const [bannerTouchStartX, setBannerTouchStartX] = useState<number | null>(null);
+  const [bannerTouchEndX, setBannerTouchEndX] = useState<number | null>(null);
+
+  // Auto loop every 5s
+  useEffect(() => {
+    if (isBannerPaused || numismaticBanners.length === 0) return;
+    const timer = setInterval(() => {
+      setActiveBannerIdx((prev) => (prev + 1) % numismaticBanners.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [isBannerPaused, numismaticBanners.length]);
+
+  const handlePrevBanner = () => {
+    setIsBannerPaused(true);
+    setActiveBannerIdx((prev) => (prev - 1 + numismaticBanners.length) % numismaticBanners.length);
+    setTimeout(() => setIsBannerPaused(false), 4500);
+  };
+
+  const handleNextBanner = () => {
+    setIsBannerPaused(true);
+    setActiveBannerIdx((prev) => (prev + 1) % numismaticBanners.length);
+    setTimeout(() => setIsBannerPaused(false), 4500);
+  };
+
+  const handleBannerTouchStart = (e: React.TouchEvent) => {
+    setBannerTouchEndX(null);
+    setBannerTouchStartX(e.targetTouches[0].clientX);
+    setIsBannerPaused(true);
+  };
+
+  const handleBannerTouchMove = (e: React.TouchEvent) => {
+    setBannerTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleBannerTouchEnd = () => {
+    if (bannerTouchStartX === null || bannerTouchEndX === null) return;
+    const distance = bannerTouchStartX - bannerTouchEndX;
+    if (distance > 40) {
+      handleNextBanner(); // Swiped left -> next
+    } else if (distance < -40) {
+      handlePrevBanner(); // Swiped right -> prev
+    }
+    setTimeout(() => setIsBannerPaused(false), 4000);
+  };
+
   return (
     <div className="w-full max-w-full min-h-screen bg-[#FFFBF8] text-brand-espresso select-none overflow-x-hidden">
 
@@ -761,56 +842,85 @@ export const NumismaticsHome: React.FC = () => {
       </section>
 
       {/* ==================================================
-          4. PROMOTIONAL HERITAGE SALE BANNER (Exact Match for media_1788273362349.jpg Bottom Part)
+          4. NUMISMATICS BANNER SECTION (4 Luxury Banners with Auto Loop, Phone Swipe & Web Arrows)
          ================================================== */}
-      <section className="w-full py-6 px-4 md:px-12 lg:px-24 bg-brand-warmWhite">
-        <div className="max-w-6xl mx-auto rounded-[32px] sm:rounded-[36px] overflow-hidden bg-[#1B3832] text-white p-6 sm:p-10 md:p-12 relative flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 shadow-xl">
+      <section className="w-full py-6 sm:py-10 md:py-12 px-3 sm:px-6 md:px-10 lg:px-12 bg-brand-warmWhite overflow-hidden">
+        <div className="max-w-7xl mx-auto">
           
-          {/* Left Text & CTA */}
-          <div className="space-y-3 sm:space-y-4 text-left z-10 max-w-lg">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#E8A598]" />
-              <span className="text-[10px] font-extrabold tracking-[0.25em] text-[#E8A598] uppercase">
-                LIMITED TIME OFFER
-              </span>
-            </div>
-            
-            <h2 className="font-display font-bold text-2xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight">
-              Heritage Sale is Live!
-            </h2>
-            
-            <p className="text-xs sm:text-sm text-white/80 font-medium leading-relaxed max-w-md">
-              Enjoy up to 40% off on selected museum-grade coins, rare Mughal rupees, and archival British India banknotes.
-            </p>
-
-            <div className="pt-1 sm:pt-2">
-              <button
-                onClick={() => router.push('/catalog?department=numismatics&discount=true')}
-                className="px-6 sm:px-7 py-3 sm:py-3.5 bg-[#E8A598] hover:bg-[#F2B6A9] text-[#1B3832] font-extrabold text-xs tracking-wider rounded-full transition-colors flex items-center gap-2 shadow-lg"
+          {/* Banner Outer Container (Fully Fitted to Screen) */}
+          <div 
+            className="relative w-full aspect-[2/1] sm:aspect-[2.1/1] md:aspect-[2.3/1] lg:aspect-[2.4/1] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-[#EAE2D5]/80 bg-[#16212B] select-none group"
+            onMouseEnter={() => setIsBannerPaused(true)}
+            onMouseLeave={() => setIsBannerPaused(false)}
+            onTouchStart={handleBannerTouchStart}
+            onTouchMove={handleBannerTouchMove}
+            onTouchEnd={handleBannerTouchEnd}
+          >
+            {/* Animated Banner Transition */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeBannerIdx}
+                initial={{ opacity: 0, scale: 0.99 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.01 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                onClick={() => router.push(numismaticBanners[activeBannerIdx].link)}
+                className="w-full h-full cursor-pointer relative"
               >
-                <span>Explore Deals</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+                <img 
+                  src={numismaticBanners[activeBannerIdx].img} 
+                  alt={numismaticBanners[activeBannerIdx].title}
+                  className="w-full h-full object-fill sm:object-cover rounded-2xl sm:rounded-3xl"
+                  loading="eager"
+                />
+              </motion.div>
+            </AnimatePresence>
 
-          {/* Right Visual with Overlapping 40% Badge */}
-          <div className="relative flex items-center justify-center z-10">
-            {/* Circular Discount Pill Badge */}
-            <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full bg-[#E8A598] text-[#1B3832] flex flex-col items-center justify-center font-display font-black shadow-2xl text-center flex-shrink-0 z-20 -mr-5 sm:-mr-8">
-              <span className="text-[8px] sm:text-[10px] font-extrabold tracking-widest uppercase">UP TO</span>
-              <span className="text-xl sm:text-3xl md:text-4xl font-black leading-none my-0.5">40%</span>
-              <span className="text-[8px] sm:text-[10px] font-extrabold tracking-widest uppercase">OFF</span>
+            {/* Left Web Arrow Navigation */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrevBanner();
+              }}
+              className="absolute left-2 sm:left-4 md:left-6 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/30 shadow-xl flex items-center justify-center transition-all z-30 opacity-80 hover:opacity-100 hover:scale-105"
+              aria-label="Previous Banner"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
+            </button>
+
+            {/* Right Web Arrow Navigation */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNextBanner();
+              }}
+              className="absolute right-2 sm:right-4 md:right-6 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/30 shadow-xl flex items-center justify-center transition-all z-30 opacity-80 hover:opacity-100 hover:scale-105"
+              aria-label="Next Banner"
+            >
+              <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
+            </button>
+
+            {/* Bottom Dots Indicator */}
+            <div className="absolute bottom-2.5 sm:bottom-4 md:bottom-5 inset-x-0 flex justify-center items-center gap-1.5 sm:gap-2 z-30 pointer-events-auto">
+              {numismaticBanners.map((banner, idx) => (
+                <button
+                  key={banner.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsBannerPaused(true);
+                    setActiveBannerIdx(idx);
+                    setTimeout(() => setIsBannerPaused(false), 4500);
+                  }}
+                  className={`transition-all duration-300 rounded-full ${
+                    activeBannerIdx === idx
+                      ? 'w-6 sm:w-8 h-1.5 sm:h-2 bg-[#E0591D] shadow-md shadow-[#E0591D]/60'
+                      : 'w-2 sm:w-2.5 h-1.5 sm:h-2 bg-white/70 hover:bg-white'
+                  }`}
+                  aria-label={`Go to banner ${idx + 1}`}
+                />
+              ))}
             </div>
 
-            {/* Lifestyle Coin / Artifact Image Display */}
-            <div className="w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-3xl overflow-hidden bg-white/10 border border-white/20 p-2 sm:p-3 backdrop-blur-xs flex items-center justify-center shadow-lg">
-              <img 
-                src="/coin_image_new.png" 
-                alt="Heritage Numismatics Collection" 
-                className="w-full h-full object-contain rounded-2xl"
-              />
-            </div>
           </div>
 
         </div>
