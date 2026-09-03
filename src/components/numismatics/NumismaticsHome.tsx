@@ -307,9 +307,10 @@ export const NumismaticsHome: React.FC = () => {
     <div className="w-full max-w-full min-h-screen bg-[#FFFBF8] text-brand-espresso select-none overflow-x-hidden">
 
       {/* ==================================================
-          1. FULL SCREEN FIT HERO SECTION (Desktop & Mobile)
+          1. FULL SCREEN FIT HERO SECTION (Desktop & Mobile) - BEST SELLERS SHOWCASE
          ================================================== */}
       <section 
+        id="best-sellers"
         className="w-full min-h-[calc(100vh-72px)] flex flex-col justify-center py-4 sm:py-6 md:py-8 px-3 sm:px-6 md:px-12 lg:px-16 bg-gradient-to-b from-[#FFF5EC] via-[#FFF8F3] to-[#FFFBF8] relative overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
@@ -335,6 +336,17 @@ export const NumismaticsHome: React.FC = () => {
                   transition={{ duration: 0.35 }}
                   className="space-y-1.5 sm:space-y-2.5 md:space-y-3"
                 >
+                  {/* BEST SELLERS SHOWCASE BADGE & TITLE */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black tracking-[0.25em] bg-[#E0591D] text-white px-2.5 py-0.5 rounded-full uppercase shadow-xs flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 fill-current" />
+                      <span>BEST SELLERS SHOWCASE</span>
+                    </span>
+                    <span className="text-[8px] sm:text-[9px] text-[#7D736A] font-bold uppercase tracking-wider hidden sm:inline">
+                      Vault Highlights
+                    </span>
+                  </div>
+
                   {/* Catchy 2-Tone Headline */}
                   <h1 className="font-display font-black text-lg sm:text-2xl md:text-3xl lg:text-[40px] text-[#2B231D] tracking-tight leading-[1.12]">
                     Rare Coinage <span className="text-[#2B231D]">is</span> <br />
@@ -586,7 +598,7 @@ export const NumismaticsHome: React.FC = () => {
       {/* ==================================================
           2. NEW ARRIVALS SECTION (Exact Fashion Card Layout & Grid)
          ================================================== */}
-      <section className="w-full py-12 md:py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40 overflow-hidden">
+      <section id="new-arrivals" className="w-full py-12 md:py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40 overflow-hidden">
         <div className="max-w-6xl mx-auto space-y-6 md:space-y-10">
           
           {/* Header Grid */}
@@ -723,7 +735,7 @@ export const NumismaticsHome: React.FC = () => {
       {/* ==================================================
           3. SHOP BY CATEGORY (2 Animated Sliding Rows Matching media_1788422746488.png)
          ================================================== */}
-      <section className="w-full py-12 md:py-20 px-3 sm:px-6 md:px-12 lg:px-20 bg-gradient-to-b from-[#FFFDFB] to-[#FAF5EE] overflow-hidden">
+      <section id="categories" className="w-full py-12 md:py-20 px-3 sm:px-6 md:px-12 lg:px-20 bg-gradient-to-b from-[#FFFDFB] to-[#FAF5EE] overflow-hidden">
         <div className="max-w-7xl mx-auto space-y-8 md:space-y-12">
           
           {/* Header Title (Matching media_1788422746488.png) */}

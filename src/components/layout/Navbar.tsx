@@ -62,19 +62,72 @@ export const Navbar: React.FC = () => {
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const handleNavClick = (sectionId: string) => {
-    if (sectionId === 'categories') {
-      router.push('/catalog');
-      setSidebarOpen(false);
+    const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
+    setSidebarOpen(false);
+
+    if (isNumis) {
+      // WHEN IN NUMISMATICS: Navigate ONLY within Numismatics!
+      if (sectionId === 'categories') {
+        if (pathname !== '/numismatics') {
+          router.push('/numismatics#categories');
+        } else {
+          const el = document.getElementById('categories');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+        return;
+      }
+
+      if (sectionId === 'bestsellers') {
+        if (pathname !== '/numismatics') {
+          router.push('/numismatics#best-sellers');
+        } else {
+          const el = document.getElementById('best-sellers');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+        return;
+      }
+
+      if (sectionId === 'new-arrivals') {
+        if (pathname !== '/numismatics') {
+          router.push('/numismatics#new-arrivals');
+        } else {
+          const el = document.getElementById('new-arrivals');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+        return;
+      }
+
+      if (sectionId === 'about') {
+        if (pathname !== '/numismatics') {
+          router.push('/numismatics#explore-products');
+        } else {
+          const el = document.getElementById('explore-products');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+        return;
+      }
+
+      // Default Numismatics fallback
+      router.push('/numismatics');
       return;
     }
+
+    // WHEN IN FASHION: Navigate ONLY within Fashion!
+    if (sectionId === 'categories') {
+      router.push('/catalog?department=fashion');
+      return;
+    }
+
     setPage('home');
-    setSidebarOpen(false);
+    if (pathname !== '/') {
+      router.push('/');
+    }
     setTimeout(() => {
       const el = document.getElementById(sectionId);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth' });
       }
-    }, 100);
+    }, 120);
   };
 
   // Stagger variants for sidebar links
@@ -134,11 +187,19 @@ export const Navbar: React.FC = () => {
 
           <button
             onClick={() => {
-              if (pathname?.includes('/numismatics') || activePage === 'numismatics') {
-                setPage('home');
-                triggerSectionTransition('fashion');
+              const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
+              if (isNumis) {
+                if (pathname === '/numismatics') {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                  router.push('/numismatics');
+                }
               } else {
-                router.push('/');
+                if (pathname === '/') {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                  router.push('/');
+                }
                 setPage('home');
               }
             }}
@@ -324,8 +385,8 @@ export const Navbar: React.FC = () => {
                 className="flex-grow py-6 space-y-6 overflow-y-auto"
               >
                 <div className="space-y-2 text-left">
-                  <span className="text-[8px] tracking-[0.25em] font-extrabold text-brand-warmGray block px-3">
-                    FASHION EDITORIAL
+                  <span className="text-[8px] tracking-[0.25em] font-extrabold text-brand-warmGray block px-3 uppercase">
+                    {(pathname?.includes('/numismatics') || activePage === 'numismatics') ? 'NUMISMATICS EDITORIAL' : 'FASHION EDITORIAL'}
                   </span>
                   
                   <nav className="flex flex-col space-y-1 font-sans text-xs font-bold tracking-widest text-brand-espresso">
@@ -334,20 +395,29 @@ export const Navbar: React.FC = () => {
                       variants={itemVariants}
                       onClick={() => {
                         setSidebarOpen(false);
-                        if (pathname?.includes('/numismatics') || activePage === 'numismatics') {
-                          setPage('home');
-                          triggerSectionTransition('fashion');
+                        const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
+                        if (isNumis) {
+                          if (pathname === '/numismatics') {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          } else {
+                            router.push('/numismatics');
+                          }
                         } else {
+                          if (pathname === '/') {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          } else {
+                            router.push('/');
+                          }
                           setPage('home');
                         }
                       }}
                       className={`flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full transition-all relative ${
-                        activePage === 'home' 
+                        (activePage === 'home' || activePage === 'numismatics')
                           ? 'bg-[#FFF3EC] text-[#F26A2E] font-extrabold shadow-sm' 
                           : 'hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E]'
                       }`}
                     >
-                      {activePage === 'home' && (
+                      {(activePage === 'home' || activePage === 'numismatics') && (
                         <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#F26A2E] rounded-r-md" />
                       )}
                       <Home className="w-4 h-4 stroke-[2]" />
@@ -387,11 +457,20 @@ export const Navbar: React.FC = () => {
                     {/* Shop Link */}
                     <motion.button
                       variants={itemVariants}
-                      onClick={() => { setPage('home'); setSidebarOpen(false); }}
+                      onClick={() => {
+                        setSidebarOpen(false);
+                        const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
+                        if (isNumis) {
+                          router.push('/catalog?department=numismatics');
+                        } else {
+                          router.push('/catalog?department=fashion');
+                          setPage('home');
+                        }
+                      }}
                       className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                     >
                       <ShoppingBag className="w-4 h-4 stroke-[2]" />
-                      <span>SHOP COLLECTION</span>
+                      <span>{(pathname?.includes('/numismatics') || activePage === 'numismatics') ? 'SHOP COINS & NOTES' : 'SHOP COLLECTION'}</span>
                     </motion.button>
  
                     {/* About Link */}

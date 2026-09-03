@@ -244,12 +244,12 @@ export const PageTransitionProvider: React.FC<{ children: React.ReactNode }> = (
                   }`}
                 />
 
-                {/* The Isolated Hero Graphic */}
+                {/* The Isolated Hero Graphic: Aadhya Trends Emblem Logo */}
                 <motion.div
                   initial={{ 
                     opacity: 0, 
                     scale: shouldReduceMotion ? 1 : 0.75, 
-                    rotate: shouldReduceMotion ? 0 : (isNumis ? -12 : 10),
+                    rotate: shouldReduceMotion ? 0 : -8,
                     y: 8
                   }}
                   animate={{ 
@@ -271,25 +271,14 @@ export const PageTransitionProvider: React.FC<{ children: React.ReactNode }> = (
                   }}
                   className="relative z-10 flex items-center justify-center select-none pointer-events-none"
                 >
-                  {isNumis ? (
-                    /* Isolated Transparent Indian ₹1 Coin (1957 Specimen) */
-                    <div className="w-[125px] sm:w-[170px] md:w-[210px] lg:w-[230px] aspect-square rounded-full overflow-hidden flex items-center justify-center p-0.5 drop-shadow-[0_12px_36px_rgba(224,89,29,0.45)]">
-                      <img
-                        src="/coin_image_new.png"
-                        alt="Indian One Rupee Heritage Coin"
-                        className="w-full h-full object-contain rounded-full select-none"
-                      />
-                    </div>
-                  ) : (
-                    /* Isolated Transparent Indian Luxury Silk Saree Fashion Visual */
-                    <div className="w-[130px] sm:w-[175px] md:w-[210px] lg:w-[230px] aspect-square flex items-center justify-center drop-shadow-[0_12px_36px_rgba(201,143,145,0.45)]">
-                      <img
-                        src="/rose_silk_saree.png"
-                        alt="Aadhya Couture Silk Saree"
-                        className="w-full h-full object-contain select-none"
-                      />
-                    </div>
-                  )}
+                  {/* Luxury Aadhya Trends Gold Emblem Logo */}
+                  <div className="w-[140px] sm:w-[185px] md:w-[220px] lg:w-[240px] aspect-square rounded-full overflow-hidden flex items-center justify-center p-0.5 shadow-2xl drop-shadow-[0_16px_40px_rgba(212,175,55,0.45)] border border-[#D4AF37]/30 bg-black">
+                    <img
+                      src="/images/aadhya-trends-logo.jpg"
+                      alt="Aadhya Trends Luxury Emblem"
+                      className="w-full h-full object-cover rounded-full select-none"
+                    />
+                  </div>
                 </motion.div>
               </div>
 
