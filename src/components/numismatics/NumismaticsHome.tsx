@@ -142,7 +142,7 @@ export const NumismaticsHome: React.FC = () => {
   );
 
   // --------------------------------------------------
-  // 3. CATEGORIES DATA (Matching media_1788422746488.png layout & user's uploaded coin images)
+  // 3. CATEGORIES DATA (User-Provided Images & Authentic Titles Only)
   // --------------------------------------------------
   const categoryRow1 = [
     {
@@ -174,51 +174,51 @@ export const NumismaticsHome: React.FC = () => {
     },
     {
       id: 'ancient-coins',
-      name: 'Ancient Dynasties',
-      tag: 'Kushan & Gupta',
-      desc: 'Archaic Mauryan punch-marked coins & Kushan king gold dinars.',
+      name: 'Ancient India',
+      tag: 'Goddess Lakshmi',
+      desc: 'Sacred archaic gold dinars depicting seated Goddess Lakshmi.',
       count: '110+ Items',
       price: 'From ₹8,900',
-      img: '/coin_image.jpg'
+      img: '/images/categories/ancient-lakshmi.jpg'
     }
   ];
 
   const categoryRow2 = [
     {
-      id: 'republic-india',
-      name: 'Republic India',
-      tag: 'Post-1950 Issues',
-      desc: 'Official 1950 onward commemorative coins and proof specimen sets.',
+      id: 'commemorative',
+      name: 'Commemorative',
+      tag: 'Republic ₹100',
+      desc: 'Official 100 Rupees silver commemorative proof with Ashoka Lion.',
       count: '95+ Items',
       price: 'From ₹1,800',
-      img: '/coin_image_new.png'
+      img: '/images/categories/commemorative-100.jpg'
     },
     {
       id: 'notes',
       name: 'Paper Currency',
-      tag: 'Rare Banknotes',
-      desc: 'Preserved George VI uncirculated notes & vintage Reserve Bank paper.',
+      tag: '1914 Banknote',
+      desc: 'Preserved 1914 Government of India 100 Rupees archival banknote.',
       count: '75+ Items',
       price: 'From ₹3,200',
-      img: '/images/inr-100-note.png'
-    },
-    {
-      id: 'royal-mohurs',
-      name: 'Royal Mohurs',
-      tag: 'High-Purity Gold',
-      desc: 'Heavy 24k gold coronation mohurs minted for imperial ceremonies.',
-      count: '50+ Items',
-      price: 'From ₹32,000',
-      img: '/images/categories/east-india-company.jpg'
+      img: '/images/categories/gov-india-100-note.jpg'
     },
     {
       id: 'princely-states',
       name: 'Princely States',
-      tag: 'Durbar Coinage',
-      desc: 'Sovereign coinage from Hyderabad, Gwalior, Mewar & Travancore.',
+      tag: 'Awadh Kingdom',
+      desc: 'Royal silver rupee with twin fish emblem & crown of Awadh kingdom.',
       count: '80+ Items',
       price: 'From ₹2,900',
-      img: '/images/categories/mughal-zodiac.png'
+      img: '/images/categories/princely-states-awadh.jpg'
+    },
+    {
+      id: 'square-mohurs',
+      name: 'Square Mohurs',
+      tag: 'Akbar The Great',
+      desc: 'Calligraphic heavy gold square mohurs of Emperor Akbar the Great.',
+      count: '50+ Items',
+      price: 'From ₹32,000',
+      img: '/images/categories/mughal-square-mohur.jpg'
     }
   ];
 
