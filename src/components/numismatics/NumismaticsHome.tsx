@@ -141,6 +141,87 @@ export const NumismaticsHome: React.FC = () => {
     </div>
   );
 
+  // --------------------------------------------------
+  // 3. CATEGORIES DATA (Matching media_1788422746488.png layout & user's uploaded coin images)
+  // --------------------------------------------------
+  const categoryRow1 = [
+    {
+      id: 'east-india-company',
+      name: 'East India Co.',
+      tag: 'Gold Two Mohurs',
+      desc: 'Rare 1835 William IV gold mohurs with royal palm & lion crest.',
+      count: '85+ Items',
+      price: 'From ₹18,500',
+      img: '/images/categories/east-india-company.jpg'
+    },
+    {
+      id: 'mughal-zodiac',
+      name: 'Mughal Zodiac',
+      tag: 'Jahangir Mohur',
+      desc: 'Legendary Aries ram gold mohur struck under Emperor Jahangir.',
+      count: '60+ Items',
+      price: 'From ₹24,000',
+      img: '/images/categories/mughal-zodiac.png'
+    },
+    {
+      id: 'british-india',
+      name: 'British India',
+      tag: 'Victoria Queen',
+      desc: 'Imperial crowned portraits of Queen Victoria & silver rupees.',
+      count: '140+ Items',
+      price: 'From ₹4,500',
+      img: '/images/categories/victoria-queen.jpg'
+    },
+    {
+      id: 'ancient-coins',
+      name: 'Ancient Dynasties',
+      tag: 'Kushan & Gupta',
+      desc: 'Archaic Mauryan punch-marked coins & Kushan king gold dinars.',
+      count: '110+ Items',
+      price: 'From ₹8,900',
+      img: '/coin_image.jpg'
+    }
+  ];
+
+  const categoryRow2 = [
+    {
+      id: 'republic-india',
+      name: 'Republic India',
+      tag: 'Post-1950 Issues',
+      desc: 'Official 1950 onward commemorative coins and proof specimen sets.',
+      count: '95+ Items',
+      price: 'From ₹1,800',
+      img: '/coin_image_new.png'
+    },
+    {
+      id: 'notes',
+      name: 'Paper Currency',
+      tag: 'Rare Banknotes',
+      desc: 'Preserved George VI uncirculated notes & vintage Reserve Bank paper.',
+      count: '75+ Items',
+      price: 'From ₹3,200',
+      img: '/images/inr-100-note.png'
+    },
+    {
+      id: 'royal-mohurs',
+      name: 'Royal Mohurs',
+      tag: 'High-Purity Gold',
+      desc: 'Heavy 24k gold coronation mohurs minted for imperial ceremonies.',
+      count: '50+ Items',
+      price: 'From ₹32,000',
+      img: '/images/categories/east-india-company.jpg'
+    },
+    {
+      id: 'princely-states',
+      name: 'Princely States',
+      tag: 'Durbar Coinage',
+      desc: 'Sovereign coinage from Hyderabad, Gwalior, Mewar & Travancore.',
+      count: '80+ Items',
+      price: 'From ₹2,900',
+      img: '/images/categories/mughal-zodiac.png'
+    }
+  ];
+
   return (
     <div className="w-full max-w-full min-h-screen bg-[#FFFBF8] text-brand-espresso select-none overflow-x-hidden">
 
@@ -264,7 +345,7 @@ export const NumismaticsHome: React.FC = () => {
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   className="relative flex items-center justify-center"
                 >
-                  {/* RED 20% or 30% DISCOUNT BADGE ON TOP-RIGHT (No overflow/cut-off) */}
+                  {/* RED 20% or 30% DISCOUNT BADGE ON TOP-RIGHT */}
                   <div className="absolute top-1 sm:top-2 right-1 sm:right-2 z-30 w-12 h-12 sm:w-15 sm:h-15 md:w-17 md:h-17 rounded-full bg-[#E53935] text-white flex flex-col items-center justify-center shadow-xl font-display font-black border-2 border-white rotate-6">
                     <span className="text-xs sm:text-sm md:text-base font-black leading-none">
                       {currentHeroItem.discountBadge.includes('OFF') ? currentHeroItem.discountBadge.replace(' OFF', '') : '30%'}
@@ -447,7 +528,7 @@ export const NumismaticsHome: React.FC = () => {
                 className="px-4 py-2 border border-brand-border rounded-full text-[10px] font-bold tracking-widest text-brand-espresso hover:bg-brand-softBeige/40 transition-colors flex items-center space-x-1 uppercase"
               >
                 <span>VIEW ALL</span>
-                <ArrowRight className="w-3 h-3" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -559,56 +640,121 @@ export const NumismaticsHome: React.FC = () => {
       </section>
 
       {/* ==================================================
-          3. SHOP BY CATEGORY (Exact Match for Uploaded media_1788273362349.jpg Top Part)
+          3. SHOP BY CATEGORY (2 Animated Sliding Rows Matching media_1788422746488.png)
          ================================================== */}
-      <section className="w-full py-10 md:py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite overflow-hidden">
-        <div className="max-w-6xl mx-auto bg-white rounded-3xl p-5 sm:p-8 md:p-10 border border-brand-border/40 shadow-xs space-y-6 sm:space-y-8">
+      <section className="w-full py-12 md:py-20 px-3 sm:px-6 md:px-12 lg:px-20 bg-gradient-to-b from-[#FFFDFB] to-[#FAF5EE] overflow-hidden">
+        <div className="max-w-7xl mx-auto space-y-8 md:space-y-12">
           
-          {/* Header Row */}
-          <div className="flex items-center justify-between border-b border-brand-border/30 pb-4 text-left">
-            <h2 className="font-display font-bold text-2xl sm:text-3xl text-brand-espresso tracking-tight">
-              Shop by Category
+          {/* Header Title (Matching media_1788422746488.png) */}
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <h2 className="font-display font-black text-2xl sm:text-3xl md:text-5xl text-[#2B231D] tracking-tight uppercase">
+              Curated Numismatic Categories
             </h2>
-            <button
-              onClick={() => router.push('/catalog?department=numismatics')}
-              className="text-xs font-bold text-brand-warmGray hover:text-[#E0591D] transition-colors flex items-center gap-1"
-            >
-              <span>Browse all</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            <p className="text-xs sm:text-sm text-[#7D736A] font-medium leading-relaxed">
+              Discover our distinguished range of rare historical coinages, crafted across ancient dynasties and royal mints.
+            </p>
           </div>
 
-          {/* 6 Clean Circular Categories Row: Horizontal Touch-Swipe on Mobile */}
-          <div className="flex overflow-x-auto pb-2 gap-4 sm:gap-6 md:grid md:grid-cols-6 md:gap-4 scrollbar-none snap-x snap-mandatory touch-pan-x w-full justify-between scroll-smooth">
-            {[
-              { id: 'coins', name: 'Coins', count: '120+ Items', img: '/coin_image_new.png' },
-              { id: 'notes', name: 'Paper Money', count: '95+ Items', img: '/images/inr-100-note.png' },
-              { id: 'ancient-coins', name: 'Ancient Coins', count: '150+ Items', img: '/coin_image.jpg' },
-              { id: 'british-india', name: 'British India', count: '80+ Items', img: '/coin_image_new.png' },
-              { id: 'republic-india', name: 'Republic India', count: '70+ Items', img: '/coin_image.jpg' },
-              { id: 'commemorative', name: 'Commemorative', count: '65+ Items', img: '/coin_image_new.png' },
-            ].map((cat) => (
-              <div
-                key={cat.id}
-                onClick={() => router.push(`/catalog?department=numismatics&category=${cat.id}`)}
-                className="flex flex-col items-center text-center group cursor-pointer space-y-2.5 flex-shrink-0 w-[110px] sm:w-[130px] md:w-auto snap-start"
-              >
-                {/* Big Circular Image Badge */}
-                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-[#FAF7F2] border border-[#EAE2D5] p-1.5 flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
-                  <img src={cat.img} alt={cat.name} className="w-full h-full object-contain rounded-full" />
-                </div>
+          {/* TWO SLIDING TRACKS */}
+          <div className="space-y-6 sm:space-y-8 md:space-y-10">
 
-                {/* Name and Count */}
-                <div>
-                  <span className="font-sans font-bold text-xs sm:text-sm text-brand-espresso group-hover:text-[#E0591D] transition-colors block">
-                    {cat.name}
-                  </span>
-                  <span className="text-[10px] text-brand-warmGray font-medium block pt-0.5">
-                    {cat.count}
-                  </span>
-                </div>
+            {/* TRACK 1: SLOW LEFT-TO-RIGHT SLIDE (Pauses ONLY Track 1 on hover) */}
+            <div className="relative group/track1 overflow-hidden w-full">
+              <div className="flex w-max animate-marquee-reverse-slow group-hover/track1:[animation-play-state:paused] ease-linear hover:[animation-play-state:paused] touch-pan-x">
+                {[...categoryRow1, ...categoryRow1, ...categoryRow1].map((cat, idx) => (
+                  <div
+                    key={`row1-${cat.id}-${idx}`}
+                    onClick={() => router.push(`/catalog?department=numismatics&category=${cat.id}`)}
+                    className="w-[200px] sm:w-[240px] md:w-[270px] mx-2.5 sm:mx-4 flex-shrink-0 cursor-pointer text-center group/card transition-all duration-300"
+                  >
+                    {/* Circular Plate with Glow Background (Matching media_1788422746488.png) */}
+                    <div className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full bg-gradient-to-b from-[#FFF5DC] via-[#FFEBC2] to-[#FEDE9A] p-2.5 sm:p-3 mx-auto relative shadow-lg group-hover/card:scale-105 group-hover/card:shadow-xl transition-all duration-300 flex items-center justify-center border-2 border-white/60">
+                      <img
+                        src={cat.img}
+                        alt={cat.name}
+                        className="w-full h-full object-contain rounded-full drop-shadow-md transition-transform duration-300 group-hover/card:rotate-3"
+                      />
+                      {/* Frosted Title Ribbon across middle/lower part (Matching media_1788422746488.png) */}
+                      <div className="absolute inset-x-2.5 bottom-5 sm:bottom-7 bg-[#2B231D]/85 backdrop-blur-md text-white py-1 sm:py-1.5 px-2 rounded-lg text-center shadow-lg border border-white/20">
+                        <span className="font-display font-black text-xs sm:text-sm tracking-wide block uppercase line-clamp-1">
+                          {cat.name}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Subtitle & Details */}
+                    <div className="pt-3 space-y-1.5 px-2">
+                      <p className="text-[11px] sm:text-xs text-[#666666] font-medium line-clamp-2 leading-relaxed h-8">
+                        {cat.desc}
+                      </p>
+                      <div className="flex items-center justify-center gap-2 pt-1">
+                        <span className="text-[11px] sm:text-xs font-bold text-[#E0591D]">
+                          {cat.count}
+                        </span>
+                        <button className="px-3 py-1 bg-[#8B261D] hover:bg-[#6D1B13] text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-xs transition-colors">
+                          Explore &gt;
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* TRACK 2: SLOW RIGHT-TO-LEFT SLIDE (Pauses ONLY Track 2 on hover) */}
+            <div className="relative group/track2 overflow-hidden w-full">
+              <div className="flex w-max animate-marquee-slow group-hover/track2:[animation-play-state:paused] ease-linear hover:[animation-play-state:paused] touch-pan-x">
+                {[...categoryRow2, ...categoryRow2, ...categoryRow2].map((cat, idx) => (
+                  <div
+                    key={`row2-${cat.id}-${idx}`}
+                    onClick={() => router.push(`/catalog?department=numismatics&category=${cat.id}`)}
+                    className="w-[200px] sm:w-[240px] md:w-[270px] mx-2.5 sm:mx-4 flex-shrink-0 cursor-pointer text-center group/card transition-all duration-300"
+                  >
+                    {/* Circular Plate with Glow Background (Matching media_1788422746488.png) */}
+                    <div className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full bg-gradient-to-b from-[#FFF5DC] via-[#FFEBC2] to-[#FEDE9A] p-2.5 sm:p-3 mx-auto relative shadow-lg group-hover/card:scale-105 group-hover/card:shadow-xl transition-all duration-300 flex items-center justify-center border-2 border-white/60">
+                      <img
+                        src={cat.img}
+                        alt={cat.name}
+                        className="w-full h-full object-contain rounded-full drop-shadow-md transition-transform duration-300 group-hover/card:rotate-3"
+                      />
+                      {/* Frosted Title Ribbon across middle/lower part (Matching media_1788422746488.png) */}
+                      <div className="absolute inset-x-2.5 bottom-5 sm:bottom-7 bg-[#2B231D]/85 backdrop-blur-md text-white py-1 sm:py-1.5 px-2 rounded-lg text-center shadow-lg border border-white/20">
+                        <span className="font-display font-black text-xs sm:text-sm tracking-wide block uppercase line-clamp-1">
+                          {cat.name}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Subtitle & Details */}
+                    <div className="pt-3 space-y-1.5 px-2">
+                      <p className="text-[11px] sm:text-xs text-[#666666] font-medium line-clamp-2 leading-relaxed h-8">
+                        {cat.desc}
+                      </p>
+                      <div className="flex items-center justify-center gap-2 pt-1">
+                        <span className="text-[11px] sm:text-xs font-bold text-[#E0591D]">
+                          {cat.count}
+                        </span>
+                        <button className="px-3 py-1 bg-[#8B261D] hover:bg-[#6D1B13] text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-xs transition-colors">
+                          Explore &gt;
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom Browse All CTA */}
+          <div className="text-center pt-2">
+            <button
+              onClick={() => router.push('/catalog?department=numismatics')}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-brand-border bg-white text-xs font-black uppercase tracking-widest text-[#2B231D] hover:bg-[#2B231D] hover:text-white transition-all shadow-xs"
+            >
+              <span>Browse All Categories</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
         </div>

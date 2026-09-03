@@ -29,7 +29,8 @@ export default {
         sans: ["Inter", "Manrope", "sans-serif"],
       },
       animation: {
-        'marquee-slow': 'marquee 30s linear infinite',
+        'marquee-slow': 'marquee 40s linear infinite',
+        'marquee-reverse-slow': 'marquee-rev 40s linear infinite',
         'spin-slow': 'spin 15s linear infinite',
         'spin-coin': 'spinY 8s linear infinite',
         'spin-coin-fast': 'spinY 3s linear infinite',
@@ -40,6 +41,10 @@ export default {
         marquee: {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(-50%)' },
+        },
+        'marquee-rev': {
+          '0%': { transform: 'translateX(-50%)' },
+          '100%': { transform: 'translateX(0%)' },
         },
         spinY: {
           '0%': { transform: 'rotateY(0deg)' },
