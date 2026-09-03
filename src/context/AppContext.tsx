@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product } from '../data/mockData';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export type PageType = 'home' | 'numismatics' | 'wishlist' | 'checkout' | 'account';
 
@@ -114,6 +114,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem('aadhya_wishlist', JSON.stringify(wishlist));
     }
   }, [wishlist, isLoaded]);
+
+  const pathname = usePathname();
+
+  // Synchronize activePage automatically whenever pathname changes (browser back/forward button, external links, etc.)
+  useEffect(() => {
+    if (pathname?.includes('/numismatics')) {
+      setPageInternal('numismatics');
+    } else if (pathname === '/') {
+      setPageInternal('home');
+    } else if (pathname?.includes('/wishlist')) {
+      setPageInternal('wishlist');
+    } else if (pathname?.includes('/checkout')) {
+      setPageInternal('checkout');
+    } else if (pathname?.includes('/account')) {
+      setPageInternal('account');
+    }
+  }, [pathname]);
 
   // Smooth scroll to top on page change
   const setPage = (page: PageType) => {

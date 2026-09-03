@@ -60,9 +60,9 @@ export const Navbar: React.FC = () => {
   }, []);
 
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const isNumis = Boolean(pathname?.includes('/numismatics'));
 
   const handleNavClick = (sectionId: string) => {
-    const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
     setSidebarOpen(false);
 
     if (isNumis) {
@@ -187,7 +187,6 @@ export const Navbar: React.FC = () => {
 
           <button
             onClick={() => {
-              const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
               if (isNumis) {
                 if (pathname === '/numismatics') {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -248,7 +247,6 @@ export const Navbar: React.FC = () => {
           >
             <button
               onClick={() => {
-                const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
                 if (isNumis) {
                   setPage('home');
                   triggerSectionTransition('fashion');
@@ -258,13 +256,13 @@ export const Navbar: React.FC = () => {
                 }
               }}
               className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 ${
-                (pathname?.includes('/numismatics') || activePage === 'numismatics') || numismaticsHovered
+                isNumis || numismaticsHovered
                   ? 'border-[#F26A2E] bg-[#FFF3EC] text-[#F26A2E] shadow-sm'
                   : 'border-brand-border/80 text-brand-warmGray'
               }`}
             >
               <div className="relative w-4 h-4 rounded-full overflow-hidden border border-[#2C2522] shadow-sm flex items-center justify-center bg-[#2C2522]">
-                {(pathname?.includes('/numismatics') || activePage === 'numismatics') ? (
+                {isNumis ? (
                   <span className="text-[9px]">👗</span>
                 ) : (
                   <img
@@ -275,7 +273,7 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
               <span className="tracking-[0.2em] font-extrabold text-[9px] uppercase">
-                {(pathname?.includes('/numismatics') || activePage === 'numismatics') ? 'FASHION' : 'COINS & NOTES'}
+                {isNumis ? 'FASHION' : 'COINS & NOTES'}
               </span>
             </button>
 
@@ -386,7 +384,7 @@ export const Navbar: React.FC = () => {
               >
                 <div className="space-y-2 text-left">
                   <span className="text-[8px] tracking-[0.25em] font-extrabold text-brand-warmGray block px-3 uppercase">
-                    {(pathname?.includes('/numismatics') || activePage === 'numismatics') ? 'NUMISMATICS EDITORIAL' : 'FASHION EDITORIAL'}
+                    {isNumis ? 'NUMISMATICS EDITORIAL' : 'FASHION EDITORIAL'}
                   </span>
                   
                   <nav className="flex flex-col space-y-1 font-sans text-xs font-bold tracking-widest text-brand-espresso">
@@ -395,7 +393,6 @@ export const Navbar: React.FC = () => {
                       variants={itemVariants}
                       onClick={() => {
                         setSidebarOpen(false);
-                        const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
                         if (isNumis) {
                           if (pathname === '/numismatics') {
                             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -412,12 +409,12 @@ export const Navbar: React.FC = () => {
                         }
                       }}
                       className={`flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full transition-all relative ${
-                        (activePage === 'home' || activePage === 'numismatics')
+                        (isNumis ? pathname === '/numismatics' : pathname === '/')
                           ? 'bg-[#FFF3EC] text-[#F26A2E] font-extrabold shadow-sm' 
                           : 'hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E]'
                       }`}
                     >
-                      {(activePage === 'home' || activePage === 'numismatics') && (
+                      {(isNumis ? pathname === '/numismatics' : pathname === '/') && (
                         <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#F26A2E] rounded-r-md" />
                       )}
                       <Home className="w-4 h-4 stroke-[2]" />
@@ -459,7 +456,6 @@ export const Navbar: React.FC = () => {
                       variants={itemVariants}
                       onClick={() => {
                         setSidebarOpen(false);
-                        const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
                         if (isNumis) {
                           router.push('/catalog?department=numismatics');
                         } else {
@@ -470,7 +466,7 @@ export const Navbar: React.FC = () => {
                       className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
                     >
                       <ShoppingBag className="w-4 h-4 stroke-[2]" />
-                      <span>{(pathname?.includes('/numismatics') || activePage === 'numismatics') ? 'SHOP COINS & NOTES' : 'SHOP COLLECTION'}</span>
+                      <span>{isNumis ? 'SHOP COINS & NOTES' : 'SHOP COLLECTION'}</span>
                     </motion.button>
  
                     {/* About Link */}
@@ -492,7 +488,6 @@ export const Navbar: React.FC = () => {
                   <button
                     onClick={() => {
                       setSidebarOpen(false);
-                      const isNumis = pathname?.includes('/numismatics') || activePage === 'numismatics';
                       if (isNumis) {
                         setPage('home');
                         triggerSectionTransition('fashion');
@@ -502,14 +497,14 @@ export const Navbar: React.FC = () => {
                       }
                     }}
                     className={`flex items-center justify-between px-4 py-3 border rounded-2xl text-left font-sans text-[11px] font-extrabold w-full shadow-sm transition-all ${
-                      (pathname?.includes('/numismatics') || activePage === 'numismatics')
+                      isNumis
                         ? 'bg-[#F26A2E] text-white border-[#E0591D]'
                         : 'bg-[#FFF3EC] text-[#F26A2E] border-[#F9E1D3]'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className="w-5 h-5 rounded-full overflow-hidden border border-[#2C2522] flex items-center justify-center bg-[#2C2522]">
-                        {(pathname?.includes('/numismatics') || activePage === 'numismatics') ? (
+                        {isNumis ? (
                           <span className="text-[10px]">👗</span>
                         ) : (
                           <img
@@ -520,7 +515,7 @@ export const Navbar: React.FC = () => {
                         )}
                       </div>
                       <span className="tracking-widest">
-                        {(pathname?.includes('/numismatics') || activePage === 'numismatics') ? 'FASHION' : 'COINS & NOTES'}
+                        {isNumis ? 'FASHION' : 'COINS & NOTES'}
                       </span>
                     </div>
                     <ArrowRight className="w-3.5 h-3.5" />

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface PageTransitionContextType {
   triggerSectionTransition: (target: 'numismatics' | 'fashion') => void;
@@ -13,6 +13,7 @@ const PageTransitionContext = createContext<PageTransitionContextType | undefine
 
 export const PageTransitionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const shouldReduceMotion = useReducedMotion();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [targetSection, setTargetSection] = useState<'numismatics' | 'fashion'>('numismatics');
@@ -20,6 +21,11 @@ export const PageTransitionProvider: React.FC<{ children: React.ReactNode }> = (
   // Animation stage states (controlled timeline)
   const [stage, setStage] = useState<'enter' | 'visual' | 'text' | 'settle' | 'exit'>('enter');
   const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
+
+  // Navigation tracking for mobile/browser back and forward button
+  const currentDepartment = pathname?.includes('/numismatics') ? 'numismatics' : 'fashion';
+  const prevDepartmentRef = useRef<'numismatics' | 'fashion'>(currentDepartment);
+  const isTransitioningRef = useRef(false);
 
   // Clear all pending timeouts on unmount or reset
   const clearTimeouts = () => {
@@ -34,13 +40,59 @@ export const PageTransitionProvider: React.FC<{ children: React.ReactNode }> = (
     };
   }, []);
 
+  // Sync ref with state
+  useEffect(() => {
+    isTransitioningRef.current = isTransitioning;
+  }, [isTransitioning]);
+
+  // Intercept browser & mobile hardware back/forward button between Fashion and Numismatics
+  useEffect(() => {
+    if (prevDepartmentRef.current !== currentDepartment) {
+      const target = currentDepartment;
+      prevDepartmentRef.current = target;
+
+      // If transition is NOT already running, it was triggered by browser/mobile back or forward!
+      if (!isTransitioningRef.current) {
+        clearTimeouts();
+        setTargetSection(target);
+        setIsTransitioning(true);
+        isTransitioningRef.current = true;
+        setStage('enter');
+        document.body.style.overflow = 'hidden';
+
+        const t1 = setTimeout(() => {
+          setStage('visual');
+        }, 150);
+
+        const t2 = setTimeout(() => {
+          setStage('text');
+        }, 900);
+
+        const t3 = setTimeout(() => {
+          setStage('exit');
+        }, 1800);
+
+        const t4 = setTimeout(() => {
+          setIsTransitioning(false);
+          isTransitioningRef.current = false;
+          document.body.style.overflow = '';
+          clearTimeouts();
+        }, 2200);
+
+        timeoutRefs.current = [t1, t2, t3, t4];
+      }
+    }
+  }, [currentDepartment]);
+
   const triggerSectionTransition = (target: 'numismatics' | 'fashion') => {
     // Prevent duplicate triggers or rapid clicks while running
-    if (isTransitioning) return;
+    if (isTransitioningRef.current) return;
 
     clearTimeouts();
     setTargetSection(target);
     setIsTransitioning(true);
+    isTransitioningRef.current = true;
+    prevDepartmentRef.current = target;
     setStage('enter');
 
     // Freeze page scroll immediately
@@ -74,6 +126,7 @@ export const PageTransitionProvider: React.FC<{ children: React.ReactNode }> = (
     // 2.65s: Complete transition, restore body scroll & unmount
     const t5 = setTimeout(() => {
       setIsTransitioning(false);
+      isTransitioningRef.current = false;
       document.body.style.overflow = '';
       clearTimeouts();
     }, 2650);

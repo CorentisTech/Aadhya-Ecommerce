@@ -30,13 +30,9 @@ export const Categories: React.FC = () => {
 
         {/* Horizontal Scroll Layout on mobile/tablet, grid layout on desktop */}
         <div className="flex overflow-x-auto pb-3 gap-4 md:grid md:grid-cols-3 lg:grid-cols-6 md:gap-8 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
-          {fashionCategories.map((category, index) => (
-            <motion.div
+          {fashionCategories.map((category) => (
+            <div
               key={category.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.04 }}
               className="flex flex-col text-center group cursor-pointer space-y-2 focus:outline-none flex-shrink-0 w-[125px] md:w-auto snap-start"
             >
               {/* Arched Top Image */}
@@ -66,7 +62,7 @@ export const Categories: React.FC = () => {
                 </span>
               </div>
 
-            </motion.div>
+            </div>
           ))}
         </div>
 

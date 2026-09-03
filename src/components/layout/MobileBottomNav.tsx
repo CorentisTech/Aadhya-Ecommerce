@@ -43,7 +43,13 @@ export const MobileBottomNav: React.FC = () => {
   const unrollOpacity = useTransform(dragX, [0, 15, maxDrag], [0, 0.95, 1]);
   const textOpacity = useTransform(dragX, [0, maxDrag * 0.7], [1, 0.25]);
 
-  const isNumismaticsPage = pathname?.includes('/numismatics') || activePage === 'numismatics';
+  const isNumismaticsPage = Boolean(pathname?.includes('/numismatics'));
+
+  // Reset swipe state whenever pathname changes (e.g. mobile back button)
+  useEffect(() => {
+    dragX.set(0);
+    setStatusMessage(null);
+  }, [pathname, dragX]);
 
   const handleDragEnd = (event: any, info: any) => {
     const currentX = dragX.get();

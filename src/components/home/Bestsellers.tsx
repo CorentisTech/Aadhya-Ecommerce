@@ -59,17 +59,13 @@ export const Bestsellers: React.FC = () => {
 
         {/* Horizontal scroll container */}
         <div className="flex overflow-x-auto pb-3 gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
-          {bestsellerProducts.slice(0, 4).map((product, index) => {
+          {bestsellerProducts.slice(0, 4).map((product) => {
             const inWishlist = isInWishlist(product.id);
             const slug = product.name.toLowerCase().replace(/ /g, '-');
 
             return (
-              <motion.div
+              <div
                 key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.04 }}
                 onClick={() => router.push(`/product/${slug}`)}
                 className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start"
               >
@@ -134,7 +130,7 @@ export const Bestsellers: React.FC = () => {
                     </span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
         </div>
