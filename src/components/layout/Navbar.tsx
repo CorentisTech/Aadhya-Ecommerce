@@ -133,7 +133,15 @@ export const Navbar: React.FC = () => {
           </button>
 
           <button
-            onClick={() => { router.push('/'); setPage('home'); }}
+            onClick={() => {
+              if (pathname?.includes('/numismatics') || activePage === 'numismatics') {
+                setPage('home');
+                triggerSectionTransition('fashion');
+              } else {
+                router.push('/');
+                setPage('home');
+              }
+            }}
             className="font-display text-xl md:text-2xl font-bold tracking-[0.25em] text-brand-espresso hover:opacity-85 transition-opacity"
           >
             AADHYA
@@ -324,7 +332,15 @@ export const Navbar: React.FC = () => {
                     {/* Home Link */}
                     <motion.button
                       variants={itemVariants}
-                      onClick={() => { setPage('home'); setSidebarOpen(false); }}
+                      onClick={() => {
+                        setSidebarOpen(false);
+                        if (pathname?.includes('/numismatics') || activePage === 'numismatics') {
+                          setPage('home');
+                          triggerSectionTransition('fashion');
+                        } else {
+                          setPage('home');
+                        }
+                      }}
                       className={`flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full transition-all relative ${
                         activePage === 'home' 
                           ? 'bg-[#FFF3EC] text-[#F26A2E] font-extrabold shadow-sm' 
