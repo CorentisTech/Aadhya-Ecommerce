@@ -13,7 +13,6 @@ import {
   ArrowRight, 
   ChevronLeft, 
   ChevronRight, 
-  ShieldCheck, 
   Award, 
   Truck, 
   Star,
@@ -47,25 +46,25 @@ export const NumismaticsHome: React.FC = () => {
       product: numProducts[4] || numProducts[0], // Mughal Shah Alam II Rupee
       cardGradient: 'from-[#F28B82] to-[#E56B6F]', // Rose / Peach-Red Card
       categoryLabel: 'Mughal Empire',
-      discountBadge: '20% Off'
+      discountBadge: '20% OFF'
     },
     {
       product: numProducts[0] || numProducts[0], // 1954 Republic One Rupee
       cardGradient: 'from-[#FBA858] to-[#EF8A24]', // Warm Amber / Orange Card
       categoryLabel: 'Republic India',
-      discountBadge: 'Rare Issue'
+      discountBadge: '30% OFF'
     },
     {
       product: numProducts[2] || numProducts[1], // British India 100 Rupee Note
       cardGradient: 'from-[#7CD585] to-[#55B75F]', // Sage / Leaf Green Card
       categoryLabel: 'Paper Currency',
-      discountBadge: 'Uncirculated'
+      discountBadge: '25% OFF'
     },
     {
       product: numProducts[3] || numProducts[2], // Queen Victoria Two Annas
       cardGradient: 'from-[#7B73F0] to-[#584FE3]', // Rich Violet / Indigo Card
       categoryLabel: 'British India',
-      discountBadge: '100% Certified'
+      discountBadge: '20% OFF'
     }
   ];
 
@@ -87,7 +86,7 @@ export const NumismaticsHome: React.FC = () => {
     const newIdx = (heroActiveIndex - 1 + heroFeaturedCoins.length) % heroFeaturedCoins.length;
     setHeroActiveIndex(newIdx);
     if (heroCardsScrollRef.current) {
-      const cardWidth = 160;
+      const cardWidth = 180;
       heroCardsScrollRef.current.scrollTo({ left: newIdx * cardWidth, behavior: 'smooth' });
     }
     setTimeout(() => setIsPaused(false), 4500);
@@ -98,7 +97,7 @@ export const NumismaticsHome: React.FC = () => {
     const newIdx = (heroActiveIndex + 1) % heroFeaturedCoins.length;
     setHeroActiveIndex(newIdx);
     if (heroCardsScrollRef.current) {
-      const cardWidth = 160;
+      const cardWidth = 180;
       heroCardsScrollRef.current.scrollTo({ left: newIdx * cardWidth, behavior: 'smooth' });
     }
     setTimeout(() => setIsPaused(false), 4500);
@@ -146,10 +145,10 @@ export const NumismaticsHome: React.FC = () => {
     <div className="w-full max-w-full min-h-screen bg-[#FFFBF8] text-brand-espresso select-none overflow-x-hidden">
 
       {/* ==================================================
-          1. HERO SECTION — SINGLE SCREEN FIT (Desktop & Mobile)
+          1. FULL SCREEN FIT HERO SECTION (Desktop & Mobile)
          ================================================== */}
       <section 
-        className="w-full pt-3 sm:pt-4 md:pt-6 pb-4 sm:pb-6 md:pb-8 px-3 sm:px-6 md:px-12 lg:px-16 bg-gradient-to-b from-[#FFF5EC] via-[#FFF8F3] to-[#FFFBF8] relative overflow-hidden"
+        className="w-full min-h-[calc(100vh-72px)] flex flex-col justify-center py-4 sm:py-6 md:py-8 px-3 sm:px-6 md:px-12 lg:px-16 bg-gradient-to-b from-[#FFF5EC] via-[#FFF8F3] to-[#FFFBF8] relative overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -157,7 +156,7 @@ export const NumismaticsHome: React.FC = () => {
         <div className="absolute top-6 right-8 w-[450px] h-[450px] rounded-full bg-[#FCE5D3]/60 blur-3xl pointer-events-none" />
         <div className="absolute top-1/3 left-4 w-72 h-72 rounded-full bg-[#FFF0E0]/80 blur-2xl pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 md:space-y-5 relative z-10">
+        <div className="max-w-7xl mx-auto w-full my-auto space-y-4 sm:space-y-6 md:space-y-7 relative z-10">
           
           {/* TOP SPLIT: Left Headline, Price, Reviews & Actions + Right Large Hero Coin */}
           <div className="grid grid-cols-12 gap-2 sm:gap-4 md:gap-8 items-center">
@@ -265,18 +264,20 @@ export const NumismaticsHome: React.FC = () => {
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   className="relative flex items-center justify-center"
                 >
-                  {/* Scalloped Badge on Top-Right */}
-                  <div className="absolute -top-1.5 sm:-top-2 -right-1 sm:-right-3 z-30 w-11 h-11 sm:w-15 sm:h-15 md:w-18 md:h-18 rounded-full bg-[#85A947] text-white flex flex-col items-center justify-center shadow-lg font-display font-extrabold rotate-12">
-                    <span className="text-[8px] sm:text-[10px] md:text-xs font-black tracking-wider leading-none">
-                      {currentHeroItem.discountBadge}
+                  {/* RED 20% or 30% DISCOUNT BADGE ON TOP-RIGHT (No overflow/cut-off) */}
+                  <div className="absolute top-1 sm:top-2 right-1 sm:right-2 z-30 w-12 h-12 sm:w-15 sm:h-15 md:w-17 md:h-17 rounded-full bg-[#E53935] text-white flex flex-col items-center justify-center shadow-xl font-display font-black border-2 border-white rotate-6">
+                    <span className="text-xs sm:text-sm md:text-base font-black leading-none">
+                      {currentHeroItem.discountBadge.includes('OFF') ? currentHeroItem.discountBadge.replace(' OFF', '') : '30%'}
                     </span>
-                    <span className="text-[6px] sm:text-[7px] md:text-[8px] tracking-tight opacity-90">100% Genuine</span>
+                    <span className="text-[7px] sm:text-[8px] md:text-[9px] font-black tracking-wider leading-none uppercase mt-0.5">
+                      OFF
+                    </span>
                   </div>
 
                   {/* Main Circular Coin Presentation Stage */}
                   <div 
                     onClick={() => router.push(`/product/${activeHeroProduct.name.toLowerCase().replace(/ /g, '-')}`)}
-                    className="w-[140px] sm:w-[200px] md:w-[260px] lg:w-[300px] h-[140px] sm:h-[200px] md:h-[260px] lg:h-[300px] rounded-full bg-[#FFFDFB] border-4 sm:border-6 lg:border-8 border-white p-1.5 sm:p-2.5 md:p-3 shadow-xl sm:shadow-2xl flex items-center justify-center cursor-pointer group relative overflow-hidden"
+                    className="w-[150px] sm:w-[210px] md:w-[270px] lg:w-[320px] h-[150px] sm:h-[210px] md:h-[270px] lg:h-[320px] rounded-full bg-[#FFFDFB] border-4 sm:border-6 lg:border-8 border-white p-1.5 sm:p-2.5 md:p-3 shadow-xl sm:shadow-2xl flex items-center justify-center cursor-pointer group relative overflow-hidden"
                   >
                     {activeHeroProduct.visualType === 'note' ? (
                       <img 
@@ -297,17 +298,6 @@ export const NumismaticsHome: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Floating Glassmorphic Provenance Badge (Bottom-Left) */}
-                  <div className="absolute -bottom-2 sm:-bottom-3 -left-1.5 sm:-left-4 md:-left-6 z-30 bg-white/95 backdrop-blur-md border border-[#EFE8DC] rounded-xl sm:rounded-2xl p-1.5 sm:p-2.5 md:p-3 shadow-lg flex items-center gap-1.5 sm:gap-2.5">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-[#FFF3EC] flex items-center justify-center text-[#E0591D] flex-shrink-0">
-                      <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-                    </div>
-                    <div className="text-left pr-1">
-                      <span className="text-[9px] sm:text-[10px] md:text-[11px] font-extrabold text-[#2B231D] block leading-tight">Verified Provenance</span>
-                      <span className="text-[7px] sm:text-[8px] md:text-[9px] text-[#7D736A] font-semibold">Historic Specimen</span>
-                    </div>
-                  </div>
-
                 </motion.div>
               </AnimatePresence>
 
@@ -315,8 +305,8 @@ export const NumismaticsHome: React.FC = () => {
 
           </div>
 
-          {/* LOWER HERO CAROUSEL: Floating White Container with 4 Vibrant Cards Moved Up */}
-          <div className="relative max-w-5xl mx-auto bg-white rounded-[22px] sm:rounded-[32px] md:rounded-[40px] p-3 sm:p-4 md:p-6 shadow-xl shadow-black/5 border border-[#F0EAE1]">
+          {/* LOWER HERO CAROUSEL: Floating White Container with 4 Vibrant Cards (Enlarged Coins) */}
+          <div className="relative max-w-5xl mx-auto bg-white rounded-[22px] sm:rounded-[32px] md:rounded-[40px] p-3 sm:p-5 md:p-6 shadow-xl shadow-black/5 border border-[#F0EAE1]">
             
             {/* Outer Left Circular Navigation Button */}
             <button
@@ -339,7 +329,7 @@ export const NumismaticsHome: React.FC = () => {
             {/* 4 Vibrant Rounded Cards: Horizontal Touch-Swipe on Mobile, Grid on Desktop */}
             <div 
               ref={heroCardsScrollRef}
-              className="flex overflow-x-auto gap-3 sm:gap-4 md:grid md:grid-cols-4 md:gap-4 lg:gap-5 pt-6 sm:pt-7 pb-1 scrollbar-none snap-x snap-mandatory touch-pan-x w-full scroll-smooth"
+              className="flex overflow-x-auto gap-3 sm:gap-4 md:grid md:grid-cols-4 md:gap-4 lg:gap-5 pt-8 sm:pt-10 md:pt-11 pb-1 scrollbar-none snap-x snap-mandatory touch-pan-x w-full scroll-smooth"
             >
               {heroFeaturedCoins.map((item, idx) => {
                 const isSelected = heroActiveIndex === idx;
@@ -354,15 +344,15 @@ export const NumismaticsHome: React.FC = () => {
                       setHeroActiveIndex(idx);
                       setTimeout(() => setIsPaused(false), 4500);
                     }}
-                    className={`flex-shrink-0 w-[145px] sm:w-[170px] md:w-auto snap-start bg-gradient-to-b ${item.cardGradient} rounded-[20px] sm:rounded-[26px] p-2.5 sm:p-3.5 text-left flex flex-col justify-between cursor-pointer transition-all duration-300 relative ${
+                    className={`flex-shrink-0 w-[155px] sm:w-[185px] md:w-auto snap-start bg-gradient-to-b ${item.cardGradient} rounded-[20px] sm:rounded-[26px] p-2.5 sm:p-3.5 text-left flex flex-col justify-between cursor-pointer transition-all duration-300 relative ${
                       isSelected 
                         ? 'ring-3 sm:ring-4 ring-[#E0591D]/30 shadow-2xl scale-[1.02] -translate-y-0.5' 
                         : 'shadow-md hover:scale-[1.01] opacity-90 hover:opacity-100'
                     }`}
                   >
-                    {/* Floating Circular Coin on Top */}
-                    <div className="w-full flex justify-center -mt-9 sm:-mt-11 mb-1 sm:mb-1.5">
-                      <div className="w-13 h-13 sm:w-16 sm:h-16 md:w-19 md:h-19 rounded-full bg-white p-0.5 sm:p-1 shadow-lg flex items-center justify-center overflow-hidden border-2 border-white">
+                    {/* Floating Circular Coin on Top (ENLARGED & CLEARLY VISIBLE) */}
+                    <div className="w-full flex justify-center -mt-12 sm:-mt-14 md:-mt-16 mb-1 sm:mb-2">
+                      <div className="w-18 h-18 sm:w-22 sm:h-22 md:w-24 md:h-24 rounded-full bg-white p-1 sm:p-1.5 shadow-xl flex items-center justify-center overflow-hidden border-2 sm:border-3 border-white">
                         {prod.visualType === 'note' ? (
                           <img src={prod.image} alt={prod.name} className="w-full h-full object-cover rounded-full" />
                         ) : (
