@@ -109,7 +109,7 @@ export const SearchOverlay: React.FC = () => {
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Search sarees, lehengas, dresses, jewellery..."
+                placeholder="Search palazzo, pants, salwar, blouse, kurti, coins..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-transparent outline-none text-xl md:text-3xl font-display font-light placeholder-brand-warmGray/40 text-brand-espresso"

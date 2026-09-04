@@ -9,26 +9,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { NavigationControls } from '@/components/ui/NavigationControls';
 import { ProductVisual } from '@/components/ui/ProductVisual';
 
-// Exact filter criteria from media_1788429391390.png
+// Exact filter criteria updated for the strict 7 categories and fabrics
 const FASHION_FILTER_CRITERIA = {
-  fabric: { label: 'FABRIC', options: ['Cotton', 'Silk', 'Wool Blend', 'Raw Silk', 'Chiffon'] },
-  neckType: { label: 'NECK TYPE', options: ['Collared', 'V-Neck Lapel', 'Round Neck', 'Sweetheart', 'Boat Neck'] },
-  sleeves: { label: 'SLEEVES', options: ['Full Sleeves', 'Long Sleeves', 'Three-Quarter', 'Half Sleeves', 'Sleeveless'] },
-  occasion: { label: 'OCCASION', options: ['Casual', 'Formal', 'Festive', 'Wedding', 'Evening'] },
-  length: { label: 'LENGTH', options: ['Short', 'Midi', 'Maxi', 'Crop'] },
+  category: { label: 'CATEGORY', options: ['Palazzo', 'Pants', 'Salwar', 'Blouse', 'Kurti & Pants', 'Saree Shaper', 'Nighty'] },
+  fabric: { label: 'FABRIC', options: ['AV Cotton', 'Rayon', 'Raw Silk', 'Cotton', 'Silk'] },
+  pattern: { label: 'PATTERN', options: ['Plain', 'Printed'] },
+  occasion: { label: 'OCCASION', options: ['Casual', 'Formal', 'Festive', 'Evening'] },
+  length: { label: 'LENGTH', options: ['Ankle Length', 'Floor Length', 'Full Length', 'Midi Length', 'Regular Length'] },
   fit: { label: 'FIT', options: ['Relaxed', 'Slim Fit', 'Flared', 'Tailored', 'Oversized'] }
 };
 
 // Exact numismatics filter criteria specified by user
 const NUMISMATICS_FILTER_CRITERIA = {
-  material: { label: 'MATERIAL', options: ['Silver', 'Gold', 'Paper', 'Mixed Metal', 'Copper'] },
+  material: { label: 'MATERIAL', options: ['Silver', 'Gold', 'Paper', 'Mixed Metal', 'Copper', 'Nickel'] },
   era: { label: 'ERA / PERIOD', options: ['British India', 'Republic India', 'Mughal Empire', 'Ancient', 'East India Company'] },
   rarity: { label: 'RARITY', options: ['Rare', 'Scarce', 'Very Rare', 'Extremely Rare', 'Standard'] },
   visualType: { label: 'TYPE', options: ['Coins', 'Notes'] },
   priceRange: { label: 'PRICE RANGE', options: ['Under ₹5,000', '₹5,000 - ₹15,000', '₹15,000 - ₹30,000', 'Above ₹30,000'] }
 };
 
-const FASHION_PILLS = ['ALL', 'WESTERN', 'ETHNIC', 'DRESSES', 'BLOUSE', 'TROUSERS', 'TOPS'];
+const FASHION_PILLS = ['ALL', 'PALAZZO', 'PANTS', 'SALWAR', 'BLOUSE', 'KURTI & PANTS', 'SAREE SHAPER', 'NIGHTY'];
 
 function CatalogContent() {
   const router = useRouter();
@@ -55,9 +55,9 @@ function CatalogContent() {
 
   // Selected Filter Pills State
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({
+    category: [],
     fabric: [],
-    neckType: [],
-    sleeves: [],
+    pattern: [],
     occasion: [],
     length: [],
     fit: [],
@@ -90,9 +90,9 @@ function CatalogContent() {
   // Reset all filters
   const handleResetFilters = () => {
     setSelectedFilters({
+      category: [],
       fabric: [],
-      neckType: [],
-      sleeves: [],
+      pattern: [],
       occasion: [],
       length: [],
       fit: [],
@@ -120,52 +120,47 @@ function CatalogContent() {
       if (!matchesName && !matchesDesc && !matchesCat) return false;
     }
 
-    // 3. Fashion Pills
+    // 3. Fashion Category Pills (7 strict categories)
     if (department === 'fashion' && selectedFashionPill !== 'ALL') {
       const pill = selectedFashionPill.toLowerCase();
       const cat = product.category.toLowerCase();
       const name = product.name.toLowerCase();
-      const visual = product.visualType?.toLowerCase() || '';
 
-      if (pill === 'western') {
-        const matches = cat.includes('dress') || cat.includes('pants') || cat.includes('western') || cat.includes('coord') || cat.includes('sweater') || name.includes('blazer') || name.includes('shirt');
-        if (!matches) return false;
-      } else if (pill === 'ethnic') {
-        const matches = cat.includes('occasion') || cat.includes('saree') || visual.includes('saree') || visual.includes('ethnic') || name.includes('kurti') || name.includes('anarkali');
-        if (!matches) return false;
-      } else if (pill === 'dresses') {
-        const matches = cat.includes('dress') || visual.includes('dress') || name.includes('dress');
-        if (!matches) return false;
+      if (pill === 'palazzo') {
+        if (!cat.includes('palazzo') && !name.includes('palazzo')) return false;
+      } else if (pill === 'pants') {
+        if (!cat.includes('pants') && !name.includes('pants') && !name.includes('trouser')) return false;
+      } else if (pill === 'salwar') {
+        if (!cat.includes('salwar') && !name.includes('salwar')) return false;
       } else if (pill === 'blouse') {
-        const matches = cat.includes('blouse') || visual.includes('blouse') || name.includes('blouse') || name.includes('top');
-        if (!matches) return false;
-      } else if (pill === 'trousers') {
-        const matches = cat.includes('pants') || cat.includes('coord') || name.includes('trousers');
-        if (!matches) return false;
-      } else if (pill === 'tops') {
-        const matches = cat.includes('tops') || cat.includes('sweaters') || visual.includes('blouse') || name.includes('top') || name.includes('sweater');
-        if (!matches) return false;
+        if (!cat.includes('blouse') && !name.includes('blouse')) return false;
+      } else if (pill === 'kurti & pants') {
+        if (!cat.includes('kurti') && !name.includes('kurti')) return false;
+      } else if (pill === 'saree shaper') {
+        if (!cat.includes('shaper') && !name.includes('shaper')) return false;
+      } else if (pill === 'nighty') {
+        if (!cat.includes('nighty') && !name.includes('nighty')) return false;
       }
     }
 
     // 4. Drawer Filter Checks for Fashion
     if (department === 'fashion') {
-      if (selectedFilters.fabric.length > 0 && product.fabric) {
+      if (selectedFilters.category?.length > 0) {
+        if (!selectedFilters.category.some(c => product.category.toLowerCase().includes(c.toLowerCase()))) return false;
+      }
+      if (selectedFilters.fabric?.length > 0 && product.fabric) {
         if (!selectedFilters.fabric.some(f => product.fabric?.toLowerCase().includes(f.toLowerCase()))) return false;
       }
-      if (selectedFilters.neckType.length > 0 && product.neckType) {
-        if (!selectedFilters.neckType.some(n => product.neckType?.toLowerCase().includes(n.toLowerCase()))) return false;
+      if (selectedFilters.pattern?.length > 0 && product.pattern) {
+        if (!selectedFilters.pattern.some(p => product.pattern?.toLowerCase().includes(p.toLowerCase()))) return false;
       }
-      if (selectedFilters.sleeves.length > 0 && product.sleeves) {
-        if (!selectedFilters.sleeves.some(s => product.sleeves?.toLowerCase().includes(s.toLowerCase()))) return false;
-      }
-      if (selectedFilters.occasion.length > 0 && product.occasion) {
+      if (selectedFilters.occasion?.length > 0 && product.occasion) {
         if (!selectedFilters.occasion.some(o => product.occasion?.toLowerCase().includes(o.toLowerCase()))) return false;
       }
-      if (selectedFilters.length.length > 0 && product.length) {
+      if (selectedFilters.length?.length > 0 && product.length) {
         if (!selectedFilters.length.some(l => product.length?.toLowerCase().includes(l.toLowerCase()))) return false;
       }
-      if (selectedFilters.fit.length > 0 && product.fit) {
+      if (selectedFilters.fit?.length > 0 && product.fit) {
         if (!selectedFilters.fit.some(f => product.fit?.toLowerCase().includes(f.toLowerCase()))) return false;
       }
     }
@@ -256,7 +251,7 @@ function CatalogContent() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search dresses, kurtis, tops..."
+                    placeholder="Search palazzo, pants, salwar, blouse, kurti..."
                     className="pl-9 pr-4 py-2 text-xs bg-white border border-[#EAE2D5] rounded-full focus:outline-none focus:border-[#1A1A1A] w-48 sm:w-64 text-[#2B231D] shadow-xs placeholder:text-[#A09890]"
                   />
                 </div>

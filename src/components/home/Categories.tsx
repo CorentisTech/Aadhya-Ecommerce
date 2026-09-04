@@ -29,7 +29,7 @@ export const Categories: React.FC = () => {
         </div>
 
         {/* Horizontal Scroll Layout on mobile/tablet, grid layout on desktop */}
-        <div className="flex overflow-x-auto pb-3 gap-4 md:grid md:grid-cols-3 lg:grid-cols-6 md:gap-8 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
+        <div className="flex overflow-x-auto pb-3 gap-4 md:grid md:grid-cols-4 lg:grid-cols-7 md:gap-6 lg:gap-5 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
           {fashionCategories.map((category) => (
             <div
               key={category.id}
