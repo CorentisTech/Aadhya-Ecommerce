@@ -58,6 +58,15 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
   };
 
   useEffect(() => {
+    setIsZoomed(false);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    isHoldingRef.current = false;
+  }, [src]);
+
+  useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
@@ -67,7 +76,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
     <div className="flex flex-col items-center w-full">
       {/* Clipped Fixed Image Container */}
       <div 
-        className={`w-full ${aspectRatio} overflow-hidden relative select-none touch-none ${className}`}
+        className={`w-full ${aspectRatio} overflow-hidden relative select-none touch-pan-y ${className}`}
         onMouseDown={startHold}
         onMouseUp={endHold}
         onMouseLeave={endHold}

@@ -422,7 +422,7 @@ function CatalogContent() {
               return (
                 <div
                   key={product.id}
-                  onClick={() => router.push(`/product/${slug}`)}
+                  onClick={() => router.push(`/numismatics/${slug}`)}
                   className="flex flex-col text-left group cursor-pointer bg-white border border-[#EAE2D5] rounded-2xl p-3 sm:p-4 hover:shadow-lg transition-all relative justify-between"
                 >
                   <div>

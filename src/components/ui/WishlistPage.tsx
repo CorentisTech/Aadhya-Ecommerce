@@ -183,7 +183,10 @@ export const WishlistPage: React.FC = () => {
                     <div
                       key={product.id}
                       className="border border-brand-border/20 rounded-3xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
-                      onClick={() => router.push(`/product/${product.name.toLowerCase().replace(/ /g, '-')}`)}
+                      onClick={() => {
+                        const wishSlug = product.name.toLowerCase().replace(/ /g, '-');
+                        router.push(product.department === 'numismatics' ? `/numismatics/${wishSlug}` : `/product/${wishSlug}`);
+                      }}
                     >
                       {/* Upper section (White bg with center portrait image) */}
                       <div className="p-4 bg-white flex flex-col items-center relative flex-grow min-h-[290px] justify-between">

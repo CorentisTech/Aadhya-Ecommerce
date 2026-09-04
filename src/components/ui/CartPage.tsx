@@ -95,7 +95,13 @@ export const CartPage: React.FC = () => {
                   >
                     <div className="flex items-start gap-4 w-full">
                       {/* Rounded Image Frame */}
-                      <div className="w-16 h-20 sm:w-20 sm:h-24 bg-brand-softBeige/15 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-brand-border/20">
+                      <div 
+                        onClick={() => {
+                          const itemSlug = item.product.name.toLowerCase().replace(/ /g, '-');
+                          router.push(item.product.department === 'numismatics' ? `/numismatics/${itemSlug}` : `/product/${itemSlug}`);
+                        }}
+                        className="w-16 h-20 sm:w-20 sm:h-24 bg-brand-softBeige/15 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-brand-border/20 cursor-pointer hover:opacity-90 transition-opacity"
+                      >
                         <img 
                           src={item.product.image} 
                           alt={item.product.name} 
@@ -109,7 +115,13 @@ export const CartPage: React.FC = () => {
                           <span className="text-[8px] font-extrabold text-[#F26A2E] tracking-widest uppercase block">
                             {item.product.department === 'numismatics' ? 'Ethnic Heritage' : 'Women\'s Couture'}
                           </span>
-                          <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso line-clamp-2 pr-2">
+                          <h3 
+                            onClick={() => {
+                              const itemSlug = item.product.name.toLowerCase().replace(/ /g, '-');
+                              router.push(item.product.department === 'numismatics' ? `/numismatics/${itemSlug}` : `/product/${itemSlug}`);
+                            }}
+                            className="font-sans font-bold text-xs sm:text-sm text-brand-espresso line-clamp-2 pr-2 cursor-pointer hover:text-[#F26A2E] transition-colors"
+                          >
                             {item.product.name}
                           </h3>
                           
@@ -297,7 +309,10 @@ export const CartPage: React.FC = () => {
                 return (
                   <div
                     key={product.id}
-                    onClick={() => router.push(`/product/${product.name.toLowerCase().replace(/ /g, '-')}`)}
+                    onClick={() => {
+                      const crossSlug = product.name.toLowerCase().replace(/ /g, '-');
+                      router.push(product.department === 'numismatics' ? `/numismatics/${crossSlug}` : `/product/${crossSlug}`);
+                    }}
                     className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/20 rounded-2xl p-2 hover:shadow-md transition-shadow relative"
                   >
                     {/* Image viewport */}

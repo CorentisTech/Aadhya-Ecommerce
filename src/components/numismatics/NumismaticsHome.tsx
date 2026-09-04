@@ -450,7 +450,7 @@ export const NumismaticsHome: React.FC = () => {
 
                   {/* Main Circular Coin Presentation Stage */}
                   <div 
-                    onClick={() => router.push(`/product/${activeHeroProduct.name.toLowerCase().replace(/ /g, '-')}`)}
+                    onClick={() => router.push(`/numismatics/${activeHeroProduct.name.toLowerCase().replace(/ /g, '-')}`)}
                     className="w-[150px] sm:w-[210px] md:w-[270px] lg:w-[320px] h-[150px] sm:h-[210px] md:h-[270px] lg:h-[320px] rounded-full bg-[#FFFDFB] border-4 sm:border-6 lg:border-8 border-white p-1.5 sm:p-2.5 md:p-3 shadow-xl sm:shadow-2xl flex items-center justify-center cursor-pointer group relative overflow-hidden"
                   >
                     {activeHeroProduct.visualType === 'note' ? (
@@ -635,7 +635,7 @@ export const NumismaticsHome: React.FC = () => {
               return (
                 <div
                   key={product.id}
-                  onClick={() => router.push(`/product/${slug}`)}
+                  onClick={() => router.push(`/numismatics/${slug}`)}
                   className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 sm:p-3 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start"
                 >
                   {/* Product Visual Container */}
@@ -997,7 +997,7 @@ export const NumismaticsHome: React.FC = () => {
               return (
                 <div
                   key={product.id}
-                  onClick={() => router.push(`/product/${slug}`)}
+                  onClick={() => router.push(`/numismatics/${slug}`)}
                   className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 sm:p-3 hover:shadow-md transition-shadow relative flex-shrink-0 w-[170px] sm:w-[210px] md:w-[240px] snap-start"
                 >
                   {/* Product Visual Container */}

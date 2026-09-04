@@ -39,6 +39,13 @@ export default function ProductDetailPage({ params }: PageProps) {
     (p) => p.name.toLowerCase().replace(/ /g, '-') === slug
   );
 
+  // Safeguard: Redirect numismatics products to the dedicated numismatics PDP route
+  useEffect(() => {
+    if (product && product.department === 'numismatics') {
+      router.replace(`/numismatics/${slug}`);
+    }
+  }, [product, slug, router]);
+
   // States
   const [selectedSize, setSelectedSize] = useState('36');
   const [selectedColor, setSelectedColor] = useState('');
@@ -100,6 +107,11 @@ export default function ProductDetailPage({ params }: PageProps) {
         </button>
       </div>
     );
+  }
+
+  // If this is a numismatics product, render nothing while router redirects
+  if (product.department === 'numismatics') {
+    return null;
   }
 
   // Get active images based on color selection
@@ -208,22 +220,28 @@ export default function ProductDetailPage({ params }: PageProps) {
                   <Maximize2 className="w-3.5 h-3.5" />
                 </button>
 
-                <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-20">
                   <button
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
                     onClick={(e) => {
                       e.stopPropagation();
                       handlePrevImage();
                     }}
-                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso cursor-pointer"
+                    aria-label="Previous image"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <button
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleNextImage();
                     }}
-                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso"
+                    className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso cursor-pointer"
+                    aria-label="Next image"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -391,22 +409,28 @@ export default function ProductDetailPage({ params }: PageProps) {
                     <Maximize2 className="w-3.5 h-3.5" />
                   </button>
 
-                  <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                  <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-20">
                     <button
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
                       onClick={(e) => {
                         e.stopPropagation();
                         handlePrevImage();
                       }}
                       className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso cursor-pointer"
+                      aria-label="Previous image"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleNextImage();
                       }}
                       className="p-1.5 bg-white/80 hover:bg-white rounded-full shadow pointer-events-auto text-brand-espresso cursor-pointer"
+                      aria-label="Next image"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>

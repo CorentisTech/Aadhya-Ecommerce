@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState } from 'react';
+import React, { use, useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { PRODUCTS, Product } from '@/data/mockData';
@@ -36,13 +36,119 @@ export default function NumismaticDetailPage({ params }: PageProps) {
     (p) => p.name.toLowerCase().replace(/ /g, '-') === slug
   );
 
+  // Two-way Route Safeguard: If a fashion product is accessed here, redirect to fashion PDP
+  useEffect(() => {
+    if (product && product.department === 'fashion') {
+      router.replace(`/product/${slug}`);
+    }
+  }, [product, slug, router]);
+
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
 
-  // Gallery lightboxes
+  // Gallery, Zoom, and Lightbox states
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
   const [isGalleryOpen, setGalleryOpen] = useState(false);
+
+  const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const isSwipingRef = useRef(false);
+
+  const productImages = product?.images && product.images.length > 0 
+    ? product.images 
+    : (product ? [product.image] : []);
+
+  // Reset zoom state whenever image, product, or slug changes
+  useEffect(() => {
+    setIsZoomed(false);
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+  }, [activeImageIndex, slug]);
+
+  const startHold = () => {
+    if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+    holdTimerRef.current = setTimeout(() => {
+      setIsZoomed(true);
+    }, 220); // Intentional hold threshold (medium sensitivity)
+  };
+
+  const cancelHold = () => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    setIsZoomed(false);
+  };
+
+  // Safe image switching (strictly resets zoom)
+  const handlePrevImage = () => {
+    cancelHold();
+    if (productImages.length > 0) {
+      setActiveImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length);
+    }
+  };
+
+  const handleNextImage = () => {
+    cancelHold();
+    if (productImages.length > 0) {
+      setActiveImageIndex((prev) => (prev + 1) % productImages.length);
+    }
+  };
+
+  const handleSelectThumbnail = (idx: number) => {
+    cancelHold();
+    setActiveImageIndex(idx);
+  };
+
+  // Mobile touch handlers for swipe navigation + touch-and-hold zoom
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartXRef.current = touch.clientX;
+    touchStartYRef.current = touch.clientY;
+    isSwipingRef.current = false;
+    startHold();
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const touch = e.touches[0];
+    const diffX = touch.clientX - touchStartXRef.current;
+    const diffY = touch.clientY - touchStartYRef.current;
+
+    // If movement is detected, cancel hold zoom immediately
+    if (Math.abs(diffX) > 12 || Math.abs(diffY) > 12) {
+      isSwipingRef.current = true;
+      cancelHold();
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    cancelHold();
+
+    if (touchStartXRef.current !== null && touchStartYRef.current !== null) {
+      const touch = e.changedTouches[0];
+      const diffX = touch.clientX - touchStartXRef.current;
+      const diffY = touch.clientY - touchStartYRef.current;
+
+      // Natural horizontal swipe (threshold: 35px, horizontal dominant)
+      if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX < 0) {
+          handleNextImage();
+        } else {
+          handlePrevImage();
+        }
+      }
+    }
+
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+    isSwipingRef.current = false;
+  };
 
   if (!product) {
     return (
@@ -58,6 +164,11 @@ export default function NumismaticDetailPage({ params }: PageProps) {
     );
   }
 
+  // If this is a fashion product, render nothing while router redirects
+  if (product.department === 'fashion') {
+    return null;
+  }
+
   const inWishlist = isInWishlist(product.id);
 
   const handleAddToCart = () => {
@@ -66,11 +177,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
     setTimeout(() => setAdded(false), 1200);
   };
 
-  const productImages = product.images && product.images.length > 0 
-    ? product.images 
-    : [product.image];
-
-  // Related numismatic collectibles
+  // Related numismatic collectibles (Numismatics ONLY)
   const relatedProducts = PRODUCTS.filter(
     (p) => p.department === 'numismatics' && p.id !== product.id
   ).slice(0, 4);
@@ -99,58 +206,123 @@ export default function NumismaticDetailPage({ params }: PageProps) {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12 items-start">
           
           {/* Left Column: Image Canvas (6 cols) */}
-          <div className="md:col-span-6 bg-brand-white p-6 sm:p-8 border border-brand-border/60 rounded-3xl relative flex flex-col items-center justify-center min-h-[380px] md:min-h-[460px] shadow-sm">
+          <div className="md:col-span-6 bg-brand-white p-4 sm:p-6 md:p-8 border border-brand-border/60 rounded-3xl relative flex flex-col items-center justify-center min-h-[380px] md:min-h-[460px] shadow-sm overflow-hidden select-none">
             {/* Rarity Tag */}
-            <div className="absolute top-4 left-4">
+            <div className="absolute top-4 left-4 z-20 pointer-events-none">
               <span className="text-[9px] bg-brand-espresso text-brand-gold font-extrabold tracking-widest px-3 py-1 rounded-full shadow-xs uppercase">
                 {product.rarity || 'RARE'}
               </span>
             </div>
 
-            {/* Main Collectible Display */}
-            <div 
-              onClick={() => setGalleryOpen(true)}
-              className="w-full h-[300px] md:h-[360px] flex items-center justify-center p-4 cursor-pointer relative group"
+            {/* Maximize / Lightbox Action */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                cancelHold();
+                setGalleryOpen(true);
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              className="absolute top-4 right-4 z-20 p-2 bg-white/90 hover:bg-white border border-brand-border/30 rounded-full shadow-sm text-brand-espresso transition-all hover:scale-105 active:scale-95 cursor-pointer pointer-events-auto"
+              aria-label="View fullscreen artifact"
             >
-              {product.visualType === 'note' ? (
-                <img 
-                  src={productImages[activeImageIndex]} 
-                  alt={product.name} 
-                  className="max-w-full max-h-full object-contain shadow-md rounded-lg group-hover:scale-103 transition-transform"
-                />
-              ) : (
-                <ProductVisual
-                  type="coin"
-                  color={product.visualColor || '#B89A67'}
-                  pattern={product.visualPattern || 'antique-metallic'}
-                  className="transform transition-transform group-hover:scale-105"
-                />
-              )}
+              <Maximize2 className="w-3.5 h-3.5" />
+            </button>
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setGalleryOpen(true);
-                }}
-                className="absolute bottom-2 right-2 p-2 bg-white/90 border border-brand-border/30 rounded-full shadow-sm text-brand-espresso hover:bg-white"
-                aria-label="Zoom artifact"
+            {/* Left & Right Navigation Arrows (Always visible and usable) */}
+            {productImages.length > 1 && (
+              <>
+                <button
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevImage();
+                  }}
+                  className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 bg-white/95 hover:bg-white text-brand-espresso border border-brand-border/40 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer pointer-events-auto flex items-center justify-center"
+                  aria-label="Previous artifact image"
+                >
+                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-brand-espresso" />
+                </button>
+                <button
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextImage();
+                  }}
+                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3 bg-white/95 hover:bg-white text-brand-espresso border border-brand-border/40 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer pointer-events-auto flex items-center justify-center"
+                  aria-label="Next artifact image"
+                >
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-brand-espresso" />
+                </button>
+              </>
+            )}
+
+            {/* Main Collectible Display Area — NO automatic hover zoom, press-and-hold zoom ONLY */}
+            <div 
+              onMouseDown={startHold}
+              onMouseUp={cancelHold}
+              onMouseLeave={cancelHold}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={cancelHold}
+              onContextMenu={(e) => e.preventDefault()}
+              className="w-full h-[280px] sm:h-[320px] md:h-[360px] flex items-center justify-center p-4 relative overflow-hidden select-none touch-pan-y cursor-grab active:cursor-grabbing"
+            >
+              {/* Centered Image / Visual with Medium Zoom on Intentional Hold ONLY */}
+              <div 
+                className={`w-full h-full flex items-center justify-center transition-transform duration-300 ease-out origin-center pointer-events-none select-none ${
+                  isZoomed ? 'scale-[1.5]' : 'scale-100'
+                }`}
               >
-                <Maximize2 className="w-3.5 h-3.5" />
-              </button>
+                {product.visualType === 'note' ? (
+                  <img 
+                    src={productImages[activeImageIndex]} 
+                    alt={product.name} 
+                    className="max-w-full max-h-full object-contain drop-shadow-md rounded-lg"
+                    loading="eager"
+                  />
+                ) : productImages[activeImageIndex] && (productImages[activeImageIndex].startsWith('/') || productImages[activeImageIndex].startsWith('http')) ? (
+                  <img 
+                    src={productImages[activeImageIndex]} 
+                    alt={product.name} 
+                    className="max-w-[240px] sm:max-w-[270px] md:max-w-[290px] max-h-full object-contain drop-shadow-lg rounded-full"
+                    loading="eager"
+                  />
+                ) : (
+                  <ProductVisual
+                    type="coin"
+                    color={product.visualColor || '#B89A67'}
+                    pattern={product.visualPattern || 'antique-metallic'}
+                  />
+                )}
+              </div>
             </div>
+
+            {/* Zoom & Navigation Hint */}
+            <span className="text-[9px] sm:text-[10px] text-brand-warmGray/80 font-medium tracking-wider text-center block pt-1 pointer-events-none">
+              Press & hold to zoom • Swipe or use arrows to view angles
+            </span>
 
             {/* Thumbnail switcher if multiple images available */}
             {productImages.length > 1 && (
-              <div className="flex gap-2 pt-3">
+              <div className="flex gap-2 pt-3 z-10">
                 {productImages.map((img, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`w-12 h-12 rounded-xl border p-1 overflow-hidden transition-all cursor-pointer ${
-                      activeImageIndex === idx ? 'border-[#F26A2E] ring-1 ring-[#F26A2E]/30' : 'border-brand-border/40 opacity-70 hover:opacity-100'
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onClick={() => handleSelectThumbnail(idx)}
+                    className={`w-12 h-12 rounded-xl border p-1 overflow-hidden transition-all cursor-pointer bg-white ${
+                      activeImageIndex === idx 
+                        ? 'border-[#F26A2E] ring-2 ring-[#F26A2E]/30 scale-105 shadow-xs' 
+                        : 'border-brand-border/40 opacity-70 hover:opacity-100 hover:border-brand-border'
                     }`}
+                    aria-label={`View angle ${idx + 1}`}
                   >
-                    <img src={img} alt="Thumbnail" className="w-full h-full object-contain" />
+                    <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-contain pointer-events-none" />
                   </button>
                 ))}
               </div>
@@ -521,6 +693,12 @@ export default function NumismaticDetailPage({ params }: PageProps) {
                   src={productImages[activeImageIndex]}
                   alt={product.name}
                   className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl"
+                />
+              ) : productImages[activeImageIndex] && (productImages[activeImageIndex].startsWith('/') || productImages[activeImageIndex].startsWith('http')) ? (
+                <img
+                  src={productImages[activeImageIndex]}
+                  alt={product.name}
+                  className="max-w-[80vw] sm:max-w-[420px] max-h-[75vh] object-contain drop-shadow-2xl rounded-full"
                 />
               ) : (
                 <div className="p-8 bg-white/5 rounded-3xl border border-white/10">
