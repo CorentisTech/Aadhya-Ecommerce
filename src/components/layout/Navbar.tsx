@@ -44,7 +44,7 @@ export const Navbar: React.FC = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -457,9 +457,9 @@ export const Navbar: React.FC = () => {
                       onClick={() => {
                         setSidebarOpen(false);
                         if (isNumis) {
-                          router.push('/catalog?department=numismatics');
+                          router.push('/numismatics/catalog');
                         } else {
-                          router.push('/catalog?department=fashion');
+                          router.push('/catalog');
                           setPage('home');
                         }
                       }}

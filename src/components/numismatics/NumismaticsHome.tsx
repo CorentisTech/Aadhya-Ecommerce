@@ -231,28 +231,28 @@ export const NumismaticsHome: React.FC = () => {
       title: 'Indian Heritage. Timeless Treasures.',
       subtitle: 'Authentic Coins • Rare Notes • Historic Value',
       img: '/images/banners/banner-heritage-treasures.png',
-      link: '/catalog?department=numismatics'
+      link: '/numismatics/catalog'
     },
     {
       id: 'authenticity-trust',
       title: 'Authenticity. Assurance. Trust.',
       subtitle: 'Every piece is verified by experts for genuine value and authenticity.',
       img: '/images/banners/banner-authenticity-trust.jpg',
-      link: '/catalog?department=numismatics'
+      link: '/numismatics/catalog'
     },
     {
       id: 'secure-delivery',
       title: 'Secure Delivery. Safe Arrival.',
       subtitle: 'Your collectibles are packed with care and delivered with complete safety.',
       img: '/images/banners/banner-secure-delivery.png',
-      link: '/catalog?department=numismatics'
+      link: '/numismatics/catalog'
     },
     {
       id: 'numismatic-events',
       title: 'Join Our Numismatic Events',
       subtitle: 'Connect. Learn. Collect.',
       img: '/images/banners/banner-numismatic-events.jpg',
-      link: '/catalog?department=numismatics'
+      link: '/numismatics/catalog'
     }
   ];
 
@@ -617,7 +617,7 @@ export const NumismaticsHome: React.FC = () => {
             
             <div className="flex justify-start md:justify-end flex-shrink-0">
               <button 
-                onClick={() => router.push('/catalog?department=numismatics&sort=newest')}
+                onClick={() => router.push('/numismatics/catalog?sort=newest')}
                 className="px-4 py-2 border border-brand-border rounded-full text-[10px] font-bold tracking-widest text-brand-espresso hover:bg-brand-softBeige/40 transition-colors flex items-center space-x-1 uppercase"
               >
                 <span>VIEW ALL</span>
@@ -753,11 +753,11 @@ export const NumismaticsHome: React.FC = () => {
 
             {/* TRACK 1: SLOW LEFT-TO-RIGHT SLIDE (Pauses ONLY Track 1 on hover) */}
             <div className="relative group/track1 overflow-hidden w-full">
-              <div className="flex w-max animate-marquee-reverse-slow group-hover/track1:[animation-play-state:paused] ease-linear hover:[animation-play-state:paused] touch-pan-x">
+              <div className="flex w-max animate-marquee-reverse-slow will-change-transform group-hover/track1:[animation-play-state:paused] ease-linear hover:[animation-play-state:paused] touch-pan-x">
                 {[...categoryRow1, ...categoryRow1, ...categoryRow1].map((cat, idx) => (
                   <div
                     key={`row1-${cat.id}-${idx}`}
-                    onClick={() => router.push(`/catalog?department=numismatics&category=${cat.id}`)}
+                    onClick={() => router.push(`/numismatics/catalog?category=${cat.id}`)}
                     className="w-[200px] sm:w-[240px] md:w-[270px] mx-2.5 sm:mx-4 flex-shrink-0 cursor-pointer text-center group/card transition-all duration-300"
                   >
                     {/* Circular Plate with Glow Background (Matching media_1788422746488.png) */}
@@ -767,8 +767,8 @@ export const NumismaticsHome: React.FC = () => {
                         alt={cat.name}
                         className="w-full h-full object-contain rounded-full drop-shadow-md transition-transform duration-300 group-hover/card:rotate-3"
                       />
-                      {/* Frosted Title Ribbon across middle/lower part (Matching media_1788422746488.png) */}
-                      <div className="absolute inset-x-2.5 bottom-5 sm:bottom-7 bg-[#2B231D]/85 backdrop-blur-md text-white py-1 sm:py-1.5 px-2 rounded-lg text-center shadow-lg border border-white/20">
+                      {/* Frosted Title Ribbon across middle/lower part (Solid high performance) */}
+                      <div className="absolute inset-x-2.5 bottom-5 sm:bottom-7 bg-[#2B231D]/95 text-white py-1 sm:py-1.5 px-2 rounded-lg text-center shadow-lg border border-white/20">
                         <span className="font-display font-black text-xs sm:text-sm tracking-wide block uppercase line-clamp-1">
                           {cat.name}
                         </span>
@@ -796,11 +796,11 @@ export const NumismaticsHome: React.FC = () => {
 
             {/* TRACK 2: SLOW RIGHT-TO-LEFT SLIDE (Pauses ONLY Track 2 on hover) */}
             <div className="relative group/track2 overflow-hidden w-full">
-              <div className="flex w-max animate-marquee-slow group-hover/track2:[animation-play-state:paused] ease-linear hover:[animation-play-state:paused] touch-pan-x">
+              <div className="flex w-max animate-marquee-slow will-change-transform group-hover/track2:[animation-play-state:paused] ease-linear hover:[animation-play-state:paused] touch-pan-x">
                 {[...categoryRow2, ...categoryRow2, ...categoryRow2].map((cat, idx) => (
                   <div
                     key={`row2-${cat.id}-${idx}`}
-                    onClick={() => router.push(`/catalog?department=numismatics&category=${cat.id}`)}
+                    onClick={() => router.push(`/numismatics/catalog?category=${cat.id}`)}
                     className="w-[200px] sm:w-[240px] md:w-[270px] mx-2.5 sm:mx-4 flex-shrink-0 cursor-pointer text-center group/card transition-all duration-300"
                   >
                     {/* Circular Plate with Glow Background (Matching media_1788422746488.png) */}
@@ -810,8 +810,8 @@ export const NumismaticsHome: React.FC = () => {
                         alt={cat.name}
                         className="w-full h-full object-contain rounded-full drop-shadow-md transition-transform duration-300 group-hover/card:rotate-3"
                       />
-                      {/* Frosted Title Ribbon across middle/lower part (Matching media_1788422746488.png) */}
-                      <div className="absolute inset-x-2.5 bottom-5 sm:bottom-7 bg-[#2B231D]/85 backdrop-blur-md text-white py-1 sm:py-1.5 px-2 rounded-lg text-center shadow-lg border border-white/20">
+                      {/* Frosted Title Ribbon across middle/lower part (Solid high performance) */}
+                      <div className="absolute inset-x-2.5 bottom-5 sm:bottom-7 bg-[#2B231D]/95 text-white py-1 sm:py-1.5 px-2 rounded-lg text-center shadow-lg border border-white/20">
                         <span className="font-display font-black text-xs sm:text-sm tracking-wide block uppercase line-clamp-1">
                           {cat.name}
                         </span>
@@ -842,7 +842,7 @@ export const NumismaticsHome: React.FC = () => {
           {/* Bottom Browse All CTA */}
           <div className="text-center pt-2">
             <button
-              onClick={() => router.push('/catalog?department=numismatics')}
+              onClick={() => router.push('/numismatics/catalog')}
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-brand-border bg-white text-xs font-black uppercase tracking-widest text-[#2B231D] hover:bg-[#2B231D] hover:text-white transition-all shadow-xs"
             >
               <span>Browse All Categories</span>
@@ -961,7 +961,7 @@ export const NumismaticsHome: React.FC = () => {
             {/* Desktop Navigation & Filters */}
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => router.push('/catalog?department=numismatics')}
+                onClick={() => router.push('/numismatics/catalog')}
                 className="px-4 py-2 bg-[#2B231D] text-white rounded-full text-xs font-bold hover:bg-black transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer mr-1"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5 text-[#E0591D]" />
@@ -1094,7 +1094,7 @@ export const NumismaticsHome: React.FC = () => {
           {/* Bottom Redirect Link to Full Catalogue */}
           <div className="pt-4">
             <button
-              onClick={() => router.push('/catalog?department=numismatics')}
+              onClick={() => router.push('/numismatics/catalog')}
               className="py-3 px-8 bg-[#2B231D] text-white font-extrabold text-xs tracking-widest uppercase rounded-full hover:bg-black transition-colors shadow-md inline-flex items-center gap-2"
             >
               <span>EXPLORE MORE NUMISMATIC PIECES</span>

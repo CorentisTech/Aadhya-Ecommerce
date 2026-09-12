@@ -155,13 +155,13 @@ export const WishlistPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Favorites Product Cards Grid */}
+            {/* Favorites Product Cards Grid: 2 Columns on Mobile, 3 Columns on Desktop */}
             {displayedProducts.length === 0 ? (
               <div className="text-center py-20 bg-brand-white border border-brand-border/30 rounded-3xl text-[10px] font-bold text-brand-warmGray uppercase tracking-widest">
                 No items saved in this category.
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 pt-4">
                 {displayedProducts.map((product) => {
                   // Stock alert labels dynamically determined to match reference layouts
                   let stockLabel = '⚡ Only 2 pieces left in size S';
@@ -182,32 +182,32 @@ export const WishlistPage: React.FC = () => {
                   return (
                     <div
                       key={product.id}
-                      className="border border-brand-border/20 rounded-3xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+                      className="border border-brand-border/20 rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col bg-white shadow-xs hover:shadow-md transition-shadow cursor-pointer group"
                       onClick={() => {
                         const wishSlug = product.name.toLowerCase().replace(/ /g, '-');
                         router.push(product.department === 'numismatics' ? `/numismatics/${wishSlug}` : `/product/${wishSlug}`);
                       }}
                     >
                       {/* Upper section (White bg with center portrait image) */}
-                      <div className="p-4 bg-white flex flex-col items-center relative flex-grow min-h-[290px] justify-between">
+                      <div className="p-2 sm:p-4 bg-white flex flex-col items-center relative flex-grow min-h-[190px] sm:min-h-[290px] justify-between">
                         
                         {/* Upper image tags */}
                         {product.bestseller ? (
-                          <div className="absolute top-4 left-4">
-                            <span className="text-[7px] bg-white border border-brand-border text-brand-espresso font-extrabold tracking-widest px-2 py-0.5 rounded shadow-xs uppercase">
+                          <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
+                            <span className="text-[7px] bg-white border border-brand-border text-brand-espresso font-extrabold tracking-widest px-1.5 sm:px-2 py-0.5 rounded shadow-xs uppercase">
                               Bestseller
                             </span>
                           </div>
                         ) : product.discount && product.discount > 0 ? (
-                          <div className="absolute top-4 left-4">
-                            <span className="text-[7px] bg-brand-sale/10 border border-brand-sale/25 text-brand-sale font-extrabold tracking-widest px-2 py-0.5 rounded shadow-xs uppercase">
+                          <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
+                            <span className="text-[7px] bg-brand-sale/10 border border-brand-sale/25 text-brand-sale font-extrabold tracking-widest px-1.5 sm:px-2 py-0.5 rounded shadow-xs uppercase">
                               -{product.discount}%
                             </span>
                           </div>
                         ) : null}
 
                         {/* Image panel */}
-                        <div className="w-[180px] aspect-[4/5] mt-3 rounded-2xl overflow-hidden relative bg-brand-softBeige/5">
+                        <div className="w-full max-w-[180px] aspect-[4/5] mt-1 sm:mt-3 rounded-xl sm:rounded-2xl overflow-hidden relative bg-brand-softBeige/5">
                           <img
                             src={product.image}
                             alt={product.name}
@@ -217,8 +217,8 @@ export const WishlistPage: React.FC = () => {
                         </div>
 
                         {/* Middle Stock Warning Status */}
-                        <div className="w-full text-center mt-3 pt-2 border-t border-brand-border/10">
-                          <span className="text-[9px] font-bold text-[#F26A2E] tracking-wide block">
+                        <div className="w-full text-center mt-1 sm:mt-3 pt-1 sm:pt-2 border-t border-brand-border/10">
+                          <span className="text-[7.5px] sm:text-[9px] font-bold text-[#F26A2E] tracking-wide block line-clamp-1">
                             {stockLabel}
                           </span>
                         </div>
@@ -226,40 +226,40 @@ export const WishlistPage: React.FC = () => {
                       </div>
 
                       {/* Lower Section (Beige background) */}
-                      <div className="p-4 bg-[#FBF9F6] border-t border-brand-border/10 flex flex-col justify-between space-y-3">
+                      <div className="p-2.5 sm:p-4 bg-[#FBF9F6] border-t border-brand-border/10 flex flex-col justify-between space-y-2 sm:space-y-3">
                         <div className="space-y-0.5 text-left">
-                          <span className="text-[8px] font-extrabold text-brand-warmGray tracking-widest uppercase block">
+                          <span className="text-[7px] sm:text-[8px] font-extrabold text-brand-warmGray tracking-widest uppercase block">
                             {categoryLabel}
                           </span>
-                          <h3 className="font-sans font-bold text-xs text-brand-espresso tracking-wide line-clamp-1 group-hover:text-[#F26A2E] transition-colors">
+                          <h3 className="font-sans font-bold text-[11px] sm:text-xs text-brand-espresso tracking-wide line-clamp-1 group-hover:text-[#F26A2E] transition-colors">
                             {product.name}
                           </h3>
                         </div>
 
                         {/* Pricing and CTAs */}
-                        <div className="flex items-center justify-between pt-1 border-t border-brand-border/15">
-                          <div className="flex items-baseline space-x-1.5">
-                            <span className="text-xs font-extrabold text-brand-espresso">
+                        <div className="flex items-center justify-between pt-1 border-t border-brand-border/15 gap-1">
+                          <div className="flex flex-col sm:flex-row sm:items-baseline sm:space-x-1.5">
+                            <span className="text-[11px] sm:text-xs font-extrabold text-brand-espresso whitespace-nowrap">
                               ₹{product.price.toLocaleString('en-IN')}
                             </span>
                             {product.mrp && product.mrp > product.price && (
-                              <span className="text-[10px] text-brand-warmGray line-through font-semibold">
+                              <span className="text-[9px] sm:text-[10px] text-brand-warmGray line-through font-semibold whitespace-nowrap">
                                 ₹{product.mrp.toLocaleString('en-IN')}
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                             {/* Heart toggle button (removes item) */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleWishlist(product);
                               }}
-                              className="p-1.5 bg-brand-blush/35 hover:bg-brand-blush/60 border border-brand-dustyRose/30 rounded-full transition-colors"
+                              className="p-1 sm:p-1.5 bg-brand-blush/35 hover:bg-brand-blush/60 border border-brand-dustyRose/30 rounded-full transition-colors"
                               aria-label="Remove item"
                             >
-                              <Heart className="w-3.5 h-3.5 fill-[#F26A2E] text-[#F26A2E]" />
+                              <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-[#F26A2E] text-[#F26A2E]" />
                             </button>
 
                             {/* Add to bag button */}
@@ -269,10 +269,10 @@ export const WishlistPage: React.FC = () => {
                                 addToCart(product, 1, product.sizes && product.sizes.length > 0 ? product.sizes[0] : '36');
                                 alert(`${product.name} added to shopping bag!`);
                               }}
-                              className="p-1.5 bg-brand-espresso text-brand-white rounded-full hover:bg-[#F26A2E] transition-colors shadow-sm"
+                              className="p-1 sm:p-1.5 bg-brand-espresso text-brand-white rounded-full hover:bg-[#F26A2E] transition-colors shadow-sm"
                               aria-label="Add to cart"
                             >
-                              <ShoppingBag className="w-3.5 h-3.5" />
+                              <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                             </button>
                           </div>
                         </div>

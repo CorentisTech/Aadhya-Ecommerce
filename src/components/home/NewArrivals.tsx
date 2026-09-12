@@ -111,7 +111,6 @@ export const NewArrivals: React.FC = () => {
         rotateY: 0,
         zIndex: 30,
         opacity: 1,
-        filter: 'brightness(1)',
         pointerEvents: 'auto' as const
       };
     }
@@ -124,7 +123,6 @@ export const NewArrivals: React.FC = () => {
         rotateY: 22,
         zIndex: 20,
         opacity: 0.85,
-        filter: 'brightness(0.75)',
         pointerEvents: 'auto' as const
       };
     }
@@ -137,7 +135,6 @@ export const NewArrivals: React.FC = () => {
         rotateY: -22,
         zIndex: 20,
         opacity: 0.85,
-        filter: 'brightness(0.75)',
         pointerEvents: 'auto' as const
       };
     }
@@ -150,7 +147,6 @@ export const NewArrivals: React.FC = () => {
         rotateY: 38,
         zIndex: 10,
         opacity: 0.45,
-        filter: 'brightness(0.5)',
         pointerEvents: 'auto' as const
       };
     }
@@ -163,7 +159,6 @@ export const NewArrivals: React.FC = () => {
         rotateY: -38,
         zIndex: 10,
         opacity: 0.45,
-        filter: 'brightness(0.5)',
         pointerEvents: 'auto' as const
       };
     }
@@ -175,7 +170,6 @@ export const NewArrivals: React.FC = () => {
       rotateY: diff > 0 ? -45 : 45,
       zIndex: 0,
       opacity: 0,
-      filter: 'brightness(0.3)',
       pointerEvents: 'none' as const
     };
   };
@@ -187,8 +181,8 @@ export const NewArrivals: React.FC = () => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Ambient background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-r from-[#F26A2E]/10 via-[#D4AF37]/10 to-transparent blur-[120px] pointer-events-none" />
+      {/* Ambient background glow (optimized with blur-3xl) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-r from-[#F26A2E]/15 via-[#D4AF37]/15 to-transparent blur-3xl opacity-30 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto space-y-8 md:space-y-12 relative z-10 text-center">
         
@@ -238,7 +232,6 @@ export const NewArrivals: React.FC = () => {
                   ease: [0.25, 1, 0.5, 1]
                 }}
                 style={{
-                  filter: style.filter,
                   pointerEvents: style.pointerEvents
                 }}
                 onClick={() => {
@@ -248,7 +241,7 @@ export const NewArrivals: React.FC = () => {
                     setActiveIndex(idx);
                   }
                 }}
-                className="absolute w-[220px] sm:w-[260px] md:w-[300px] aspect-[9/14] rounded-[24px] sm:rounded-[30px] overflow-hidden cursor-pointer shadow-2xl transition-all duration-300 group border border-white/20 bg-[#161311]"
+                className="absolute w-[220px] sm:w-[260px] md:w-[300px] aspect-[9/14] rounded-[24px] sm:rounded-[30px] overflow-hidden cursor-pointer shadow-2xl transition-all duration-300 group border border-white/20 bg-[#161311] transform-gpu will-change-transform"
               >
                 {/* Full-Bleed Product Photography */}
                 <img
@@ -258,8 +251,14 @@ export const NewArrivals: React.FC = () => {
                   loading="lazy"
                 />
 
+                {/* Inactive Card Dimmer (Pure GPU Compositing) */}
+                <div 
+                  className="absolute inset-0 bg-black pointer-events-none transition-opacity duration-500 z-5"
+                  style={{ opacity: isCenter ? 0 : 0.35 }}
+                />
+
                 {/* Dark Vignette Overlay for Text Legibility (Matching Reference Image) */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent pointer-events-none z-10" />
 
                 {/* Top Left Badge */}
                 <div className="absolute top-3.5 left-3.5 pointer-events-none">

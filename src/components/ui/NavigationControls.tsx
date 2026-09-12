@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { ArrowLeft, Home } from 'lucide-react';
 
 interface NavigationControlsProps {
@@ -16,17 +16,24 @@ export const NavigationControls: React.FC<NavigationControlsProps> = ({
   className = ''
 }) => {
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleBack = () => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
       router.back();
+    } else if (pathname?.includes('/numismatics')) {
+      router.push('/numismatics');
     } else {
       router.push('/');
     }
   };
 
   const handleHome = () => {
-    router.push('/');
+    if (pathname?.includes('/numismatics')) {
+      router.push('/numismatics');
+    } else {
+      router.push('/');
+    }
   };
 
   return (
