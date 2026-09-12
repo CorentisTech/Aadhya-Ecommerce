@@ -22,9 +22,16 @@ export const PageTransitionProvider: React.FC<{ children: React.ReactNode }> = (
   const [stage, setStage] = useState<'enter' | 'visual' | 'text' | 'settle' | 'exit'>('enter');
   const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
 
+  // Helper to identify shared storewide neutral pages
+  const isSharedPage = (path?: string | null) => {
+    if (!path) return false;
+    return ['/wishlist', '/cart', '/checkout', '/account', '/admin'].some(p => path.startsWith(p));
+  };
+
   // Navigation tracking for mobile/browser back and forward button
   const currentDepartment = pathname?.includes('/numismatics') ? 'numismatics' : 'fashion';
   const prevDepartmentRef = useRef<'numismatics' | 'fashion'>(currentDepartment);
+  const prevPathRef = useRef<string | null>(pathname);
   const isTransitioningRef = useRef(false);
 
   // Clear all pending timeouts on unmount or reset
@@ -47,6 +54,15 @@ export const PageTransitionProvider: React.FC<{ children: React.ReactNode }> = (
 
   // Intercept browser & mobile hardware back/forward button between Fashion and Numismatics
   useEffect(() => {
+    const prevPath = prevPathRef.current;
+    prevPathRef.current = pathname;
+
+    // Shared storewide pages (wishlist, cart, checkout, account) should NEVER trigger a department switch splashscreen
+    if (isSharedPage(pathname) || isSharedPage(prevPath)) {
+      prevDepartmentRef.current = currentDepartment;
+      return;
+    }
+
     if (prevDepartmentRef.current !== currentDepartment) {
       const target = currentDepartment;
       prevDepartmentRef.current = target;
@@ -82,7 +98,7 @@ export const PageTransitionProvider: React.FC<{ children: React.ReactNode }> = (
         timeoutRefs.current = [t1, t2, t3, t4];
       }
     }
-  }, [currentDepartment]);
+  }, [currentDepartment, pathname]);
 
   const triggerSectionTransition = (target: 'numismatics' | 'fashion') => {
     // Prevent duplicate triggers or rapid clicks while running
