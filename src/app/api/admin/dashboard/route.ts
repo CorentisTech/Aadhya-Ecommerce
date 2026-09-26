@@ -5,9 +5,6 @@ import { createClient } from '@/utils/supabase/server';
 export async function GET(request: Request) {
   try {
     // 1. Authenticate & retrieve admin profile
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
     let adminProfile: { id?: string; name: string; email: string; role: string; avatar: string } = {
       name: 'Prem Karnawat',
       email: 'admin@aadhya.co',
@@ -15,25 +12,32 @@ export async function GET(request: Request) {
       avatar: 'male'
     };
 
-    if (user) {
-      const profiles = await queryDb(
-        `SELECT id, first_name, last_name, phone, avatar, role FROM profiles WHERE id = $1`,
-        [user.id]
-      );
-      if (profiles && profiles.length > 0) {
-        const p = profiles[0];
-        const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ') || user.email?.split('@')[0] || 'Admin';
-        adminProfile = {
-          id: p.id,
-          name: fullName,
-          email: user.email || 'admin@aadhya.co',
-          role: p.role === 'super_admin' ? 'Super Admin' : 'Admin',
-          avatar: p.avatar || 'male'
-        };
-      } else {
-        adminProfile.email = user.email || adminProfile.email;
-        adminProfile.name = user.email?.split('@')[0] || adminProfile.name;
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        const profiles = await queryDb(
+          `SELECT id, first_name, last_name, phone, avatar, role FROM profiles WHERE id = $1`,
+          [user.id]
+        );
+        if (profiles && profiles.length > 0) {
+          const p = profiles[0];
+          const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ') || user.email?.split('@')[0] || 'Admin';
+          adminProfile = {
+            id: p.id,
+            name: fullName,
+            email: user.email || 'admin@aadhya.co',
+            role: p.role === 'super_admin' ? 'Super Admin' : 'Admin',
+            avatar: p.avatar || 'male'
+          };
+        } else {
+          adminProfile.email = user.email || adminProfile.email;
+          adminProfile.name = user.email?.split('@')[0] || adminProfile.name;
+        }
       }
+    } catch (authErr) {
+      console.warn('Auth check skipped in dashboard:', authErr);
     }
 
     // 2. Product Counts (Total, Fashion, Numismatics, Active, Low Stock, Out of Stock)
