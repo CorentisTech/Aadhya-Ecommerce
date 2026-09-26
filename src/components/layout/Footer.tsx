@@ -14,9 +14,15 @@ import {
   Lock
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 export const Footer: React.FC = () => {
+  const pathname = usePathname();
   const { setPage } = useApp();
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   const handleNavClick = (sectionId: string) => {
     setPage('home');

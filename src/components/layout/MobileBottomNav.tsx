@@ -12,6 +12,10 @@ export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
   const { triggerSectionTransition } = usePageTransition();
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [maxDrag, setMaxDrag] = useState(240);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);

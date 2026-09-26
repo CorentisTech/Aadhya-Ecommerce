@@ -62,6 +62,10 @@ export const Navbar: React.FC = () => {
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
   const isNumis = Boolean(pathname?.includes('/numismatics'));
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   const handleNavClick = (sectionId: string) => {
     setSidebarOpen(false);
 
