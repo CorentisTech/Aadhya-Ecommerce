@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
-import { PRODUCTS } from '../../data/mockData';
+import React, { useEffect, useState } from 'react';
+import { fetchProducts } from '../../services/productService';
+import { Product } from '../../data/mockData';
 import { useApp } from '../../context/AppContext';
 import { Heart, Star, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -12,8 +13,12 @@ export const Bestsellers: React.FC = () => {
   const { toggleWishlist, isInWishlist } = useApp();
   const router = useRouter();
   
-  // Filter bestseller fashion items
-  const bestsellerProducts = PRODUCTS.filter((p) => p.bestseller && p.department === 'fashion');
+  const [bestsellerProducts, setBestsellerProducts] = useState<Product[]>([]);
+  
+  useEffect(() => {
+    fetchProducts({ department: 'fashion', isBestseller: true, limit: 10 })
+      .then(setBestsellerProducts);
+  }, []);
 
   const renderStars = (rating = 4) => {
     return (

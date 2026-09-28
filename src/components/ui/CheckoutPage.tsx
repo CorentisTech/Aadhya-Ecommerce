@@ -187,13 +187,43 @@ export const CheckoutPage: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handlePayNow = () => {
-    setPaymentModalOpen(false);
-    setSuccess(true);
-    clearCart();
+  const [placedOrderNo, setPlacedOrderNo] = useState<string | null>(null);
+
+  const handlePayNow = async () => {
+    try {
+      const payload = {
+        items: cart,
+        shipping_address: formData,
+        subtotal,
+        shipping_cost: shippingCost,
+        discount_amount: discount,
+        total_amount: total,
+        payment_method: 'CARD',
+        idempotency_key: `chk_${Date.now()}_${Math.random()}`
+      };
+      
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setPlacedOrderNo(data.order.order_number);
+        setPaymentModalOpen(false);
+        setSuccess(true);
+        clearCart();
+      } else {
+        alert(data.error || 'Failed to place order');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred during checkout');
+    }
   };
 
-  if (success) {
+  if (success && placedOrderNo) {
     return (
       <div className="w-full min-h-screen bg-brand-warmWhite flex items-center justify-center py-20 px-6">
         <motion.div
@@ -207,7 +237,7 @@ export const CheckoutPage: React.FC = () => {
               ORDER PLACED SUCCESSFULLY
             </h2>
             <p className="text-xs text-brand-warmGray font-semibold tracking-wider">
-              Your order ID is <strong className="text-brand-espresso">#AD-{Math.floor(100000 + Math.random() * 900000)}</strong>.
+              Your order ID is <strong className="text-brand-espresso">{placedOrderNo}</strong>.
             </p>
           </div>
           <p className="text-xs text-brand-warmGray leading-relaxed font-semibold">

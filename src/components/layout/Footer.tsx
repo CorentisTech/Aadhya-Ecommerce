@@ -18,7 +18,7 @@ import { usePathname } from 'next/navigation';
 
 export const Footer: React.FC = () => {
   const pathname = usePathname();
-  const { setPage } = useApp();
+  const { setPage, websiteSettings } = useApp();
 
   if (pathname?.startsWith('/admin')) {
     return null;
@@ -34,6 +34,8 @@ export const Footer: React.FC = () => {
     }, 100);
   };
 
+  const socials = websiteSettings?.social_links || {};
+
   return (
     <footer className="w-full max-w-full bg-[#121110] text-[#FCFAF7] pt-12 sm:pt-16 pb-24 md:pb-12 px-4 sm:px-6 md:px-12 lg:px-24 mt-16 md:mt-20 relative overflow-hidden select-none">
       
@@ -44,7 +46,7 @@ export const Footer: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           <div className="space-y-4">
             <h2 className="font-display text-2xl md:text-3xl font-bold tracking-[0.25em] text-white">
-              AADHYA
+              {websiteSettings?.brand_name || 'AADHYA'}
             </h2>
             <p className="text-xs md:text-sm text-white/70 leading-relaxed font-light max-w-sm">
               Inspiring modern luxury through bespoke Indian ethnic silhouettes, refined Western couture, and authenticated historical numismatics.
@@ -54,10 +56,10 @@ export const Footer: React.FC = () => {
           {/* Social Links inside circled outline boxes */}
           <div className="flex space-x-3">
             {[
-              { icon: Twitter, href: "#" },
-              { icon: Instagram, href: "#" },
-              { icon: Facebook, href: "#" },
-              { icon: Linkedin, href: "#" }
+              { icon: Twitter, href: socials.twitter || "#" },
+              { icon: Instagram, href: socials.instagram || "#" },
+              { icon: Facebook, href: socials.facebook || "#" },
+              { icon: Linkedin, href: socials.linkedin || "#" }
             ].map((item, idx) => {
               const Icon = item.icon;
               return (
@@ -82,7 +84,7 @@ export const Footer: React.FC = () => {
           <ul className="space-y-2.5 text-xs text-white/60 font-light tracking-wide">
             <li><a href="#" className="hover:text-white transition-colors duration-300">Privacy Policy</a></li>
             <li><a href="#" className="hover:text-white transition-colors duration-300">Terms & Conditions</a></li>
-            <li><a href="#" className="hover:text-white transition-colors duration-300">Track Order</a></li>
+            <li><a href="/track-order" className="hover:text-white transition-colors duration-300">Track Order</a></li>
             <li><a href="#" className="hover:text-white transition-colors duration-300">Cancellation & Refund</a></li>
           </ul>
         </div>

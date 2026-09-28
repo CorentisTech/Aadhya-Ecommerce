@@ -15,6 +15,7 @@ export async function GET(request: Request) {
   const department = searchParams.get('department');
   const categorySlug = searchParams.get('category');
   const isHero = searchParams.get('is_hero');
+  const isBestseller = searchParams.get('is_bestseller');
   const searchQuery = searchParams.get('search');
   const sort = searchParams.get('sort');
 
@@ -33,6 +34,10 @@ export async function GET(request: Request) {
 
   if (isHero === 'true') {
     query = query.eq('is_hero', true).order('hero_order', { ascending: true });
+  }
+
+  if (isBestseller === 'true') {
+    query = query.eq('is_bestseller', true);
   }
 
   if (department) {
@@ -60,6 +65,9 @@ export async function GET(request: Request) {
       break;
     case 'bestseller':
       query = query.order('is_bestseller', { ascending: false }).order('reviews_count', { ascending: false });
+      break;
+    case 'newest':
+      query = query.order('created_at', { ascending: false });
       break;
     default:
       // 'recommended' or default

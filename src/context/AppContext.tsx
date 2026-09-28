@@ -64,6 +64,7 @@ interface AppContextType {
   updateUserDetails: (details: Partial<UserDetails>) => Promise<void>;
   deleteUserAccount: () => Promise<void>;
   refreshUserData: () => Promise<void>;
+  websiteSettings: any | null;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -71,6 +72,19 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
+
+  const [websiteSettings, setWebsiteSettings] = useState<any | null>(null);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.settings) {
+          setWebsiteSettings(data.settings);
+        }
+      })
+      .catch(err => console.error('Error fetching website settings:', err));
+  }, []);
 
   // Navigation State
   const [activePage, setPageInternal] = useState<PageType>('home');
@@ -554,6 +568,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateUserDetails,
         deleteUserAccount,
         refreshUserData: syncServerData,
+        websiteSettings,
       }}
     >
       {children}

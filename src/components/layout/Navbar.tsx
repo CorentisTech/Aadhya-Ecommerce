@@ -33,7 +33,8 @@ export const Navbar: React.FC = () => {
     wishlist, 
     setSearchOpen, 
     setAccountOpen, 
-    setCartOpen 
+    setCartOpen,
+    websiteSettings
   } = useApp();
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -238,7 +239,7 @@ export const Navbar: React.FC = () => {
             
             <div className="relative z-10 flex flex-col items-center">
               <span className="font-serif font-black text-2xl sm:text-3xl md:text-4xl tracking-[0.26em] text-[#181818] group-hover:opacity-90 transition-opacity uppercase leading-none">
-                AADHYA
+                {websiteSettings?.brand_name || 'AADHYA'}
               </span>
             </div>
           </button>
@@ -341,7 +342,7 @@ export const Navbar: React.FC = () => {
               {/* Header */}
               <div className="flex items-center justify-between border-b border-[#E5DACB] pb-4">
                 <div className="flex flex-col">
-                  <span className="font-serif font-black tracking-[0.2em] text-[#181818] text-base">AADHYA</span>
+                  <span className="font-serif font-black tracking-[0.2em] text-[#181818] text-base">{websiteSettings?.brand_name || 'AADHYA'}</span>
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}
