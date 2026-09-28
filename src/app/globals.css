@@ -86,3 +86,34 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* =============================================
+   ADMIN DARK THEME TOKENS
+   Applied via data-theme="dark" on main element
+============================================= */
+[data-theme='dark'] .bg-white { background-color: #1a1d2e !important; }
+[data-theme='dark'] .bg-gray-50 { background-color: #151724 !important; }
+[data-theme='dark'] .bg-gray-100 { background-color: #1e2133 !important; }
+[data-theme='dark'] .border-gray-100 { border-color: #2a2e42 !important; }
+[data-theme='dark'] .border-gray-200 { border-color: #2a2e42 !important; }
+[data-theme='dark'] .text-gray-900 { color: #e5e7eb !important; }
+[data-theme='dark'] .text-gray-800 { color: #d1d5db !important; }
+[data-theme='dark'] .text-gray-700 { color: #c0c4cc !important; }
+[data-theme='dark'] .text-gray-600 { color: #9ca3af !important; }
+[data-theme='dark'] .text-gray-500 { color: #8b91a5 !important; }
+[data-theme='dark'] .text-gray-400 { color: #8b91a5 !important; }
+[data-theme='dark'] .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
+[data-theme='dark'] input,
+[data-theme='dark'] textarea,
+[data-theme='dark'] select {
+  background-color: #1a1d2e !important;
+  border-color: #2a2e42 !important;
+  color: #e5e7eb !important;
+}
+[data-theme='dark'] .divide-gray-100 > * + * { border-color: #2a2e42 !important; }
+[data-theme='dark'] .bg-amber-50 { background-color: #2a2210 !important; }
+[data-theme='dark'] .bg-amber-100 { background-color: #302815 !important; }
+[data-theme='dark'] .bg-emerald-50 { background-color: #0f2920 !important; }
+[data-theme='dark'] .bg-rose-50 { background-color: #2e1520 !important; }
+[data-theme='dark'] .bg-purple-50 { background-color: #1e1530 !important; }
+[data-theme='dark'] .bg-blue-50 { background-color: #101828 !important; }

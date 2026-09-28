@@ -66,8 +66,58 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    // SECURITY: Require authentication
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'You must be logged in to place an order.' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const { items, shipping_address, subtotal, shipping_cost, discount_amount, total_amount, payment_method, idempotency_key } = body;
+    const { items, shipping_address, payment_method, idempotency_key } = body;
+
+    // SERVER-SIDE VALIDATION: Items
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ success: false, error: 'Cart is empty.' }, { status: 400 });
+    }
+
+    // SERVER-SIDE VALIDATION: Shipping address
+    const addr = shipping_address || {};
+    const requiredFields: { key: string; label: string }[] = [
+      { key: 'firstName', label: 'First name' },
+      { key: 'lastName', label: 'Last name' },
+      { key: 'phone', label: 'Mobile number' },
+      { key: 'address', label: 'Address' },
+      { key: 'streetName', label: 'Street name' },
+      { key: 'landmark', label: 'Landmark' },
+      { key: 'zip', label: 'Pincode' },
+      { key: 'city', label: 'City' },
+      { key: 'state', label: 'State' },
+    ];
+    for (const f of requiredFields) {
+      if (!addr[f.key] || String(addr[f.key]).trim() === '') {
+        return NextResponse.json({ success: false, error: `${f.label} is required.` }, { status: 400 });
+      }
+    }
+    if (!/^\d{6}$/.test(String(addr.zip).trim())) {
+      return NextResponse.json({ success: false, error: 'Invalid pincode. Must be 6 digits.' }, { status: 400 });
+    }
+
+    // SERVER-SIDE: Recalculate total from real product prices
+    let serverSubtotal = 0;
+    for (const item of items) {
+      if (!item.product?.id || !item.quantity || item.quantity < 1) {
+        return NextResponse.json({ success: false, error: 'Invalid item in cart.' }, { status: 400 });
+      }
+      // Fetch real price from DB to prevent price manipulation
+      const productRows = await queryDb('SELECT price FROM products WHERE id = $1', [item.product.id]);
+      if (!productRows || productRows.length === 0) {
+        return NextResponse.json({ success: false, error: `Product not found: ${item.product.id}` }, { status: 400 });
+      }
+      serverSubtotal += Number(productRows[0].price) * item.quantity;
+    }
+
+    const shippingCost = serverSubtotal >= 5000 ? 0 : 150;
+    const discountAmount = Math.round(serverSubtotal * 0.1);
+    const serverTotal = serverSubtotal + shippingCost - discountAmount;
 
     // Check idempotency (prevent duplicate orders if user clicked twice)
     if (idempotency_key) {
@@ -78,13 +128,9 @@ export async function POST(request: Request) {
     }
 
     const orderNumber = 'AD-' + Math.floor(100000 + Math.random() * 900000);
-    const userId = user ? user.id : null;
-
-    // We must use a transaction for safety
-    // For now we'll do sequential inserts or use a transaction if getDbPool is available
-    // But since queryDb might not share the same client, we can do it in separate queries if it's safe enough for this mock.
+    const userId = user.id;
     
-    // Insert order
+    // Insert order with server-calculated totals
     const orderRows = await queryDb(`
       INSERT INTO orders (
         order_number, user_id, status, subtotal, shipping_cost, discount_amount, total_amount, 
@@ -95,15 +141,15 @@ export async function POST(request: Request) {
     `, [
       orderNumber, 
       userId, 
-      subtotal || 0, 
-      shipping_cost || 0, 
-      discount_amount || 0, 
-      total_amount || 0, 
+      serverSubtotal, 
+      shippingCost, 
+      discountAmount, 
+      serverTotal, 
       payment_method || 'CARD',
-      shipping_address?.firstName || '',
-      shipping_address?.lastName || '',
-      shipping_address?.email || '',
-      shipping_address?.phone || '',
+      addr.firstName || '',
+      addr.lastName || '',
+      addr.email || '',
+      addr.phone || '',
       idempotency_key || null
     ]);
 

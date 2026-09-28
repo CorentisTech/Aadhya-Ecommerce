@@ -26,19 +26,33 @@ export default function AdminLoginPage() {
       });
 
       if (authError) {
-        // Fallback for initial demo or pre-configured credentials
-        if (email.trim().toLowerCase() === 'admin@aadhya.co' && password === 'admin123') {
-          router.push('/admin/dashboard');
-          return;
-        }
         setError(authError.message || 'Invalid admin credentials');
         return;
       }
 
-      // Check role
-      if (data.user) {
-        router.push('/admin/dashboard');
+      if (!data.user) {
+        setError('Authentication failed');
+        return;
       }
+
+      // Verify admin role via server API
+      const res = await fetch('/api/admin/profile');
+      const profileData = await res.json();
+
+      if (!profileData.success || !profileData.profile) {
+        setError('Unable to verify admin privileges. Access denied.');
+        await supabase.auth.signOut();
+        return;
+      }
+
+      const role = profileData.profile.role;
+      if (role !== 'admin' && role !== 'super_admin') {
+        setError('This account does not have admin access.');
+        await supabase.auth.signOut();
+        return;
+      }
+
+      router.push('/admin/dashboard');
     } catch (err: any) {
       setError(err.message || 'Authentication error');
     } finally {

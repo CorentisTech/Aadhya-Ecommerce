@@ -146,29 +146,37 @@ export const CheckoutPage: React.FC = () => {
   const [upiId, setUpiId] = useState('');
   const [selectedBank, setSelectedBank] = useState('');
 
-  // Pre-fill form data to match the uploaded screenshot
+  // Pre-fill form data from user profile when available
   const [formData, setFormData] = useState({
-    email: 'ananya.sharma@example.com',
-    name: 'Ananya Sharma',
-    address: 'Flat 402, Royal Palms Residency, MG Road',
-    landmark: 'Opposite Grand Mall',
-    city: 'Pune',
-    state: 'Maharashtra',
-    zip: '411001',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    streetName: '',
+    landmark: '',
+    city: '',
+    state: '',
+    zip: '',
     country: 'India',
   });
+
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Automatically pre-fill shipping address when user logs in
   React.useEffect(() => {
     if (user) {
       setFormData({
-        email: user.email,
-        name: `${user.firstName} ${user.lastName}`,
-        address: user.streetName || user.address,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        streetName: user.streetName || '',
         landmark: user.landmark || '',
-        city: user.city,
-        state: user.state,
-        zip: user.zip,
+        city: user.city || '',
+        state: user.state || '',
+        zip: user.zip || '',
         country: 'India',
       });
     }
@@ -184,15 +192,46 @@ export const CheckoutPage: React.FC = () => {
   const total = subtotal + shippingCost - discount;
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    // Clear error on field change
+    if (formErrors[name]) {
+      setFormErrors(prev => { const n = { ...prev }; delete n[name]; return n; });
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (!formData.firstName.trim()) errors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
+    if (!formData.phone.trim()) errors.phone = 'Mobile number is required';
+    else if (!/^[6-9]\d{9}$/.test(formData.phone.replace(/\s/g, '').replace(/^\+91/, ''))) errors.phone = 'Enter a valid 10-digit Indian mobile number';
+    if (!formData.address.trim()) errors.address = 'Address is required';
+    if (!formData.streetName.trim()) errors.streetName = 'Street name is required';
+    if (!formData.landmark.trim()) errors.landmark = 'Landmark is required';
+    if (!formData.zip.trim()) errors.zip = 'Pincode is required';
+    else if (!/^\d{6}$/.test(formData.zip.trim())) errors.zip = 'Enter a valid 6-digit pincode';
+    if (!formData.city.trim()) errors.city = 'City is required';
+    if (!formData.state.trim()) errors.state = 'State is required';
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const [placedOrderNo, setPlacedOrderNo] = useState<string | null>(null);
+  const [orderLoading, setOrderLoading] = useState(false);
 
   const handlePayNow = async () => {
+    if (!validateForm()) return;
+    
     try {
+      setOrderLoading(true);
       const payload = {
-        items: cart,
+        items: cart.map(item => ({
+          product: { id: item.product.id, price: item.product.price },
+          quantity: item.quantity,
+          selectedSize: item.selectedSize || null,
+          selectedColor: item.selectedColor || null,
+        })),
         shipping_address: formData,
         subtotal,
         shipping_cost: shippingCost,
@@ -220,6 +259,8 @@ export const CheckoutPage: React.FC = () => {
     } catch (err) {
       console.error(err);
       alert('An error occurred during checkout');
+    } finally {
+      setOrderLoading(false);
     }
   };
 
@@ -515,78 +556,139 @@ export const CheckoutPage: React.FC = () => {
                   </label>
                   
                   <div className="space-y-3">
-                    {/* Full Name */}
-                    <input
-                      required
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleTextChange}
-                      className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                      placeholder="Full Name"
-                    />
+                    {/* First and Last Name */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <input
+                          required
+                          type="text"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleTextChange}
+                          className={`w-full bg-brand-warmWhite border ${formErrors.firstName ? 'border-red-500' : 'border-brand-border/50'} p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso`}
+                          placeholder="First Name"
+                        />
+                        {formErrors.firstName && <p className="text-red-500 text-[9px] mt-1 ml-1">{formErrors.firstName}</p>}
+                      </div>
+                      <div>
+                        <input
+                          required
+                          type="text"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleTextChange}
+                          className={`w-full bg-brand-warmWhite border ${formErrors.lastName ? 'border-red-500' : 'border-brand-border/50'} p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso`}
+                          placeholder="Last Name"
+                        />
+                        {formErrors.lastName && <p className="text-red-500 text-[9px] mt-1 ml-1">{formErrors.lastName}</p>}
+                      </div>
+                    </div>
 
-                    {/* Address Line 1 */}
-                    <input
-                      required
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleTextChange}
-                      className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                      placeholder="Address Line 1"
-                    />
+                    {/* Phone Number */}
+                    <div>
+                      <input
+                        required
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleTextChange}
+                        className={`w-full bg-brand-warmWhite border ${formErrors.phone ? 'border-red-500' : 'border-brand-border/50'} p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso`}
+                        placeholder="Mobile Number"
+                      />
+                      {formErrors.phone && <p className="text-red-500 text-[9px] mt-1 ml-1">{formErrors.phone}</p>}
+                    </div>
+
+                    {/* Address Lines */}
+                    <div className="space-y-3">
+                      <div>
+                        <input
+                          required
+                          type="text"
+                          name="address"
+                          value={formData.address}
+                          onChange={handleTextChange}
+                          className={`w-full bg-brand-warmWhite border ${formErrors.address ? 'border-red-500' : 'border-brand-border/50'} p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso`}
+                          placeholder="Address Line 1"
+                        />
+                        {formErrors.address && <p className="text-red-500 text-[9px] mt-1 ml-1">{formErrors.address}</p>}
+                      </div>
+                      <div>
+                        <input
+                          required
+                          type="text"
+                          name="streetName"
+                          value={formData.streetName}
+                          onChange={handleTextChange}
+                          className={`w-full bg-brand-warmWhite border ${formErrors.streetName ? 'border-red-500' : 'border-brand-border/50'} p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso`}
+                          placeholder="Street Name"
+                        />
+                        {formErrors.streetName && <p className="text-red-500 text-[9px] mt-1 ml-1">{formErrors.streetName}</p>}
+                      </div>
+                    </div>
 
                     {/* Landmark / Line 2 */}
-                    <input
-                      type="text"
-                      name="landmark"
-                      value={formData.landmark}
-                      onChange={handleTextChange}
-                      className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                      placeholder="Landmark / Area (e.g. Opposite Grand Mall)"
-                    />
+                    <div>
+                      <input
+                        type="text"
+                        name="landmark"
+                        value={formData.landmark}
+                        onChange={handleTextChange}
+                        className={`w-full bg-brand-warmWhite border ${formErrors.landmark ? 'border-red-500' : 'border-brand-border/50'} p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso`}
+                        placeholder="Landmark / Area (e.g. Opposite Grand Mall)"
+                      />
+                      {formErrors.landmark && <p className="text-red-500 text-[9px] mt-1 ml-1">{formErrors.landmark}</p>}
+                    </div>
 
                     {/* City & State */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <input
-                        required
-                        type="text"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleTextChange}
-                        className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                        placeholder="City"
-                      />
-                      
-                      <div className="relative">
-                        <select
-                          name="state"
-                          value={formData.state}
+                      <div>
+                        <input
+                          required
+                          type="text"
+                          name="city"
+                          value={formData.city}
                           onChange={handleTextChange}
-                          className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso appearance-none"
-                        >
-                          <option value="Maharashtra">Maharashtra</option>
-                          <option value="Delhi">Delhi</option>
-                          <option value="Karnataka">Karnataka</option>
-                          <option value="Tamil Nadu">Tamil Nadu</option>
-                          <option value="Uttar Pradesh">Uttar Pradesh</option>
-                        </select>
-                        <ChevronDown className="w-4 h-4 text-brand-warmGray absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          className={`w-full bg-brand-warmWhite border ${formErrors.city ? 'border-red-500' : 'border-brand-border/50'} p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso`}
+                          placeholder="City"
+                        />
+                        {formErrors.city && <p className="text-red-500 text-[9px] mt-1 ml-1">{formErrors.city}</p>}
+                      </div>
+                      
+                      <div>
+                        <div className="relative">
+                          <select
+                            name="state"
+                            value={formData.state}
+                            onChange={handleTextChange}
+                            className={`w-full bg-brand-warmWhite border ${formErrors.state ? 'border-red-500' : 'border-brand-border/50'} p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso appearance-none`}
+                          >
+                            <option value="">Select State</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                          </select>
+                          <ChevronDown className="w-4 h-4 text-brand-warmGray absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                        {formErrors.state && <p className="text-red-500 text-[9px] mt-1 ml-1">{formErrors.state}</p>}
                       </div>
                     </div>
 
                     {/* Zip & Country */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <input
-                        required
-                        type="text"
-                        name="zip"
-                        value={formData.zip}
-                        onChange={handleTextChange}
-                        className="w-full bg-brand-warmWhite border border-brand-border/50 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
-                        placeholder="Pincode / Zipcode"
-                      />
+                      <div>
+                        <input
+                          required
+                          type="text"
+                          name="zip"
+                          value={formData.zip}
+                          onChange={handleTextChange}
+                          className={`w-full bg-brand-warmWhite border ${formErrors.zip ? 'border-red-500' : 'border-brand-border/50'} p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso`}
+                          placeholder="Pincode / Zipcode"
+                        />
+                        {formErrors.zip && <p className="text-red-500 text-[9px] mt-1 ml-1">{formErrors.zip}</p>}
+                      </div>
                       
                       <div className="relative">
                         <select

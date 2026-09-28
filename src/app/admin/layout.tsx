@@ -42,39 +42,82 @@ export default function AdminLayout({
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [adminProfile, setAdminProfile] = useState<AdminProfile>({
-    name: 'Prem Karnawat',
+    name: 'Admin',
     email: 'admin@aadhya.co',
-    role: 'Super Admin',
+    role: 'Admin',
     avatar: 'male'
   });
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // If on login page, render bare children
   const isLoginPage = pathname === '/admin/login';
 
+  // Auth protection: verify admin session on every admin page
   useEffect(() => {
-    if (isLoginPage) return;
+    if (isLoginPage) {
+      setAuthChecked(true);
+      return;
+    }
 
-    const fetchAdmin = async () => {
+    const checkAuth = async () => {
       try {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          router.replace('/admin/login');
+          return;
+        }
+
+        // Verify admin role via API
         const res = await fetch('/api/admin/profile');
         const data = await res.json();
-        if (data.success && data.profile) {
-          const p = data.profile;
-          const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.name || 'Admin';
-          setAdminProfile({
-            name: fullName,
-            email: p.email || 'admin@aadhya.co',
-            role: p.role === 'super_admin' ? 'Super Admin' : 'Admin',
-            avatar: p.avatar || 'male'
-          });
+        
+        if (!data.success || !data.profile) {
+          await supabase.auth.signOut();
+          router.replace('/admin/login');
+          return;
         }
+
+        const role = data.profile.role;
+        if (role !== 'admin' && role !== 'super_admin') {
+          setAuthError('Your account does not have admin privileges.');
+          await supabase.auth.signOut();
+          setTimeout(() => router.replace('/admin/login'), 2000);
+          return;
+        }
+
+        const p = data.profile;
+        const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.name || 'Admin';
+        setAdminProfile({
+          name: fullName,
+          email: p.email || 'admin@aadhya.co',
+          role: role === 'super_admin' ? 'Super Admin' : 'Admin',
+          avatar: p.avatar || 'male'
+        });
+        setAuthChecked(true);
       } catch (err) {
-        console.warn('Failed to load admin profile:', err);
+        console.error('Admin auth check failed:', err);
+        router.replace('/admin/login');
       }
     };
-    fetchAdmin();
-  }, [isLoginPage]);
+
+    checkAuth();
+
+    // Listen for auth state changes (logout, expiry)
+    const supabase = createClient();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        router.replace('/admin/login');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [isLoginPage, pathname]);
 
   const handleLogout = async () => {
     try {
@@ -88,6 +131,32 @@ export default function AdminLayout({
 
   if (isLoginPage) {
     return <>{children}</>;
+  }
+
+  // Show loading while checking auth
+  if (!authChecked) {
+    return (
+      <div className="w-full h-screen bg-[#14161f] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#ba8c4d] to-[#d4ab6c] flex items-center justify-center shadow-lg mx-auto animate-pulse">
+            <Sparkles className="w-5 h-5 text-[#14161f]" />
+          </div>
+          <span className="text-xs font-bold text-gray-400 tracking-wider block">Verifying admin access...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show auth error
+  if (authError) {
+    return (
+      <div className="w-full h-screen bg-[#14161f] flex items-center justify-center">
+        <div className="text-center space-y-3 max-w-xs">
+          <span className="text-sm font-bold text-rose-400 block">{authError}</span>
+          <span className="text-xs text-gray-500 block">Redirecting to login...</span>
+        </div>
+      </div>
+    );
   }
 
   const isNavActive = (path: string, exact = false) => {
@@ -315,7 +384,11 @@ export default function AdminLayout({
       </AnimatePresence>
 
       {/* Main Content Canvas - Fits fully to edge with smooth inner rounded corner on desktop */}
-      <main className="flex-1 min-w-0 h-full bg-[#fbf9f5] rounded-none lg:rounded-tl-[32px] lg:rounded-bl-[32px] overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 md:p-7 lg:p-8 flex flex-col pt-16 lg:pt-8">
+      <main className={`flex-1 min-w-0 h-full rounded-none lg:rounded-tl-[32px] lg:rounded-bl-[32px] overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 md:p-7 lg:p-8 flex flex-col pt-16 lg:pt-8 transition-colors duration-200 ${
+        themeMode === 'dark' 
+          ? 'bg-[#0f1117] text-gray-200' 
+          : 'bg-[#fbf9f5] text-[#1a1f36]'
+      }`} data-theme={themeMode}>
         <div className="w-full max-w-[1600px] mx-auto flex-1">
           {children}
         </div>

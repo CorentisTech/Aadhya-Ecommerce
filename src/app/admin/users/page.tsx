@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Users, ArrowUpRight, Filter, RefreshCcw } from 'lucide-react';
 
+import { ExportButton } from '@/components/admin/ExportButton';
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,12 +57,15 @@ export default function AdminUsersPage() {
             Registered customers, order history, and account activity
           </p>
         </div>
-        <button
-          onClick={fetchUsers}
-          className="p-2 text-gray-500 hover:text-black bg-white border border-gray-200 rounded-xl hover:bg-gray-50 shadow-sm transition-colors self-start sm:self-auto"
-        >
-          <RefreshCcw className="w-4 h-4" />
-        </button>
+        <div className="flex space-x-2 self-start sm:self-auto">
+          <ExportButton type="users" label="Download Excel" />
+          <button
+            onClick={fetchUsers}
+            className="p-2 text-gray-500 hover:text-black bg-white border border-gray-200 rounded-xl hover:bg-gray-50 shadow-sm transition-colors"
+          >
+            <RefreshCcw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Search & Filter Bar */}

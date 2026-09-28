@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, DollarSign, Calendar, RefreshCcw, Shirt, Coins, ArrowUpRight } from 'lucide-react';
 
+import { ExportButton } from '@/components/admin/ExportButton';
+
 export default function AdminRevenuePage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -61,12 +63,15 @@ export default function AdminRevenuePage() {
             Authoritative realized revenue, sales timeline, and domain financial split
           </p>
         </div>
-        <button
-          onClick={fetchRevenueData}
-          className="p-2 text-gray-500 hover:text-black bg-white border border-gray-200 rounded-xl hover:bg-gray-50 shadow-sm transition-colors self-start sm:self-auto"
-        >
-          <RefreshCcw className="w-4 h-4" />
-        </button>
+        <div className="flex space-x-2 self-start sm:self-auto">
+          <ExportButton type="revenue" label="Download Excel" />
+          <button
+            onClick={fetchRevenueData}
+            className="p-2 text-gray-500 hover:text-black bg-white border border-gray-200 rounded-xl hover:bg-gray-50 shadow-sm transition-colors"
+          >
+            <RefreshCcw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Revenue KPI Cards */}

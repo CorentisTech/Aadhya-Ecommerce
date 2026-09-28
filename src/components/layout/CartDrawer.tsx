@@ -84,9 +84,17 @@ export const CartDrawer: React.FC = () => {
                     key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}-${index}`}
                     className="flex items-stretch gap-4 pb-6 border-b border-brand-border/40"
                   >
-                    {/* Visual */}
-                    <div className="w-20 h-24 bg-brand-white rounded-lg flex-shrink-0 flex items-center justify-center p-1 border border-brand-border/30">
-                      <ProductVisual type={item.product.visualType} color={item.product.visualColor} pattern={item.product.visualPattern} />
+                    {/* Product Image */}
+                    <div className="w-20 h-24 bg-brand-white rounded-2xl flex-shrink-0 overflow-hidden border border-brand-border/30">
+                      {item.product.image ? (
+                        <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                      ) : item.product.images && item.product.images.length > 0 ? (
+                        <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center p-1">
+                          <ProductVisual type={item.product.visualType} color={item.product.visualColor} pattern={item.product.visualPattern} />
+                        </div>
+                      )}
                     </div>
 
                     {/* Details */}
@@ -127,7 +135,7 @@ export const CartDrawer: React.FC = () => {
 
                       {/* Quantity Selector & Price */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center border border-brand-border rounded">
+                        <div className="flex items-center border border-brand-border rounded-xl">
                           <button
                             onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedSize, item.selectedColor)}
                             className="p-1 hover:text-brand-dustyRose transition-colors text-brand-warmGray"
@@ -200,13 +208,13 @@ export const CartDrawer: React.FC = () => {
                 <div className="grid grid-cols-1 gap-2 pt-2">
                   <button
                     onClick={handleCheckoutClick}
-                    className="w-full py-3 bg-brand-espresso text-brand-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-brand-espresso/90 transition-colors shadow-sm"
+                    className="w-full py-3 bg-brand-espresso text-brand-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-brand-espresso/90 transition-colors shadow-sm rounded-xl"
                   >
                     PROCEED TO SECURE CHECKOUT
                   </button>
                   <button
                     onClick={() => setCartOpen(false)}
-                    className="w-full py-3 border border-brand-border text-brand-espresso text-xs font-bold tracking-[0.2em] uppercase hover:bg-brand-softBeige/40 transition-colors"
+                    className="w-full py-3 border border-brand-border text-brand-espresso text-xs font-bold tracking-[0.2em] uppercase hover:bg-brand-softBeige/40 transition-colors rounded-xl"
                   >
                     CONTINUE SHOPPING
                   </button>

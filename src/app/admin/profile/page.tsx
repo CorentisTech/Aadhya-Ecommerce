@@ -15,6 +15,7 @@ export default function AdminProfilePage() {
   const [phone, setPhone] = useState('');
   const [avatar, setAvatar] = useState<'male' | 'female'>('male');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const fetchProfile = async () => {
     try {
@@ -46,6 +47,20 @@ export default function AdminProfilePage() {
     setError(null);
     setSuccess(false);
 
+    // Validate password if changing
+    if (newPassword) {
+      if (newPassword.length < 8) {
+        setError('Password must be at least 8 characters long.');
+        setSaving(false);
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        setError('Passwords do not match.');
+        setSaving(false);
+        return;
+      }
+    }
+
     try {
       const res = await fetch('/api/admin/profile', {
         method: 'PUT',
@@ -62,6 +77,7 @@ export default function AdminProfilePage() {
       if (data.success) {
         setSuccess(true);
         setNewPassword('');
+        setConfirmPassword('');
         setTimeout(() => setSuccess(false), 3000);
       } else {
         setError(data.error || 'Failed to update admin profile');
@@ -157,17 +173,34 @@ export default function AdminProfilePage() {
           </div>
 
           {/* Change Password */}
-          <div className="pt-4 border-t border-gray-100 space-y-2">
-            <label className="text-[10px] font-bold text-gray-600 uppercase block">
-              Update Admin Password (leave blank to keep current)
-            </label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full sm:w-1/2 bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-xl text-xs"
-            />
+          <div className="pt-4 border-t border-gray-100 space-y-3">
+            <div className="flex items-center space-x-2 mb-2">
+              <Lock className="w-4 h-4 text-gray-500" />
+              <span className="text-xs font-black text-gray-700 uppercase tracking-wider">Change Password</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Min. 8 characters"
+                  className="w-full bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-xl text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Confirm Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter new password"
+                  className="w-full bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-xl text-xs"
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-400 font-semibold">Leave both fields blank to keep current password.</p>
           </div>
         </div>
 
