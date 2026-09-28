@@ -25,6 +25,8 @@ export default function EditProductPage() {
   const [baseDiscount, setBaseDiscount] = useState<number | ''>('');
   const [description, setDescription] = useState('');
   const [isBestseller, setIsBestseller] = useState(false);
+  const [isHero, setIsHero] = useState(false);
+  const [heroOrder, setHeroOrder] = useState<number>(0);
   const [isActive, setIsActive] = useState(true);
 
   // Fashion fields
@@ -57,6 +59,8 @@ export default function EditProductPage() {
           setBaseDiscount(Number(p.base_discount) || '');
           setDescription(p.description || '');
           setIsBestseller(Boolean(p.is_bestseller));
+          setIsHero(Boolean(p.is_hero));
+          setHeroOrder(Number(p.hero_order) || 0);
           setIsActive(Boolean(p.is_active));
 
           if (data.domainDetails) {
@@ -106,6 +110,8 @@ export default function EditProductPage() {
         base_discount: Number(baseDiscount || 0),
         description,
         is_bestseller: isBestseller,
+        is_hero: isHero,
+        hero_order: Number(heroOrder) || 0,
         is_active: isActive
       };
 
@@ -253,6 +259,30 @@ export default function EditProductPage() {
             />
             <span>Best Seller Feature</span>
           </label>
+
+          <label className="flex items-center space-x-2 text-xs font-bold text-gray-800 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isHero}
+              onChange={(e) => setIsHero(e.target.checked)}
+              className="w-4 h-4 text-purple-600 rounded"
+            />
+            <span className="text-purple-900">Feature on Homepage Hero Carousel</span>
+          </label>
+
+          {isHero && (
+            <div className="flex items-center space-x-2 text-xs font-bold text-gray-800 bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-200">
+              <label className="text-[11px] font-bold text-purple-900 uppercase">Hero Display Order:</label>
+              <input
+                type="number"
+                min={0}
+                max={99}
+                value={heroOrder}
+                onChange={(e) => setHeroOrder(parseInt(e.target.value, 10) || 0)}
+                className="w-14 bg-white border border-purple-300 px-2 py-1 rounded-lg text-xs font-bold text-center text-purple-950 focus:outline-none focus:border-purple-600"
+              />
+            </div>
+          )}
 
           <label className="flex items-center space-x-2 text-xs font-bold text-gray-800 cursor-pointer">
             <input

@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface ProductVisualProps {
-  type: 'saree' | 'dress' | 'bodycon' | 'ethnic' | 'blouse' | 'kurti' | 'lehenga' | 'coin' | 'note';
+  type?: 'saree' | 'dress' | 'bodycon' | 'ethnic' | 'blouse' | 'kurti' | 'lehenga' | 'coin' | 'note';
   color?: string;
   pattern?: 'gold-brocade' | 'floral-embroidery' | 'silk-sheen' | 'plain' | 'antique-metallic' | 'currency-green' | 'rupee-blue';
   className?: string;
@@ -9,7 +9,7 @@ interface ProductVisualProps {
 }
 
 export const ProductVisual: React.FC<ProductVisualProps> = ({
-  type,
+  type = 'dress',
   color = '#2C2522',
   pattern = 'plain',
   className = '',

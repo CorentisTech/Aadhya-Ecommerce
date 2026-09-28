@@ -14,6 +14,7 @@ export async function GET(request: Request) {
   // Filters
   const department = searchParams.get('department');
   const categorySlug = searchParams.get('category');
+  const isHero = searchParams.get('is_hero');
   const searchQuery = searchParams.get('search');
   const sort = searchParams.get('sort');
 
@@ -23,12 +24,16 @@ export async function GET(request: Request) {
       id, product_no, name, slug, department, description, 
       visual_type, visual_color, visual_pattern,
       base_price, base_mrp, base_discount, 
-      is_bestseller, avg_rating, reviews_count,
+      is_bestseller, is_hero, hero_order, avg_rating, reviews_count,
       categories(name, slug),
       product_variants(id, sku, price, mrp, discount, stock_quantity, fashion_variant_details(*)),
       product_media(media_url, is_primary, color_name)
     `, { count: 'exact' })
     .eq('is_active', true);
+
+  if (isHero === 'true') {
+    query = query.eq('is_hero', true).order('hero_order', { ascending: true });
+  }
 
   if (department) {
     query = query.eq('department', department);

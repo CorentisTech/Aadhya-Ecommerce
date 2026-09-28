@@ -304,14 +304,14 @@ export const NumismaticsHome: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-full min-h-screen bg-[#FFFBF8] text-brand-espresso select-none overflow-x-hidden">
+    <div className="w-full max-w-full min-h-screen bg-[#FAF7F2] text-brand-espresso select-none overflow-x-hidden">
 
       {/* ==================================================
-          1. FULL SCREEN FIT HERO SECTION (Desktop & Mobile) - BEST SELLERS SHOWCASE
+          1. FULL SCREEN FIT HERO SECTION (Desktop & Mobile)
          ================================================== */}
       <section 
-        id="best-sellers"
-        className="w-full min-h-[calc(100vh-72px)] flex flex-col justify-center py-4 sm:py-6 md:py-8 px-3 sm:px-6 md:px-12 lg:px-16 bg-gradient-to-b from-[#FFF5EC] via-[#FFF8F3] to-[#FFFBF8] relative overflow-hidden"
+        id="hero"
+        className="w-full min-h-[calc(100vh-72px)] flex flex-col justify-center py-4 sm:py-6 md:py-8 px-3 sm:px-6 md:px-12 lg:px-16 bg-[#FAF7F2] relative overflow-hidden border-b border-[#E5DACB]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -338,7 +338,7 @@ export const NumismaticsHome: React.FC = () => {
                 >
                   {/* BEST SELLERS SHOWCASE BADGE & TITLE */}
                   <div className="flex items-center gap-2">
-                    <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black tracking-[0.25em] bg-[#E0591D] text-white px-2.5 py-0.5 rounded-full uppercase shadow-xs flex items-center gap-1.5">
+                    <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black tracking-[0.25em] bg-[#181818] text-white px-2.5 py-0.5 rounded-full uppercase shadow-xs flex items-center gap-1.5">
                       <Sparkles className="w-3 h-3 fill-current" />
                       <span>BEST SELLERS SHOWCASE</span>
                     </span>
@@ -350,13 +350,13 @@ export const NumismaticsHome: React.FC = () => {
                   {/* Catchy 2-Tone Headline */}
                   <h1 className="font-display font-black text-lg sm:text-2xl md:text-3xl lg:text-[40px] text-[#2B231D] tracking-tight leading-[1.12]">
                     Rare Coinage <span className="text-[#2B231D]">is</span> <br />
-                    <span className="text-[#E0591D]">an Important Part</span> <br />
+                    <span className="text-[#181818]">an Important Part</span> <br />
                     <span className="text-[#2B231D]">of Heritage</span>
                   </h1>
 
                   {/* Active Coin Title & Spec Tag */}
                   <div className="flex items-center space-x-1.5 sm:space-x-2 pt-0.5">
-                    <span className="text-[7px] sm:text-[8px] md:text-[10px] font-extrabold tracking-[0.15em] sm:tracking-[0.2em] bg-[#E0591D]/10 text-[#E0591D] px-2 py-0.5 rounded-full uppercase whitespace-nowrap">
+                    <span className="text-[7px] sm:text-[8px] md:text-[10px] font-extrabold tracking-[0.15em] sm:tracking-[0.2em] bg-[#181818]/10 text-[#181818] px-2 py-0.5 rounded-full uppercase whitespace-nowrap">
                       {activeHeroProduct.era || 'BRITISH INDIA'}
                     </span>
                     <span className="font-display font-bold text-xs sm:text-sm text-[#2B231D] line-clamp-1">
@@ -367,13 +367,13 @@ export const NumismaticsHome: React.FC = () => {
                   {/* Price & Rating Row */}
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-0.5">
                     <div className="flex items-baseline space-x-1.5 sm:space-x-2">
-                      <span className="font-sans font-black text-base sm:text-xl md:text-2xl text-[#E0591D]">
+                      <span className="font-sans font-black text-base sm:text-xl md:text-2xl text-[#181818]">
                         ₹{activeHeroProduct.price.toLocaleString('en-IN')}
                       </span>
                       <span className="text-[10px] sm:text-xs text-brand-warmGray line-through font-semibold">
                         ₹{activeHeroProduct.mrp.toLocaleString('en-IN')}
                       </span>
-                      <span className="text-[7px] sm:text-[8px] font-extrabold bg-[#E0591D]/10 text-[#E0591D] px-1.5 py-0.5 rounded">
+                      <span className="text-[7px] sm:text-[8px] font-extrabold bg-[#181818]/10 text-[#181818] px-1.5 py-0.5 rounded">
                         {activeHeroProduct.discount}% OFF
                       </span>
                     </div>
@@ -393,7 +393,7 @@ export const NumismaticsHome: React.FC = () => {
                   <div className="flex items-center gap-2 sm:gap-3 pt-1">
                     <button
                       onClick={handleHeroAddToCart}
-                      className="px-4 sm:px-6 md:px-7 py-2 sm:py-2.5 bg-[#E0591D] hover:bg-[#C84B15] text-white font-extrabold text-[10px] sm:text-xs tracking-wider rounded-full transition-all shadow-md shadow-[#E0591D]/25 flex items-center gap-1.5 sm:gap-2"
+                      className="px-4 sm:px-6 md:px-7 py-2 sm:py-2.5 bg-[#181818] hover:bg-[#C84B15] text-white font-extrabold text-[10px] sm:text-xs tracking-wider rounded-full transition-all shadow-md shadow-[#181818]/25 flex items-center gap-1.5 sm:gap-2"
                     >
                       {addedHero ? (
                         <>
@@ -520,7 +520,7 @@ export const NumismaticsHome: React.FC = () => {
                     }}
                     className={`flex-shrink-0 w-[155px] sm:w-[185px] md:w-auto snap-start bg-gradient-to-b ${item.cardGradient} rounded-[20px] sm:rounded-[26px] p-2.5 sm:p-3.5 text-left flex flex-col justify-between cursor-pointer transition-all duration-300 relative ${
                       isSelected 
-                        ? 'ring-3 sm:ring-4 ring-[#E0591D]/30 shadow-2xl scale-[1.02] -translate-y-0.5' 
+                        ? 'ring-3 sm:ring-4 ring-[#181818]/30 shadow-2xl scale-[1.02] -translate-y-0.5' 
                         : 'shadow-md hover:scale-[1.01] opacity-90 hover:opacity-100'
                     }`}
                   >
@@ -596,7 +596,174 @@ export const NumismaticsHome: React.FC = () => {
       </section>
 
       {/* ==================================================
-          2. NEW ARRIVALS SECTION (Exact Fashion Card Layout & Grid)
+          2. BEST SELLERS SECTION (Curated Numismatics Archive)
+         ================================================== */}
+      <section id="best-sellers" className="w-full py-12 md:py-16 px-4 md:px-12 lg:px-24 bg-[#FAF7F2] border-b border-[#E5DACB]">
+        <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8 text-center">
+          
+          {/* Header Row with Arrow Controls */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-[#E5DACB] pb-4 text-left gap-4">
+            <div className="space-y-1">
+              <span className="text-xs sm:text-sm text-[#7A6B5C] font-extrabold tracking-[0.2em] uppercase block">
+                BEST SELLERS
+              </span>
+              <h2 className="font-display font-black text-2xl sm:text-4xl text-[#181818] tracking-tight uppercase">
+                Curated Numismatic Highlights
+              </h2>
+              <p className="text-xs sm:text-sm text-[#7A6B5C] font-medium">
+                Premier verified collector pieces with high historical rarity.
+              </p>
+            </div>
+
+            {/* Desktop Navigation & Filters */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => router.push('/numismatics/catalog')}
+                className="px-4 py-2 bg-[#181818] text-[#EFE6DA] rounded-full text-xs font-bold hover:bg-[#333333] transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer mr-1"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Filters</span>
+              </button>
+
+              <button
+                onClick={() => scrollExplore('left')}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#D5C7B5] bg-white text-[#181818] hover:bg-[#EFE6DA] flex items-center justify-center transition-colors shadow-xs cursor-pointer"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+              <button
+                onClick={() => scrollExplore('right')}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#D5C7B5] bg-white text-[#181818] hover:bg-[#EFE6DA] flex items-center justify-center transition-colors shadow-xs cursor-pointer"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Horizontal Scroll Carousel with Touch-Swipe */}
+          <div 
+            ref={exploreScrollRef}
+            className="flex overflow-x-auto pb-4 gap-3 sm:gap-6 scrollbar-none snap-x snap-mandatory touch-pan-x w-full scroll-smooth pt-2 text-left"
+          >
+            {numProducts.map((product) => {
+              const inWishlist = isInWishlist(product.id);
+              const slug = product.name.toLowerCase().replace(/ /g, '-');
+
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => router.push(`/numismatics/${slug}`)}
+                  className="flex flex-col text-left group cursor-pointer bg-white border border-[#E5DACB] rounded-2xl p-3 hover:shadow-lg transition-shadow relative flex-shrink-0 w-[170px] sm:w-[210px] md:w-[240px] snap-start"
+                >
+                  {/* Product Visual Container */}
+                  <div className="w-full aspect-[4/5] bg-[#FAF7F2] overflow-hidden relative rounded-xl p-3 flex items-center justify-center">
+                    {product.visualType === 'note' ? (
+                      <img 
+                        src={product.image} 
+                        alt={product.name} 
+                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" 
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ProductVisual 
+                          type="coin" 
+                          color={product.visualColor || '#B89A67'} 
+                          pattern={product.visualPattern || 'antique-metallic'} 
+                          className="w-full h-full scale-110"
+                          isRotating={false} 
+                        />
+                      </div>
+                    )}
+
+                    {/* Top left badge */}
+                    <div className="absolute top-2 left-2 pointer-events-none">
+                      <span className="text-[7px] bg-white/95 border border-[#E5DACB] text-[#181818] font-extrabold tracking-widest px-1.5 py-0.5 rounded shadow-xs uppercase">
+                        {product.rarity || 'RARE'}
+                      </span>
+                    </div>
+
+                    {/* Wishlist button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(product);
+                      }}
+                      className={`absolute top-2 right-2 p-1.5 rounded-full border transition-all shadow-xs pointer-events-auto ${
+                        inWishlist
+                          ? 'bg-rose-50 border-rose-300 text-rose-600'
+                          : 'bg-white/95 border-[#E5DACB] text-[#7A6B5C] hover:bg-white'
+                      }`}
+                    >
+                      <Heart className={`w-3 h-3 ${inWishlist ? 'fill-rose-500 text-rose-500' : ''}`} />
+                    </button>
+                  </div>
+
+                  {/* Details */}
+                  <div className="pt-2.5 space-y-1.5">
+                    <h3 className="font-sans font-bold text-xs sm:text-sm text-[#181818] tracking-wide leading-snug group-hover:text-[#7A6B5C] transition-colors line-clamp-1">
+                      {product.name}
+                    </h3>
+
+                    {/* Ratings */}
+                    <div className="flex items-center space-x-1">
+                      {renderStars(product.rating || 5)}
+                      <span className="text-[9px] sm:text-[10px] text-[#7A6B5C] font-bold">
+                        ({product.reviewsCount || 128})
+                      </span>
+                    </div>
+
+                    {/* Price Row with Discount Badge */}
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-baseline space-x-1.5">
+                        <span className="font-sans font-extrabold text-xs sm:text-sm text-[#181818]">
+                          ₹{product.price.toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-[10px] text-[#7A6B5C] line-through font-medium">
+                          ₹{product.mrp.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <span className="text-[9px] bg-[#181818]/10 text-[#181818] font-bold px-1.5 py-0.5 rounded">
+                        {product.discount}%
+                      </span>
+                    </div>
+
+                    {/* Add to Bag CTA */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product, 1);
+                      }}
+                      className="w-full mt-2 py-1.5 bg-[#181818] hover:bg-[#333333] text-[#EFE6DA] text-[10px] font-extrabold tracking-wider uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <ShoppingBag className="w-3 h-3" />
+                      <span>ADD TO BAG</span>
+                    </button>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Bottom Redirect Link to Full Catalogue */}
+          <div className="pt-4">
+            <button
+              onClick={() => router.push('/numismatics/catalog')}
+              className="py-3 px-8 bg-[#181818] text-[#EFE6DA] font-extrabold text-xs tracking-widest uppercase rounded-full hover:bg-[#333333] transition-colors shadow-md inline-flex items-center gap-2 cursor-pointer"
+            >
+              <span>EXPLORE ALL NUMISMATIC PIECES</span>
+              <ArrowRight className="w-4 h-4 text-[#D4AF37]" />
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ==================================================
+          3. NEW ARRIVALS SECTION (Exact Fashion Card Layout & Grid)
          ================================================== */}
       <section id="new-arrivals" className="w-full py-12 md:py-16 px-4 md:px-12 lg:px-24 bg-brand-warmWhite border-b border-brand-border/40 overflow-hidden">
         <div className="max-w-6xl mx-auto space-y-6 md:space-y-10">
@@ -604,7 +771,7 @@ export const NumismaticsHome: React.FC = () => {
           {/* Header Grid */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-brand-border/40 text-left">
             <div className="space-y-1">
-              <span className="text-xs sm:text-sm text-[#E0591D] font-extrabold tracking-[0.2em] uppercase block">
+              <span className="text-xs sm:text-sm text-[#181818] font-extrabold tracking-[0.2em] uppercase block">
                 NEW ARRIVALS
               </span>
               <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-5xl text-brand-espresso tracking-tight">
@@ -684,7 +851,7 @@ export const NumismaticsHome: React.FC = () => {
 
                   {/* Details */}
                   <div className="pt-2.5 space-y-1.5">
-                    <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso tracking-wide leading-snug group-hover:text-[#E0591D] transition-colors line-clamp-1">
+                    <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso tracking-wide leading-snug group-hover:text-[#181818] transition-colors line-clamp-1">
                       {product.name}
                     </h3>
 
@@ -717,7 +884,7 @@ export const NumismaticsHome: React.FC = () => {
                         e.stopPropagation();
                         addToCart(product, 1);
                       }}
-                      className="w-full mt-2 py-1.5 bg-[#E0591D] hover:bg-[#C84B15] text-white text-[10px] font-extrabold tracking-wider uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                      className="w-full mt-2 py-1.5 bg-[#181818] hover:bg-[#C84B15] text-white text-[10px] font-extrabold tracking-wider uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs"
                     >
                       <ShoppingBag className="w-3 h-3" />
                       <span>ADD TO BAG</span>
@@ -781,7 +948,7 @@ export const NumismaticsHome: React.FC = () => {
                         {cat.desc}
                       </p>
                       <div className="flex items-center justify-center gap-2 pt-1">
-                        <span className="text-[11px] sm:text-xs font-bold text-[#E0591D]">
+                        <span className="text-[11px] sm:text-xs font-bold text-[#181818]">
                           {cat.count}
                         </span>
                         <button className="px-3 py-1 bg-[#8B261D] hover:bg-[#6D1B13] text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-xs transition-colors">
@@ -824,7 +991,7 @@ export const NumismaticsHome: React.FC = () => {
                         {cat.desc}
                       </p>
                       <div className="flex items-center justify-center gap-2 pt-1">
-                        <span className="text-[11px] sm:text-xs font-bold text-[#E0591D]">
+                        <span className="text-[11px] sm:text-xs font-bold text-[#181818]">
                           {cat.count}
                         </span>
                         <button className="px-3 py-1 bg-[#8B261D] hover:bg-[#6D1B13] text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-xs transition-colors">
@@ -925,7 +1092,7 @@ export const NumismaticsHome: React.FC = () => {
                   }}
                   className={`transition-all duration-300 rounded-full ${
                     activeBannerIdx === idx
-                      ? 'w-6 sm:w-8 h-1.5 sm:h-2 bg-[#E0591D] shadow-md shadow-[#E0591D]/60'
+                      ? 'w-6 sm:w-8 h-1.5 sm:h-2 bg-[#181818] shadow-md shadow-[#181818]/60'
                       : 'w-2 sm:w-2.5 h-1.5 sm:h-2 bg-white/70 hover:bg-white'
                   }`}
                   aria-label={`Go to banner ${idx + 1}`}
@@ -938,172 +1105,6 @@ export const NumismaticsHome: React.FC = () => {
         </div>
       </section>
 
-      {/* ==================================================
-          5. EXPLORE NUMISMATICS (Horizontal Carousel with Mobile Swipe & Web Arrow Controls)
-         ================================================== */}
-      <section id="explore-products" className="w-full py-12 md:py-16 px-4 md:px-12 lg:px-24 bg-white border-t border-brand-border/40">
-        <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8 text-center">
-          
-          {/* Header Row with Arrow Controls */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-brand-border/30 pb-4 text-left gap-4">
-            <div className="space-y-1">
-              <span className="text-xs sm:text-sm text-[#E0591D] font-extrabold tracking-[0.2em] uppercase block">
-                CURATED ARCHIVE
-              </span>
-              <h2 className="font-display font-black text-2xl sm:text-4xl text-[#2B231D] tracking-tight uppercase">
-                Explore Numismatics
-              </h2>
-              <p className="text-xs sm:text-sm text-brand-warmGray font-medium">
-                Swipe horizontally on mobile or use arrow controls on desktop.
-              </p>
-            </div>
-
-            {/* Desktop Navigation & Filters */}
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => router.push('/numismatics/catalog')}
-                className="px-4 py-2 bg-[#2B231D] text-white rounded-full text-xs font-bold hover:bg-black transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer mr-1"
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5 text-[#E0591D]" />
-                <span>Filters</span>
-              </button>
-
-              <button
-                onClick={() => scrollExplore('left')}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-brand-border bg-white text-brand-espresso hover:bg-brand-softBeige/40 flex items-center justify-center transition-colors shadow-xs cursor-pointer"
-                aria-label="Scroll left"
-              >
-                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-              <button
-                onClick={() => scrollExplore('right')}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-brand-border bg-white text-brand-espresso hover:bg-brand-softBeige/40 flex items-center justify-center transition-colors shadow-xs cursor-pointer"
-                aria-label="Scroll right"
-              >
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Horizontal Scroll Carousel with Touch-Swipe */}
-          <div 
-            ref={exploreScrollRef}
-            className="flex overflow-x-auto pb-4 gap-3 sm:gap-6 scrollbar-none snap-x snap-mandatory touch-pan-x w-full scroll-smooth pt-2 text-left"
-          >
-            {numProducts.map((product) => {
-              const inWishlist = isInWishlist(product.id);
-              const slug = product.name.toLowerCase().replace(/ /g, '-');
-
-              return (
-                <div
-                  key={product.id}
-                  onClick={() => router.push(`/numismatics/${slug}`)}
-                  className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 sm:p-3 hover:shadow-md transition-shadow relative flex-shrink-0 w-[170px] sm:w-[210px] md:w-[240px] snap-start"
-                >
-                  {/* Product Visual Container */}
-                  <div className="w-full aspect-[4/5] bg-brand-softBeige/20 overflow-hidden relative rounded-lg p-3 flex items-center justify-center">
-                    {product.visualType === 'note' ? (
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
-                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" 
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ProductVisual 
-                          type="coin" 
-                          color={product.visualColor || '#B89A67'} 
-                          pattern={product.visualPattern || 'antique-metallic'} 
-                          className="w-full h-full scale-110"
-                          isRotating={false} 
-                        />
-                      </div>
-                    )}
-
-                    {/* Top left badge */}
-                    <div className="absolute top-2 left-2 pointer-events-none">
-                      <span className="text-[7px] bg-brand-white/95 border border-brand-border/60 text-brand-espresso font-extrabold tracking-widest px-1.5 py-0.5 rounded shadow-sm uppercase">
-                        {product.rarity || 'RARE'}
-                      </span>
-                    </div>
-
-                    {/* Wishlist button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWishlist(product);
-                      }}
-                      className={`absolute top-2 right-2 p-1.5 rounded-full border transition-all shadow-sm pointer-events-auto ${
-                        inWishlist
-                          ? 'bg-brand-blush border-brand-dustyRose text-brand-dustyRose'
-                          : 'bg-brand-white/95 border-brand-border/60 text-brand-warmGray hover:bg-brand-white'
-                      }`}
-                    >
-                      <Heart className={`w-2.5 h-2.5 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
-                    </button>
-                  </div>
-
-                  {/* Details */}
-                  <div className="pt-2.5 space-y-1.5">
-                    <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso tracking-wide leading-snug group-hover:text-[#E0591D] transition-colors line-clamp-1">
-                      {product.name}
-                    </h3>
-
-                    {/* Ratings */}
-                    <div className="flex items-center space-x-1">
-                      {renderStars(product.rating || 5)}
-                      <span className="text-[9px] sm:text-[10px] text-brand-warmGray font-bold">
-                        ({product.reviewsCount || 128})
-                      </span>
-                    </div>
-
-                    {/* Price Row with Discount Badge */}
-                    <div className="flex items-center justify-between pt-1">
-                      <div className="flex items-baseline space-x-1.5">
-                        <span className="font-sans font-extrabold text-xs sm:text-sm text-brand-espresso">
-                          ₹{product.price.toLocaleString('en-IN')}
-                        </span>
-                        <span className="text-[10px] text-brand-warmGray line-through font-medium">
-                          ₹{product.mrp.toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                      <span className="text-[9px] bg-brand-sale/10 text-brand-sale font-bold px-1.5 py-0.5 rounded">
-                        {product.discount}%
-                      </span>
-                    </div>
-
-                    {/* Add to Bag CTA */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToCart(product, 1);
-                      }}
-                      className="w-full mt-2 py-1.5 bg-[#E0591D] hover:bg-[#C84B15] text-white text-[10px] font-extrabold tracking-wider uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs"
-                    >
-                      <ShoppingBag className="w-3 h-3" />
-                      <span>ADD TO BAG</span>
-                    </button>
-                  </div>
-
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Bottom Redirect Link to Full Catalogue */}
-          <div className="pt-4">
-            <button
-              onClick={() => router.push('/numismatics/catalog')}
-              className="py-3 px-8 bg-[#2B231D] text-white font-extrabold text-xs tracking-widest uppercase rounded-full hover:bg-black transition-colors shadow-md inline-flex items-center gap-2"
-            >
-              <span>EXPLORE MORE NUMISMATIC PIECES</span>
-              <ArrowRight className="w-4 h-4 text-[#E0591D]" />
-            </button>
-          </div>
-
-        </div>
-      </section>
 
       {/* ==================================================
           6. GLASSMORPHIC COLLECTOR REVIEWS
@@ -1112,7 +1113,7 @@ export const NumismaticsHome: React.FC = () => {
         <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
           
           <div className="space-y-1">
-            <span className="text-[10px] text-[#E0591D] font-extrabold tracking-[0.25em] uppercase block">
+            <span className="text-[10px] text-[#181818] font-extrabold tracking-[0.25em] uppercase block">
               VERIFIED FEEDBACK
             </span>
             <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-[#2B231D] tracking-tight uppercase">
@@ -1160,7 +1161,7 @@ export const NumismaticsHome: React.FC = () => {
                   key={idx}
                   onClick={() => setActiveReviewIndex(idx)}
                   className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${
-                    activeReviewIndex === idx ? 'bg-[#E0591D] w-5 sm:w-6' : 'bg-[#EAE2D5]'
+                    activeReviewIndex === idx ? 'bg-[#181818] w-5 sm:w-6' : 'bg-[#EAE2D5]'
                   }`}
                   aria-label={`Slide ${idx + 1}`}
                 />

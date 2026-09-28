@@ -34,10 +34,67 @@ export default function ProductDetailPage({ params }: PageProps) {
   const { slug } = use(params);
   const { addToCart, toggleWishlist, isInWishlist } = useApp();
 
-  // Find product by slug name
-  const product = PRODUCTS.find(
-    (p) => p.name.toLowerCase().replace(/ /g, '-') === slug
+  const decodedSlug = decodeURIComponent(slug).trim();
+  const normalizedSlug = decodedSlug.toLowerCase().replace(/ /g, '-');
+
+  // Find product by id, productNo, slug, or name
+  const staticProduct = PRODUCTS.find((p) => 
+    p.id === slug ||
+    p.id === decodedSlug ||
+    p.productNo?.toLowerCase() === decodedSlug.toLowerCase() ||
+    (p as any).slug?.toLowerCase() === decodedSlug.toLowerCase() ||
+    (p as any).slug?.toLowerCase() === normalizedSlug ||
+    p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === normalizedSlug ||
+    p.name.toLowerCase().replace(/ /g, '-') === normalizedSlug ||
+    p.name.toLowerCase() === decodedSlug.toLowerCase()
   );
+
+  const [dbProduct, setDbProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(!staticProduct);
+
+  useEffect(() => {
+    if (!staticProduct) {
+      setIsLoading(true);
+      fetch(`/api/products/${slug}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.id) {
+            const mapped: Product = {
+              id: data.id,
+              name: data.name,
+              productNo: data.product_no,
+              department: (data.department || 'fashion') as 'fashion',
+              price: Number(data.base_price),
+              mrp: Number(data.base_mrp),
+              discount: data.base_discount || 0,
+              description: data.description || '',
+              category: data.category_name || 'Fashion',
+              image: data.media?.[0]?.media_url || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop',
+              images: data.media?.map((m: any) => m.media_url) || [],
+              rating: Number(data.avg_rating) || 4.8,
+              reviewsCount: data.reviews_count || 12,
+              isBestseller: data.is_bestseller,
+              returnPolicy: data.return_policy || '7 Days Returnable',
+              fabricCare: data.details?.fabric_care || ['Dry clean only', 'Gentle machine wash'],
+              details: data.details?.details || ['Handcrafted with premium materials', 'Artisanal finish', 'Sustainable dyes']
+            };
+            setDbProduct(mapped);
+          }
+        })
+        .catch(err => console.error('Failed to fetch product from DB:', err))
+        .finally(() => setIsLoading(false));
+    }
+  }, [slug, staticProduct]);
+
+  const product = staticProduct || dbProduct;
+
+  const handleBackNavigation = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/catalog?department=fashion');
+    }
+  };
 
   // Safeguard: Redirect numismatics products to the dedicated numismatics PDP route
   useEffect(() => {
@@ -100,10 +157,10 @@ export default function ProductDetailPage({ params }: PageProps) {
       <div className="w-full min-h-screen flex flex-col items-center justify-center bg-brand-warmWhite text-brand-espresso p-6">
         <h2 className="font-display font-bold text-lg tracking-widest uppercase">PRODUCT NOT FOUND</h2>
         <button
-          onClick={() => router.push('/catalog')}
-          className="mt-4 px-6 py-2.5 bg-brand-espresso text-brand-white text-xs font-bold tracking-widest uppercase rounded-lg"
+          onClick={handleBackNavigation}
+          className="mt-4 px-6 py-2.5 bg-brand-espresso text-brand-white text-xs font-bold tracking-widest uppercase rounded-lg cursor-pointer"
         >
-          RETURN TO CATALOG
+          RETURN TO PREVIOUS PAGE
         </button>
       </div>
     );
@@ -168,7 +225,7 @@ export default function ProductDetailPage({ params }: PageProps) {
           
           {/* Top-Right White Close Button */}
           <button
-            onClick={() => router.push('/catalog')}
+            onClick={handleBackNavigation}
             className="absolute top-6 right-6 w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-brand-softBeige transition-colors shadow-sm z-10 text-brand-espresso cursor-pointer"
             aria-label="Close"
           >
@@ -835,7 +892,7 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             <button
               onClick={() => router.push('/catalog?department=fashion')}
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-brand-espresso hover:text-[#F26A2E] tracking-wider uppercase transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-brand-espresso hover:text-brand-warmGray tracking-wider uppercase transition-colors"
             >
               <span>Explore Collection</span>
               <ArrowRight className="w-4 h-4" />

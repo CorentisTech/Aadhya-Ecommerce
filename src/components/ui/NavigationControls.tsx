@@ -22,9 +22,9 @@ export const NavigationControls: React.FC<NavigationControlsProps> = ({
     if (typeof window !== 'undefined' && window.history.length > 1) {
       router.back();
     } else if (pathname?.includes('/numismatics')) {
-      router.push('/numismatics');
+      router.push('/numismatics#categories');
     } else {
-      router.push('/');
+      router.push('/catalog?department=fashion');
     }
   };
 
@@ -45,7 +45,7 @@ export const NavigationControls: React.FC<NavigationControlsProps> = ({
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-brand-border/60 hover:border-brand-espresso hover:text-brand-espresso transition-colors bg-brand-white/80 shadow-xs active:scale-95"
           aria-label="Go Back"
         >
-          <ArrowLeft className="w-3.5 h-3.5 text-[#F26A2E]" />
+          <ArrowLeft className="w-3.5 h-3.5 text-brand-espresso" />
           <span>Back</span>
         </button>
       )}

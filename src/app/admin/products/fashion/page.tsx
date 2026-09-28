@@ -158,6 +158,7 @@ export default function FashionProductsPage() {
                   <th className="py-3 px-4">MRP / Discount</th>
                   <th className="py-3 px-4">Variants / Stock</th>
                   <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Hero Feature</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -214,6 +215,15 @@ export default function FashionProductsPage() {
                       }`}>
                         {p.is_active ? 'Active' : 'Archived'}
                       </span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      {p.is_hero ? (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-purple-100 text-purple-800 border border-purple-200">
+                          Hero #{p.hero_order || 0}
+                        </span>
+                      ) : (
+                        <span className="text-gray-300 text-[11px] font-semibold">—</span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end space-x-2">

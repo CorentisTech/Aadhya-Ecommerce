@@ -28,8 +28,8 @@ export const Hero: React.FC = () => {
   const { toggleWishlist, isInWishlist } = useApp();
   const [isPaused, setIsPaused] = useState(false);
 
-  // Curated editorial showcase using actual AADHYA Fashion products
-  const editorialCards: HeroCardItem[] = [
+  // Curated initial cards with fallback support
+  const initialCards: HeroCardItem[] = [
     {
       id: 'f-prod-1',
       slug: 'f-prod-1',
@@ -95,8 +95,46 @@ export const Hero: React.FC = () => {
     }
   ];
 
+  const [cards, setCards] = useState<HeroCardItem[]>(initialCards);
+
+  // Dynamically load active Hero products from database
+  useEffect(() => {
+    fetch('/api/products?is_hero=true&department=fashion')
+      .then(res => res.json())
+      .then(result => {
+        const items = result?.data || [];
+        if (Array.isArray(items) && items.length > 0) {
+          const dynamicCards: HeroCardItem[] = items.map((p: any, idx: number) => {
+            const fallback = initialCards[idx % initialCards.length];
+            const primaryMedia = p.product_media?.find((m: any) => m.is_primary)?.media_url 
+              || p.product_media?.[0]?.media_url 
+              || fallback.image;
+            
+            return {
+              id: p.id,
+              slug: p.slug || p.product_no || p.id,
+              name: p.name,
+              productNo: p.product_no || fallback.productNo,
+              price: Number(p.base_price) || fallback.price,
+              mrp: Number(p.base_mrp) || fallback.mrp,
+              editorialTitle: fallback.editorialTitle,
+              editorialScript: fallback.editorialScript,
+              editorialSubtitle: fallback.editorialSubtitle,
+              editorialAccent: fallback.editorialAccent,
+              image: primaryMedia,
+              insetPhoto: fallback.insetPhoto
+            };
+          });
+          setCards(dynamicCards);
+        }
+      })
+      .catch(err => {
+        console.warn('Hero dynamic fetch notice, using fallback editorial set:', err);
+      });
+  }, []);
+
   // Triplicate array to guarantee continuous, infinite, gap-free carousel motion
-  const carouselItems = [...editorialCards, ...editorialCards, ...editorialCards];
+  const carouselItems = [...cards, ...cards, ...cards];
 
   const formatPrice = (val: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -187,8 +225,23 @@ export const Hero: React.FC = () => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const prod = PRODUCTS.find((p) => p.id === card.id);
-                    if (prod) toggleWishlist(prod);
+                    const prod = PRODUCTS.find((p) => p.id === card.id) || {
+                      id: card.id,
+                      name: card.name,
+                      productNo: card.productNo,
+                      department: 'fashion',
+                      price: card.price,
+                      mrp: card.mrp,
+                      discount: Math.round(((card.mrp - card.price) / card.mrp) * 100),
+                      description: '',
+                      category: 'Fashion',
+                      image: card.image,
+                      images: [card.image],
+                      rating: 4.8,
+                      reviewsCount: 15,
+                      isBestseller: true
+                    };
+                    toggleWishlist(prod as any);
                   }}
                   aria-label="Add to wishlist"
                   className="absolute top-5 right-5 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md border border-white/30 flex items-center justify-center transition-all text-white"

@@ -31,10 +31,75 @@ export default function NumismaticDetailPage({ params }: PageProps) {
   const { slug } = use(params);
   const { addToCart, toggleWishlist, isInWishlist } = useApp();
 
-  // Find product by slug name
-  const product = PRODUCTS.find(
-    (p) => p.name.toLowerCase().replace(/ /g, '-') === slug
+  const decodedSlug = decodeURIComponent(slug).trim();
+  const normalizedSlug = decodedSlug.toLowerCase().replace(/ /g, '-');
+
+  // Find product by id, productNo, slug, or name
+  const staticProduct = PRODUCTS.find((p) => 
+    p.id === slug ||
+    p.id === decodedSlug ||
+    p.productNo?.toLowerCase() === decodedSlug.toLowerCase() ||
+    (p as any).slug?.toLowerCase() === decodedSlug.toLowerCase() ||
+    (p as any).slug?.toLowerCase() === normalizedSlug ||
+    p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === normalizedSlug ||
+    p.name.toLowerCase().replace(/ /g, '-') === normalizedSlug ||
+    p.name.toLowerCase() === decodedSlug.toLowerCase()
   );
+
+  const [dbProduct, setDbProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(!staticProduct);
+
+  useEffect(() => {
+    if (!staticProduct) {
+      setIsLoading(true);
+      fetch(`/api/products/${slug}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.id) {
+            const mapped: Product = {
+              id: data.id,
+              name: data.name,
+              productNo: data.product_no,
+              department: (data.department || 'numismatics') as 'numismatics',
+              price: Number(data.base_price),
+              mrp: Number(data.base_mrp),
+              discount: data.base_discount || 0,
+              description: data.description || '',
+              category: data.category_name || 'Numismatics',
+              image: data.media?.[0]?.media_url || 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?q=80&w=800&auto=format&fit=crop',
+              images: data.media?.map((m: any) => m.media_url) || [],
+              rating: Number(data.avg_rating) || 4.9,
+              reviewsCount: data.reviews_count || 8,
+              isBestseller: data.is_bestseller,
+              returnPolicy: data.return_policy || 'Authenticity Guaranteed • 7 Days Returnable',
+              rarity: data.details?.rarity || 'Scarce',
+              era: data.details?.era || 'Historic',
+              year: data.details?.year || 'Circa 1900',
+              denomination: data.details?.denomination || 'Standard',
+              material: data.details?.material || 'Silver',
+              weight: data.details?.weight || '11.66g',
+              condition: data.details?.condition || 'UNC',
+              mint: data.details?.mint || 'Calcutta Mint',
+              shippingCharges: data.details?.shipping_charges || 'Free Insured Courier',
+              collectionLabel: data.details?.collection_label || 'Numismatic Archive'
+            };
+            setDbProduct(mapped);
+          }
+        })
+        .catch(err => console.error('Failed to fetch numismatics item from DB:', err))
+        .finally(() => setIsLoading(false));
+    }
+  }, [slug, staticProduct]);
+
+  const product = staticProduct || dbProduct;
+
+  const handleBackNavigation = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/numismatics#categories');
+    }
+  };
 
   // Two-way Route Safeguard: If a fashion product is accessed here, redirect to fashion PDP
   useEffect(() => {
@@ -152,13 +217,13 @@ export default function NumismaticDetailPage({ params }: PageProps) {
 
   if (!product) {
     return (
-      <div className="w-full min-h-screen flex flex-col items-center justify-center bg-brand-warmWhite text-brand-espresso p-6">
+      <div className="w-full min-h-screen bg-brand-warmWhite flex flex-col items-center justify-center text-brand-espresso p-6">
         <h2 className="font-display font-bold text-lg tracking-widest uppercase">COLLECTION ITEM NOT FOUND</h2>
         <button
-          onClick={() => router.push('/numismatics')}
-          className="mt-4 px-6 py-2.5 bg-[#F26A2E] text-white text-xs font-bold tracking-widest uppercase rounded-lg cursor-pointer"
+          onClick={handleBackNavigation}
+          className="mt-4 px-6 py-2.5 bg-[#181818] text-[#EFE6DA] text-xs font-bold tracking-widest uppercase rounded-lg cursor-pointer hover:bg-[#333333] transition-colors"
         >
-          RETURN TO NUMISMATICS
+          RETURN TO PREVIOUS PAGE
         </button>
       </div>
     );
@@ -183,20 +248,20 @@ export default function NumismaticDetailPage({ params }: PageProps) {
   ).slice(0, 4);
 
   return (
-    <div className="w-full min-h-screen bg-brand-warmWhite py-12 px-4 md:px-12 lg:px-24 text-brand-espresso text-left select-none">
+    <div className="w-full min-h-screen bg-[#FAF7F2] py-12 px-4 md:px-12 lg:px-24 text-brand-espresso text-left select-none">
       <div className="max-w-6xl mx-auto space-y-12">
         
         {/* Back navigation */}
         <div className="flex items-center justify-between border-b border-brand-border/40 pb-4">
           <button
-            onClick={() => router.push('/numismatics')}
-            className="flex items-center gap-1.5 text-xs font-bold tracking-widest text-brand-warmGray hover:text-[#F26A2E] transition-colors cursor-pointer"
+            onClick={handleBackNavigation}
+            className="flex items-center gap-1.5 text-xs font-bold tracking-widest text-[#7A6B5C] hover:text-[#181818] transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>BACK TO NUMISMATICS GALLERY</span>
+            <span>BACK TO COLLECTION</span>
           </button>
-          <span className="text-[10px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase">
-            AADHYA {product.department.toUpperCase()}
+          <span className="text-[10px] text-[#7A6B5C] font-extrabold tracking-[0.25em] uppercase font-serif">
+            AADHYA
           </span>
         </div>
 
@@ -317,7 +382,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
                     onClick={() => handleSelectThumbnail(idx)}
                     className={`w-12 h-12 rounded-xl border p-1 overflow-hidden transition-all cursor-pointer bg-white ${
                       activeImageIndex === idx 
-                        ? 'border-[#F26A2E] ring-2 ring-[#F26A2E]/30 scale-105 shadow-xs' 
+                        ? 'border-[#181818] ring-2 ring-[#181818]/30 scale-105 shadow-xs' 
                         : 'border-brand-border/40 opacity-70 hover:opacity-100 hover:border-brand-border'
                     }`}
                     aria-label={`View angle ${idx + 1}`}
@@ -337,7 +402,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
           <div className="md:col-span-6 space-y-6">
             
             <div className="space-y-2">
-              <span className="text-[10px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase block">
+              <span className="text-[10px] text-[#181818] font-extrabold tracking-[0.25em] uppercase block">
                 {product.category}
               </span>
               <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-brand-espresso leading-tight uppercase">
@@ -352,7 +417,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
                 <span className="text-base text-brand-warmGray line-through font-semibold">
                   ₹{product.mrp.toLocaleString('en-IN')}
                 </span>
-                <span className="text-[10px] bg-[#F26A2E]/10 text-[#F26A2E] font-extrabold px-2.5 py-0.5 rounded">
+                <span className="text-[10px] bg-[#181818]/10 text-[#181818] font-extrabold px-2.5 py-0.5 rounded">
                   SAVE {product.discount}%
                 </span>
               </div>
@@ -375,7 +440,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
               </div>
               <div>
                 <span className="text-brand-warmGray block uppercase">MATERIAL</span>
-                <span className="font-extrabold text-xs text-[#F26A2E]">{product.material || 'Silver'}</span>
+                <span className="font-extrabold text-xs text-[#181818]">{product.material || 'Silver'}</span>
               </div>
               <div>
                 <span className="text-brand-warmGray block uppercase">WEIGHT</span>
@@ -397,7 +462,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
                 onClick={handleAddToCart}
                 disabled={added}
                 className={`flex-grow py-4 px-6 rounded-2xl flex items-center justify-center gap-2 font-extrabold text-xs tracking-widest uppercase transition-all shadow-md cursor-pointer ${
-                  added ? 'bg-brand-success text-white' : 'bg-[#F26A2E] text-white hover:bg-[#E0591D]'
+                  added ? 'bg-brand-success text-white' : 'bg-[#181818] text-white hover:bg-[#E0591D]'
                 }`}
               >
                 {added ? (
@@ -414,7 +479,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
                 onClick={() => toggleWishlist(product)}
                 className={`p-4 rounded-2xl border transition-all flex items-center justify-center cursor-pointer shadow-xs ${
                   inWishlist
-                    ? 'bg-[#F26A2E] border-[#F26A2E] text-white'
+                    ? 'bg-[#181818] border-[#181818] text-white'
                     : 'bg-brand-white border-brand-border hover:bg-brand-softBeige/40 text-brand-warmGray'
                 }`}
                 aria-label="Add to Wishlist"
@@ -435,13 +500,13 @@ export default function NumismaticDetailPage({ params }: PageProps) {
             className="w-full p-6 md:p-8 flex items-center justify-between hover:bg-[#FAF8F5] transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full bg-[#F26A2E]" />
+              <span className="w-2 h-2 rounded-full bg-[#181818]" />
               <h3 className="font-display font-bold text-base md:text-lg tracking-wider text-brand-espresso uppercase">
                 SEE MORE DETAILS
               </h3>
             </div>
 
-            <div className="flex items-center gap-2 text-xs font-bold text-[#F26A2E] uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#181818] uppercase tracking-wider">
               <span>{isDetailsExpanded ? 'Hide Specifications' : 'View Full Specifications'}</span>
               {isDetailsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </div>
@@ -476,7 +541,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
 
                       <div className="space-y-1">
                         <span className="text-[10px] text-brand-warmGray font-bold uppercase tracking-wider block">Material:</span>
-                        <span className="font-extrabold text-[#F26A2E]">{product.material || 'Silver'}</span>
+                        <span className="font-extrabold text-[#181818]">{product.material || 'Silver'}</span>
                       </div>
 
                       <div className="space-y-1">
@@ -515,7 +580,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-brand-border/30">
                     <div className="bg-white p-5 rounded-2xl border border-brand-border/40 space-y-2">
                       <div className="flex items-center gap-2">
-                        <Award className="w-4 h-4 text-[#F26A2E]" />
+                        <Award className="w-4 h-4 text-[#181818]" />
                         <span className="text-[10px] text-brand-warmGray font-extrabold tracking-wider uppercase">
                           Authenticity & Certification:
                         </span>
@@ -527,7 +592,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
 
                     <div className="bg-white p-5 rounded-2xl border border-brand-border/40 space-y-2">
                       <div className="flex items-center gap-2">
-                        <RotateCcw className="w-4 h-4 text-[#F26A2E]" />
+                        <RotateCcw className="w-4 h-4 text-[#181818]" />
                         <span className="text-[10px] text-brand-warmGray font-extrabold tracking-wider uppercase">
                           Return Policy:
                         </span>
@@ -628,7 +693,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
            ================================================== */}
         <div className="pt-8 border-t border-brand-border/40 space-y-6">
           <div className="text-left space-y-1">
-            <span className="text-[10px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase block">
+            <span className="text-[10px] text-[#181818] font-extrabold tracking-[0.25em] uppercase block">
               CURATED RECOMMENDATIONS
             </span>
             <h2 className="font-display font-bold text-2xl md:text-3xl text-brand-espresso tracking-tight uppercase">
@@ -654,8 +719,8 @@ export default function NumismaticDetailPage({ params }: PageProps) {
                   </div>
                 </div>
                 <div>
-                  <span className="text-[8px] font-bold text-[#F26A2E] tracking-widest uppercase block">{rel.mint || 'Mumbai Mint'}</span>
-                  <h3 className="font-display font-bold text-xs text-brand-espresso group-hover:text-[#F26A2E] transition-colors line-clamp-1">
+                  <span className="text-[8px] font-bold text-[#181818] tracking-widest uppercase block">{rel.mint || 'Mumbai Mint'}</span>
+                  <h3 className="font-display font-bold text-xs text-brand-espresso group-hover:text-[#181818] transition-colors line-clamp-1">
                     {rel.name}
                   </h3>
                   <span className="font-sans font-extrabold text-xs text-brand-espresso block pt-1">₹{rel.price.toLocaleString('en-IN')}</span>

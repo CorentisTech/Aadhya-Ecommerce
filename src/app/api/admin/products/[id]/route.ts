@@ -83,6 +83,8 @@ export async function PUT(
       base_mrp,
       base_discount,
       is_bestseller,
+      is_hero,
+      hero_order,
       description,
       return_policy,
       is_active,
@@ -102,11 +104,13 @@ export async function PUT(
         base_mrp = COALESCE($4, base_mrp),
         base_discount = COALESCE($5, base_discount),
         is_bestseller = COALESCE($6, is_bestseller),
-        description = COALESCE($7, description),
-        return_policy = COALESCE($8, return_policy),
-        is_active = COALESCE($9, is_active),
+        is_hero = COALESCE($7, is_hero),
+        hero_order = COALESCE($8, hero_order),
+        description = COALESCE($9, description),
+        return_policy = COALESCE($10, return_policy),
+        is_active = COALESCE($11, is_active),
         updated_at = NOW()
-      WHERE id = $10
+      WHERE id = $12 OR product_no = $12
     `, [
       name,
       category_id,
@@ -114,6 +118,8 @@ export async function PUT(
       base_mrp,
       base_discount,
       is_bestseller,
+      is_hero !== undefined ? is_hero : null,
+      hero_order !== undefined ? hero_order : null,
       description,
       return_policy,
       is_active,
@@ -135,7 +141,7 @@ export async function PUT(
           fit = COALESCE($8, fit),
           model_info = COALESCE($9, model_info),
           return_time = COALESCE($10, return_time)
-        WHERE product_id = $11
+        WHERE product_id = (SELECT id FROM products WHERE id = $11 OR product_no = $11 LIMIT 1)
       `, [
         fashion_details.fabric,
         fashion_details.pattern,
@@ -163,7 +169,7 @@ export async function PUT(
           mint = COALESCE($8, mint),
           shipping_charges = COALESCE($9, shipping_charges),
           collection_label = COALESCE($10, collection_label)
-        WHERE product_id = $11
+        WHERE product_id = (SELECT id FROM products WHERE id = $11 OR product_no = $11 LIMIT 1)
       `, [
         numismatic_details.rarity,
         numismatic_details.era,

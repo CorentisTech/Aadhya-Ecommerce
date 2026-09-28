@@ -23,12 +23,19 @@ export interface Product {
   description: string;
   image: string; // Used for standard thumbnail/image panels
   images?: string[]; // Multiple product images
-  visualType: 'saree' | 'dress' | 'bodycon' | 'ethnic' | 'blouse' | 'kurti' | 'lehenga' | 'coin' | 'note'; // For premium vector rendering
+  visualType?: 'saree' | 'dress' | 'bodycon' | 'ethnic' | 'blouse' | 'kurti' | 'lehenga' | 'coin' | 'note'; // For premium vector rendering
   visualColor?: string; // Hex color for the SVG garment/coin path
   visualPattern?: 'gold-brocade' | 'floral-embroidery' | 'silk-sheen' | 'plain' | 'antique-metallic' | 'currency-green' | 'rupee-blue';
   colors?: string[];
   sizes?: string[];
+  badge?: string;
+  tags?: string[];
+  inStock?: boolean;
   bestseller?: boolean;
+  isBestseller?: boolean;
+  isHero?: boolean;
+  heroOrder?: number;
+  slug?: string;
   department: 'fashion' | 'numismatics';
   
   // Fashion Specific Attributes

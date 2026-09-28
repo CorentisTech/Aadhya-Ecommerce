@@ -1,100 +1,63 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { queryDb } from '@/utils/db';
 
 export async function GET(request: Request) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { data, error } = await supabase
-    .from('orders')
-    .select(`
-      id, order_number, status, subtotal, shipping_cost, discount_amount, total_amount, created_at,
-      order_items (
-        id, quantity, unit_price, selected_size, selected_color,
-        products ( id, name, image_url )
-      )
-    `)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-
-  if (error) return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
-
-  return NextResponse.json(data);
-}
-
-export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // In a real application, you would:
-  // 1. Fetch the user's cart from the DB
-  // 2. Validate stock for each item using the reserve_stock RPC
-  // 3. Create the order & order_items
-  // 4. Clear the cart
-  // 5. Integrate with a payment gateway (e.g. Razorpay/Stripe)
-
-  const body = await request.json();
-  const { addressId, paymentMethod } = body;
-
   try {
-    // Basic implementation outline
-    const { data: cart } = await supabase.from('carts').select('id').eq('user_id', user.id).single();
-    if (!cart) return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    const { data: cartItems } = await supabase.from('cart_items').select('*, products(*), product_variants(*)').eq('cart_id', cart.id);
-    if (!cartItems || cartItems.length === 0) return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized. Authentication required.' }, { status: 401 });
+    }
 
-    let subtotal = 0;
-    cartItems.forEach(item => {
-       const price = item.product_variants?.price || item.products.base_price;
-       subtotal += (price * item.quantity);
-    });
-    
-    const shipping_cost = subtotal >= 5000 ? 0 : 150;
-    const discount_amount = subtotal * 0.1; // Example 10% discount
-    const total_amount = subtotal + shipping_cost - discount_amount;
+    const orders = await queryDb(
+      `SELECT 
+        o.id,
+        o.order_number,
+        o.status,
+        o.subtotal,
+        o.shipping_cost,
+        o.discount_amount,
+        o.total_amount,
+        o.payment_method,
+        o.payment_status,
+        o.courier,
+        o.tracking_number,
+        o.tracking_url,
+        o.created_at,
+        o.updated_at,
+        (
+          SELECT json_agg(json_build_object(
+            'id', oi.id,
+            'quantity', oi.quantity,
+            'unit_price', oi.unit_price,
+            'selected_size', oi.selected_size,
+            'selected_color', oi.selected_color,
+            'product_name', p.name,
+            'product_no', p.product_no,
+            'product_slug', p.slug,
+            'product_image', (
+              SELECT pm.media_url 
+              FROM product_media pm 
+              WHERE pm.product_id = p.id 
+              ORDER BY pm.is_primary DESC, pm.sort_order ASC 
+              LIMIT 1
+            )
+          ))
+          FROM order_items oi
+          JOIN products p ON oi.product_id = p.id
+          WHERE oi.order_id = o.id
+        ) AS items
+       FROM orders o
+       WHERE o.user_id = $1
+       ORDER BY o.created_at DESC`,
+      [user.id]
+    );
 
-    // Create Order
-    const { data: order, error: orderError } = await supabase.from('orders').insert({
-      order_number: 'AD-' + Math.floor(Math.random() * 100000),
-      user_id: user.id,
-      shipping_address_id: addressId,
-      subtotal,
-      shipping_cost,
-      discount_amount,
-      total_amount,
-      payment_method: paymentMethod || 'COD'
-    }).select().single();
-
-    if (orderError) throw orderError;
-
-    // Create Order Items
-    const orderItemsToInsert = cartItems.map(item => ({
-      order_id: order.id,
-      product_id: item.product_id,
-      variant_id: item.variant_id,
-      quantity: item.quantity,
-      unit_price: item.product_variants?.price || item.products.base_price,
-      selected_size: item.selected_size,
-      selected_color: item.selected_color
-    }));
-
-    const { error: itemsError } = await supabase.from('order_items').insert(orderItemsToInsert);
-    if (itemsError) throw itemsError;
-
-    // Clear cart
-    await supabase.from('cart_items').delete().eq('cart_id', cart.id);
-
-    return NextResponse.json({ success: true, orderId: order.id });
-
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
+    return NextResponse.json(orders);
+  } catch (error: any) {
+    console.error('Orders GET error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -28,35 +28,9 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
   const [isZoomed, setIsZoomed] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isHoldingRef = useRef(false);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
 
-  const startHold = (e: React.SyntheticEvent) => {
-    isHoldingRef.current = false;
-    if (timerRef.current) clearTimeout(timerRef.current);
-    
-    timerRef.current = setTimeout(() => {
-      isHoldingRef.current = true;
-      setIsZoomed(true);
-    }, 180);
-  };
-
-  const endHold = (e: React.MouseEvent | React.TouchEvent) => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    
-    if (isZoomed) {
-      setIsZoomed(false);
-      // Suppress click trigger if user was holding to zoom
-      e.stopPropagation();
-    } else if (!isHoldingRef.current && onClick) {
-      // Execute normal tap/click if released quickly
-      onClick(e as React.MouseEvent);
-    }
-    
-    isHoldingRef.current = false;
-  };
-
+  // Strict scale reset whenever image source changes (thumbnail switch, swipe, arrow)
   useEffect(() => {
     setIsZoomed(false);
     if (timerRef.current) {
@@ -64,11 +38,72 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
       timerRef.current = null;
     }
     isHoldingRef.current = false;
+    touchStartPos.current = null;
   }, [src]);
+
+  const cancelTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const startHold = (e: React.MouseEvent | React.TouchEvent) => {
+    cancelTimer();
+    isHoldingRef.current = false;
+
+    if ('touches' in e && e.touches.length > 0) {
+      touchStartPos.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY
+      };
+    } else {
+      touchStartPos.current = null;
+    }
+
+    // Require deliberate intentional hold (280ms)
+    timerRef.current = setTimeout(() => {
+      isHoldingRef.current = true;
+      setIsZoomed(true);
+    }, 280);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStartPos.current) return;
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const diffX = Math.abs(currentX - touchStartPos.current.x);
+    const diffY = Math.abs(currentY - touchStartPos.current.y);
+
+    // If movement is detected (swiping or scrolling), immediately cancel hold zoom
+    if (diffX > 8 || diffY > 8) {
+      cancelTimer();
+      if (isZoomed) {
+        setIsZoomed(false);
+      }
+      isHoldingRef.current = false;
+    }
+  };
+
+  const endHold = (e: React.MouseEvent | React.TouchEvent) => {
+    cancelTimer();
+
+    if (isZoomed) {
+      setIsZoomed(false);
+      // Suppress normal click if user was holding to zoom
+      e.stopPropagation();
+    } else if (!isHoldingRef.current && onClick) {
+      // Normal click / quick tap
+      onClick(e as React.MouseEvent);
+    }
+
+    isHoldingRef.current = false;
+    touchStartPos.current = null;
+  };
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      cancelTimer();
     };
   }, []);
 
@@ -81,6 +116,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = ({
         onMouseUp={endHold}
         onMouseLeave={endHold}
         onTouchStart={startHold}
+        onTouchMove={handleTouchMove}
         onTouchEnd={endHold}
         onTouchCancel={endHold}
       >

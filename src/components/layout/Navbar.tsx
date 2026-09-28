@@ -123,46 +123,41 @@ export const Navbar: React.FC = () => {
   return (
     <>
       {/* 1. Top Announcement Bar (Reference 1 Inspiration: Thin Black Bar with Centered Offers) */}
-      {!isNumis && (
-        <div className="w-full bg-[#111111] text-[#EFE6DA] py-2 px-4 flex items-center justify-between text-[11px] font-medium tracking-widest uppercase select-none z-50 relative border-b border-black/20">
-          <button 
-            onClick={() => setAnnouncementIdx((prev) => (prev - 1 + announcements.length) % announcements.length)}
-            className="p-0.5 text-[#EFE6DA]/60 hover:text-white transition-colors"
-            aria-label="Previous announcement"
+      {/* 1. Top Announcement Bar */}
+      <div className="w-full bg-[#111111] text-[#EFE6DA] py-2 px-4 flex items-center justify-between text-[11px] font-medium tracking-widest uppercase select-none z-50 relative border-b border-black/20">
+        <button 
+          onClick={() => setAnnouncementIdx((prev) => (prev - 1 + announcements.length) % announcements.length)}
+          className="p-0.5 text-[#EFE6DA]/60 hover:text-white transition-colors"
+          aria-label="Previous announcement"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+        </button>
+        
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={announcementIdx}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.25 }}
+            className="text-center font-sans tracking-[0.16em] text-[10px] sm:text-[11px] font-semibold text-[#F4ECE1]"
           >
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-          
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={announcementIdx}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.25 }}
-              className="text-center font-sans tracking-[0.16em] text-[10px] sm:text-[11px] font-semibold text-[#F4ECE1]"
-            >
-              {announcements[announcementIdx]}
-            </motion.span>
-          </AnimatePresence>
+            {announcements[announcementIdx]}
+          </motion.span>
+        </AnimatePresence>
 
-          <button 
-            onClick={() => setAnnouncementIdx((prev) => (prev + 1) % announcements.length)}
-            className="p-0.5 text-[#EFE6DA]/60 hover:text-white transition-colors"
-            aria-label="Next announcement"
-          >
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
+        <button 
+          onClick={() => setAnnouncementIdx((prev) => (prev + 1) % announcements.length)}
+          className="p-0.5 text-[#EFE6DA]/60 hover:text-white transition-colors"
+          aria-label="Next announcement"
+        >
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
 
-      {/* 2. Main Luxury Header (Saayra Inspired: Warm Beige #EFE6DA, Centered AADHYA Branding) */}
+      {/* 2. Main Luxury Header: Warm Beige #EFE6DA, Centered AADHYA Branding */}
       <header 
-        className={`sticky top-0 z-40 w-full max-w-full transition-colors duration-200 select-none ${
-          isNumis 
-            ? 'h-[68px] bg-[#FCFAF7]/95 backdrop-blur-[14px] border-b border-[#E8E1DA] px-3 sm:px-6 md:px-12 flex items-center justify-between'
-            : 'h-[76px] sm:h-[84px] bg-[#EFE6DA] border-b border-[#E5DACB] px-4 sm:px-8 md:px-12 flex items-center justify-between'
-        }`}
+        className="sticky top-0 z-40 w-full max-w-full transition-colors duration-200 select-none h-[76px] sm:h-[84px] bg-[#EFE6DA] border-b border-[#E5DACB] px-4 sm:px-8 md:px-12 flex items-center justify-between"
       >
         {/* LEFT: Hamburger menu + Desktop Navigation Links */}
         <div className="flex items-center space-x-4 sm:space-x-8 flex-1 justify-start">
@@ -175,52 +170,55 @@ export const Navbar: React.FC = () => {
             <Menu className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
           </button>
 
-          {/* Minimal Desktop Nav Links (Reference 1: Home, Kurta Sets, New Arrivals) */}
-          {!isNumis && (
-            <nav className="hidden lg:flex items-center space-x-7 text-xs font-semibold tracking-wider text-[#181818]">
-              <button
-                onClick={() => {
+          {/* Minimal Desktop Nav Links */}
+          <nav className="hidden lg:flex items-center space-x-7 text-xs font-semibold tracking-wider text-[#181818]">
+            <button
+              onClick={() => {
+                if (isNumis) {
+                  if (pathname === '/numismatics') window.scrollTo({ top: 0, behavior: 'smooth' });
+                  else router.push('/numismatics');
+                } else {
                   if (pathname === '/') window.scrollTo({ top: 0, behavior: 'smooth' });
                   else router.push('/');
-                }}
-                className={`py-1 border-b transition-colors ${
-                  pathname === '/' ? 'border-[#181818] font-bold' : 'border-transparent text-[#444444] hover:text-[#181818]'
-                }`}
-              >
-                Home
-              </button>
-              <button
-                onClick={() => router.push('/catalog')}
-                className="py-1 border-b border-transparent text-[#444444] hover:text-[#181818] transition-colors"
-              >
-                Catalog
-              </button>
-              <button
-                onClick={() => handleNavClick('new-arrivals')}
-                className="py-1 border-b border-transparent text-[#444444] hover:text-[#181818] transition-colors"
-              >
-                New Arrivals
-              </button>
-              <button
-                onClick={() => handleNavClick('categories')}
-                className="py-1 border-b border-transparent text-[#444444] hover:text-[#181818] transition-colors"
-              >
-                Categories
-              </button>
-            </nav>
-          )}
-
-          {isNumis && (
-            <button
-              onClick={() => router.push('/numismatics')}
-              className="font-display text-lg font-bold tracking-[0.2em] text-[#181818]"
+                }
+              }}
+              className={`py-1 border-b transition-colors ${
+                (isNumis ? pathname === '/numismatics' : pathname === '/') ? 'border-[#181818] font-bold' : 'border-transparent text-[#444444] hover:text-[#181818]'
+              }`}
             >
-              AADHYA HERITAGE
+              Home
             </button>
-          )}
+            <button
+              onClick={() => {
+                if (isNumis) router.push('/numismatics#categories');
+                else router.push('/catalog');
+              }}
+              className="py-1 border-b border-transparent text-[#444444] hover:text-[#181818] transition-colors"
+            >
+              {isNumis ? 'Collectibles' : 'Catalog'}
+            </button>
+            <button
+              onClick={() => handleNavClick('bestsellers')}
+              className="py-1 border-b border-transparent text-[#444444] hover:text-[#181818] transition-colors"
+            >
+              Best Sellers
+            </button>
+            <button
+              onClick={() => handleNavClick('new-arrivals')}
+              className="py-1 border-b border-transparent text-[#444444] hover:text-[#181818] transition-colors"
+            >
+              New Arrivals
+            </button>
+            <button
+              onClick={() => handleNavClick('categories')}
+              className="py-1 border-b border-transparent text-[#444444] hover:text-[#181818] transition-colors"
+            >
+              Categories
+            </button>
+          </nav>
         </div>
 
-        {/* CENTER: Strong Centered AADHYA Branding with Soft Blush/Ivory Aura */}
+        {/* CENTER: Strong Centered AADHYA Branding */}
         <div className="flex flex-col items-center justify-center flex-shrink-0 relative">
           <button
             onClick={() => {
@@ -235,15 +233,12 @@ export const Navbar: React.FC = () => {
             }}
             className="group relative flex flex-col items-center justify-center focus:outline-none"
           >
-            {/* Soft blush halo matching Reference 1 aesthetic */}
+            {/* Soft blush halo */}
             <div className="absolute w-24 sm:w-28 h-10 sm:h-12 bg-[#E5D7C7]/80 rounded-full blur-xs pointer-events-none -z-0" />
             
             <div className="relative z-10 flex flex-col items-center">
               <span className="font-serif font-black text-2xl sm:text-3xl md:text-4xl tracking-[0.26em] text-[#181818] group-hover:opacity-90 transition-opacity uppercase leading-none">
                 AADHYA
-              </span>
-              <span className="text-[8px] sm:text-[9px] font-sans font-bold tracking-[0.38em] text-[#7A6B5C] uppercase mt-1">
-                FASHION ATELIER
               </span>
             </div>
           </button>
@@ -347,7 +342,6 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center justify-between border-b border-[#E5DACB] pb-4">
                 <div className="flex flex-col">
                   <span className="font-serif font-black tracking-[0.2em] text-[#181818] text-base">AADHYA</span>
-                  <span className="text-[8px] tracking-[0.25em] text-[#7A6B5C] font-semibold uppercase">Luxury Atelier</span>
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}

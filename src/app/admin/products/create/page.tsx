@@ -37,6 +37,8 @@ function CreateProductContent() {
   const [baseMrp, setBaseMrp] = useState<number | ''>('');
   const [baseDiscount, setBaseDiscount] = useState<number | ''>('');
   const [isBestseller, setIsBestseller] = useState(false);
+  const [isHero, setIsHero] = useState(false);
+  const [heroOrder, setHeroOrder] = useState<number>(0);
   const [returnPolicy, setReturnPolicy] = useState('7-day replacement or return for eligible items');
   const [mainImageUrl, setMainImageUrl] = useState('');
 
@@ -156,6 +158,8 @@ function CreateProductContent() {
         base_mrp: Number(baseMrp || basePrice),
         base_discount: Number(baseDiscount || 0),
         is_bestseller: isBestseller,
+        is_hero: isHero,
+        hero_order: Number(heroOrder) || 0,
         return_policy: returnPolicy,
         media: mainImageUrl.trim() ? [{ media_url: mainImageUrl.trim(), is_primary: true }] : []
       };
@@ -453,17 +457,46 @@ function CreateProductContent() {
           </div>
         </div>
 
-        <div className="flex items-center space-x-3 pt-2">
-          <input
-            type="checkbox"
-            id="bestseller"
-            checked={isBestseller}
-            onChange={(e) => setIsBestseller(e.target.checked)}
-            className="w-4 h-4 text-[#cca05b] rounded focus:ring-[#cca05b]"
-          />
-          <label htmlFor="bestseller" className="text-xs font-bold text-gray-800">
-            Feature in "Best Sellers" hero showcase
-          </label>
+        <div className="flex flex-wrap items-center gap-6 pt-2">
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="bestseller"
+              checked={isBestseller}
+              onChange={(e) => setIsBestseller(e.target.checked)}
+              className="w-4 h-4 text-[#cca05b] rounded focus:ring-[#cca05b]"
+            />
+            <label htmlFor="bestseller" className="text-xs font-bold text-gray-800 cursor-pointer">
+              Feature in "Best Sellers" showcase
+            </label>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="hero"
+              checked={isHero}
+              onChange={(e) => setIsHero(e.target.checked)}
+              className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+            />
+            <label htmlFor="hero" className="text-xs font-bold text-purple-900 cursor-pointer">
+              Feature on Homepage Hero Carousel
+            </label>
+          </div>
+
+          {isHero && (
+            <div className="flex items-center space-x-2 text-xs font-bold text-gray-800 bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-200">
+              <label className="text-[11px] font-bold text-purple-900 uppercase">Hero Display Order:</label>
+              <input
+                type="number"
+                min={0}
+                max={99}
+                value={heroOrder}
+                onChange={(e) => setHeroOrder(parseInt(e.target.value, 10) || 0)}
+                className="w-14 bg-white border border-purple-300 px-2 py-1 rounded-lg text-xs font-bold text-center text-purple-950 focus:outline-none focus:border-purple-600"
+              />
+            </div>
+          )}
         </div>
       </div>
 

@@ -64,6 +64,8 @@ export async function GET(request: Request) {
         p.base_mrp,
         p.base_discount,
         p.is_bestseller,
+        p.is_hero,
+        p.hero_order,
         p.avg_rating,
         p.reviews_count,
         p.is_active,
@@ -167,6 +169,8 @@ export async function POST(request: Request) {
       base_mrp,
       base_discount,
       is_bestseller = false,
+      is_hero = false,
+      hero_order = 0,
       return_policy,
       visual_type,
       visual_color,
@@ -193,9 +197,9 @@ export async function POST(request: Request) {
     const insertProductSql = `
       INSERT INTO products (
         id, product_no, name, slug, category_id, department, description,
-        base_price, base_mrp, base_discount, is_bestseller, return_policy,
+        base_price, base_mrp, base_discount, is_bestseller, is_hero, hero_order, return_policy,
         visual_type, visual_color, visual_pattern, is_active
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, true)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, true)
       RETURNING *
     `;
     const productResult = await client.query(insertProductSql, [
@@ -210,6 +214,8 @@ export async function POST(request: Request) {
       base_mrp || base_price,
       base_discount || 0,
       Boolean(is_bestseller),
+      Boolean(is_hero),
+      parseInt(hero_order || 0, 10),
       return_policy || '',
       visual_type || (department === 'fashion' ? 'dress' : 'coin'),
       visual_color || '',
