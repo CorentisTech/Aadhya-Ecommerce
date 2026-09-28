@@ -125,10 +125,10 @@ export const Reviews: React.FC = () => {
         {/* Header Block */}
         <div className="flex flex-col sm:flex-row items-baseline justify-between border-b border-brand-border pb-4 gap-4">
           <div className="space-y-1 text-left">
-            <span className="text-xs sm:text-sm text-[#F26A2E] font-extrabold tracking-[0.2em] uppercase">
+            <span className="text-xs sm:text-sm text-[#7A6B5C] font-bold tracking-[0.25em] uppercase">
               TESTIMONIALS
             </span>
-            <h2 className="font-display font-bold text-3xl md:text-5xl text-brand-espresso uppercase tracking-wider">
+            <h2 className="font-serif font-bold text-3xl md:text-5xl text-[#181818] uppercase tracking-wider">
               LOVED BY OUR CUSTOMERS
             </h2>
             <p className="font-display italic text-brand-warmGray text-xs">

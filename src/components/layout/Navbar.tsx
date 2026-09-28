@@ -14,8 +14,9 @@ import {
   Compass,
   Grid,
   Info,
-  Package,
-  HelpCircle
+  ChevronLeft,
+  ChevronRight,
+  Menu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, usePathname } from 'next/navigation';
@@ -37,9 +38,23 @@ export const Navbar: React.FC = () => {
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [numismaticsHovered, setNumismaticsHovered] = useState(false);
+  const [announcementIdx, setAnnouncementIdx] = useState(0);
 
-  // Monitor scroll height to trigger background blur
+  const announcements = [
+    "Free Shipping On Orders Above ₹2,999",
+    "Handcrafted Pure Silks & Breathable Cottons",
+    "Easy 7-Day Returns & Exchanges Across India"
+  ];
+
+  // Rotate announcement bar every 5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setAnnouncementIdx((prev) => (prev + 1) % announcements.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [announcements.length]);
+
+  // Monitor scroll height
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -70,278 +85,236 @@ export const Navbar: React.FC = () => {
     setSidebarOpen(false);
 
     if (isNumis) {
-      // WHEN IN NUMISMATICS: Navigate ONLY within Numismatics!
       if (sectionId === 'categories') {
-        if (pathname !== '/numismatics') {
-          router.push('/numismatics#categories');
-        } else {
-          const el = document.getElementById('categories');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }
+        if (pathname !== '/numismatics') router.push('/numismatics#categories');
+        else document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' });
         return;
       }
-
       if (sectionId === 'bestsellers') {
-        if (pathname !== '/numismatics') {
-          router.push('/numismatics#best-sellers');
-        } else {
-          const el = document.getElementById('best-sellers');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }
+        if (pathname !== '/numismatics') router.push('/numismatics#best-sellers');
+        else document.getElementById('best-sellers')?.scrollIntoView({ behavior: 'smooth' });
         return;
       }
-
       if (sectionId === 'new-arrivals') {
-        if (pathname !== '/numismatics') {
-          router.push('/numismatics#new-arrivals');
-        } else {
-          const el = document.getElementById('new-arrivals');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }
+        if (pathname !== '/numismatics') router.push('/numismatics#new-arrivals');
+        else document.getElementById('new-arrivals')?.scrollIntoView({ behavior: 'smooth' });
         return;
       }
-
-      if (sectionId === 'about') {
-        if (pathname !== '/numismatics') {
-          router.push('/numismatics#explore-products');
-        } else {
-          const el = document.getElementById('explore-products');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }
-        return;
-      }
-
-      // Default Numismatics fallback
-      router.push('/numismatics');
       return;
     }
 
-    // WHEN IN FASHION: Navigate ONLY within Fashion!
     if (sectionId === 'categories') {
-      router.push('/catalog?department=fashion');
-      return;
+      if (pathname !== '/') router.push('/#categories');
+      else document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' });
+    } else if (sectionId === 'bestsellers') {
+      if (pathname !== '/') router.push('/#bestsellers');
+      else document.getElementById('bestsellers')?.scrollIntoView({ behavior: 'smooth' });
+    } else if (sectionId === 'new-arrivals') {
+      if (pathname !== '/') router.push('/#new-arrivals');
+      else document.getElementById('new-arrivals')?.scrollIntoView({ behavior: 'smooth' });
     }
-
-    setPage('home');
-    if (pathname !== '/') {
-      router.push('/');
-    }
-    setTimeout(() => {
-      const el = document.getElementById(sectionId);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 120);
   };
 
-  // Stagger variants for sidebar links
   const sidebarVariants = {
-    closed: { 
-      x: '-100%', 
-      transition: { type: 'spring', damping: 26, stiffness: 220 } 
-    },
-    open: { 
-      x: 0, 
-      transition: { type: 'spring', damping: 26, stiffness: 220 } 
-    }
-  };
-
-  const listVariants = {
-    closed: {},
-    open: {
-      transition: { staggerChildren: 0.05 }
-    }
-  };
-
-  const itemVariants = {
-    closed: { opacity: 0, x: -15 },
-    open: { opacity: 1, x: 0, transition: { duration: 0.35, ease: 'easeOut' } }
+    closed: { x: '-100%', transition: { type: 'spring', damping: 25, stiffness: 220 } },
+    open: { x: '0%', transition: { type: 'spring', damping: 25, stiffness: 220 } }
   };
 
   return (
     <>
-      {/* Navbar Container - Fixed Height (68px) and Constant Spacing */}
-      <header 
-        className="sticky top-0 z-40 w-full max-w-full h-[68px] bg-[#FCFAF7]/94 backdrop-blur-[14px] border-b border-[#E8E1DA] px-3 sm:px-6 md:px-12 flex items-center justify-between box-border overflow-hidden"
-      >
-        {/* Left: Splitting Burger Trigger + Brand Logo Wordmark */}
-        <div className="flex items-center space-x-2 sm:space-x-5">
-          {/* Framer Motion Morphing Burger Button */}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="flex flex-col justify-center items-center w-6 h-6 focus:outline-none relative z-50 cursor-pointer space-y-1"
-            aria-label="Toggle Navigation Drawer"
+      {/* 1. Top Announcement Bar (Reference 1 Inspiration: Thin Black Bar with Centered Offers) */}
+      {!isNumis && (
+        <div className="w-full bg-[#111111] text-[#EFE6DA] py-2 px-4 flex items-center justify-between text-[11px] font-medium tracking-widest uppercase select-none z-50 relative border-b border-black/20">
+          <button 
+            onClick={() => setAnnouncementIdx((prev) => (prev - 1 + announcements.length) % announcements.length)}
+            className="p-0.5 text-[#EFE6DA]/60 hover:text-white transition-colors"
+            aria-label="Previous announcement"
           >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          
+          <AnimatePresence mode="wait">
             <motion.span
-              animate={sidebarOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="w-5 h-0.5 bg-brand-espresso rounded-full block"
-            />
-            <motion.span
-              animate={sidebarOpen ? { opacity: 0, scale: 0 } : { opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2 }}
-              className="w-5 h-0.5 bg-brand-espresso rounded-full block"
-            />
-            <motion.span
-              animate={sidebarOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="w-5 h-0.5 bg-brand-espresso rounded-full block"
-            />
+              key={announcementIdx}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.25 }}
+              className="text-center font-sans tracking-[0.16em] text-[10px] sm:text-[11px] font-semibold text-[#F4ECE1]"
+            >
+              {announcements[announcementIdx]}
+            </motion.span>
+          </AnimatePresence>
+
+          <button 
+            onClick={() => setAnnouncementIdx((prev) => (prev + 1) % announcements.length)}
+            className="p-0.5 text-[#EFE6DA]/60 hover:text-white transition-colors"
+            aria-label="Next announcement"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* 2. Main Luxury Header (Saayra Inspired: Warm Beige #EFE6DA, Centered AADHYA Branding) */}
+      <header 
+        className={`sticky top-0 z-40 w-full max-w-full transition-colors duration-200 select-none ${
+          isNumis 
+            ? 'h-[68px] bg-[#FCFAF7]/95 backdrop-blur-[14px] border-b border-[#E8E1DA] px-3 sm:px-6 md:px-12 flex items-center justify-between'
+            : 'h-[76px] sm:h-[84px] bg-[#EFE6DA] border-b border-[#E5DACB] px-4 sm:px-8 md:px-12 flex items-center justify-between'
+        }`}
+      >
+        {/* LEFT: Hamburger menu + Desktop Navigation Links */}
+        <div className="flex items-center space-x-4 sm:space-x-8 flex-1 justify-start">
+          {/* Hamburger Menu Trigger */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-1.5 -ml-1 text-[#181818] hover:text-[#555555] transition-colors focus:outline-none"
+            aria-label="Open Navigation Menu"
+          >
+            <Menu className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
           </button>
 
+          {/* Minimal Desktop Nav Links (Reference 1: Home, Kurta Sets, New Arrivals) */}
+          {!isNumis && (
+            <nav className="hidden lg:flex items-center space-x-7 text-xs font-semibold tracking-wider text-[#181818]">
+              <button
+                onClick={() => {
+                  if (pathname === '/') window.scrollTo({ top: 0, behavior: 'smooth' });
+                  else router.push('/');
+                }}
+                className={`py-1 border-b transition-colors ${
+                  pathname === '/' ? 'border-[#181818] font-bold' : 'border-transparent text-[#444444] hover:text-[#181818]'
+                }`}
+              >
+                Home
+              </button>
+              <button
+                onClick={() => router.push('/catalog')}
+                className="py-1 border-b border-transparent text-[#444444] hover:text-[#181818] transition-colors"
+              >
+                Catalog
+              </button>
+              <button
+                onClick={() => handleNavClick('new-arrivals')}
+                className="py-1 border-b border-transparent text-[#444444] hover:text-[#181818] transition-colors"
+              >
+                New Arrivals
+              </button>
+              <button
+                onClick={() => handleNavClick('categories')}
+                className="py-1 border-b border-transparent text-[#444444] hover:text-[#181818] transition-colors"
+              >
+                Categories
+              </button>
+            </nav>
+          )}
+
+          {isNumis && (
+            <button
+              onClick={() => router.push('/numismatics')}
+              className="font-display text-lg font-bold tracking-[0.2em] text-[#181818]"
+            >
+              AADHYA HERITAGE
+            </button>
+          )}
+        </div>
+
+        {/* CENTER: Strong Centered AADHYA Branding with Soft Blush/Ivory Aura */}
+        <div className="flex flex-col items-center justify-center flex-shrink-0 relative">
           <button
             onClick={() => {
               if (isNumis) {
-                if (pathname === '/numismatics') {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                  router.push('/numismatics');
-                }
+                if (pathname === '/numismatics') window.scrollTo({ top: 0, behavior: 'smooth' });
+                else router.push('/numismatics');
               } else {
-                if (pathname === '/') {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                  router.push('/');
-                }
+                if (pathname === '/') window.scrollTo({ top: 0, behavior: 'smooth' });
+                else router.push('/');
                 setPage('home');
               }
             }}
-            className="font-display text-xl md:text-2xl font-bold tracking-[0.25em] text-brand-espresso hover:opacity-85 transition-opacity"
+            className="group relative flex flex-col items-center justify-center focus:outline-none"
           >
-            AADHYA
+            {/* Soft blush halo matching Reference 1 aesthetic */}
+            <div className="absolute w-24 sm:w-28 h-10 sm:h-12 bg-[#E5D7C7]/80 rounded-full blur-xs pointer-events-none -z-0" />
+            
+            <div className="relative z-10 flex flex-col items-center">
+              <span className="font-serif font-black text-2xl sm:text-3xl md:text-4xl tracking-[0.26em] text-[#181818] group-hover:opacity-90 transition-opacity uppercase leading-none">
+                AADHYA
+              </span>
+              <span className="text-[8px] sm:text-[9px] font-sans font-bold tracking-[0.38em] text-[#7A6B5C] uppercase mt-1">
+                FASHION ATELIER
+              </span>
+            </div>
           </button>
         </div>
 
-        {/* Center: Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center space-x-8 text-[10px] font-bold tracking-[0.2em] text-brand-espresso">
+        {/* RIGHT: Minimal Line Icons (Search, Profile, Wishlist, Bag) */}
+        <div className="flex items-center space-x-3 sm:space-x-5 text-[#181818] flex-1 justify-end">
+          {/* Domain Switch Pill: Coins & Notes */}
           <button
-            onClick={() => handleNavClick('bestsellers')}
-            className="hover:text-[#F26A2E] transition-colors relative py-1 group"
+            onClick={() => {
+              if (isNumis) {
+                setPage('home');
+                triggerSectionTransition('fashion');
+                router.push('/');
+              } else {
+                setPage('numismatics');
+                triggerSectionTransition('numismatics');
+                router.push('/numismatics');
+              }
+            }}
+            className="hidden md:flex items-center space-x-2 px-3 py-1 rounded-full border border-[#D5C7B5] bg-white/40 hover:bg-white text-[10px] font-bold tracking-widest text-[#181818] transition-all shadow-2xs mr-1"
+            title="Switch to Coins & Notes"
           >
-            BEST SELLERS
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F26A2E] transition-all duration-300 group-hover:w-full" />
-          </button>
-          <button
-            onClick={() => handleNavClick('new-arrivals')}
-            className="hover:text-[#F26A2E] transition-colors relative py-1 group"
-          >
-            NEW ARRIVALS
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F26A2E] transition-all duration-300 group-hover:w-full" />
-          </button>
-          <button
-            onClick={() => handleNavClick('categories')}
-            className="hover:text-[#F26A2E] transition-colors relative py-1 group"
-          >
-            CATEGORIES
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F26A2E] transition-all duration-300 group-hover:w-full" />
-          </button>
-          <button
-            onClick={() => handleNavClick('categories')}
-            className="hover:text-[#F26A2E] transition-colors relative py-1 group"
-          >
-            ABOUT US
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F26A2E] transition-all duration-300 group-hover:w-full" />
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+            <span>{isNumis ? 'FASHION' : 'COINS & NOTES'}</span>
           </button>
 
-          {/* Numismatics / Fashion Section Link */}
-          <div
-            className="relative"
-            onMouseEnter={() => setNumismaticsHovered(true)}
-            onMouseLeave={() => setNumismaticsHovered(false)}
-          >
-            <button
-              onClick={() => {
-                if (isNumis) {
-                  setPage('home');
-                  triggerSectionTransition('fashion');
-                } else {
-                  setPage('numismatics');
-                  triggerSectionTransition('numismatics');
-                }
-              }}
-              className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-full border transition-all duration-300 ${
-                isNumis || numismaticsHovered
-                  ? 'border-[#F26A2E] bg-[#FFF3EC] text-[#F26A2E] shadow-sm'
-                  : 'border-brand-border/80 text-brand-warmGray'
-              }`}
-            >
-              <div className="relative w-4 h-4 rounded-full overflow-hidden border border-[#2C2522] shadow-sm flex items-center justify-center bg-[#2C2522]">
-                {isNumis ? (
-                  <span className="text-[9px]">👗</span>
-                ) : (
-                  <img
-                    src="/coin_image_new.png"
-                    alt="Coin"
-                    className="w-full h-full object-cover"
-                  />
-                )}
-              </div>
-              <span className="tracking-[0.2em] font-extrabold text-[9px] uppercase">
-                {isNumis ? 'FASHION' : 'COINS & NOTES'}
-              </span>
-            </button>
-
-            {/* Premium Gold Accent Tooltip Popover */}
-            <AnimatePresence>
-              {numismaticsHovered && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute left-1/2 -translate-x-1/2 mt-2.5 w-52 bg-brand-espresso text-brand-warmWhite text-[9px] tracking-[0.12em] font-bold py-3.5 px-4 text-center rounded-2xl shadow-xl z-50 border border-brand-gold/30"
-                >
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-brand-espresso rotate-45 border-t border-l border-brand-gold/30" />
-                  <p className="mb-2 text-brand-softBeige font-extrabold">Explore Coins & Currency</p>
-                  <div className="flex items-center justify-center gap-1 text-brand-gold hover:text-brand-white transition-colors cursor-pointer text-[8px] tracking-[0.2em] uppercase font-extrabold">
-                    <span>EXPLORE</span>
-                    <ArrowRight className="w-2.5 h-2.5" />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </nav>
-
-        {/* Right: Core Actions Grid */}
-        <div className="flex items-center space-x-2 sm:space-x-4 text-brand-espresso">
+          {/* Search */}
           <button
             onClick={() => setSearchOpen(true)}
-            aria-label="Search"
-            className="hover:text-brand-dustyRose transition-colors p-1"
+            aria-label="Search Catalog"
+            className="p-1.5 hover:text-[#555555] transition-colors focus:outline-none"
           >
-            <Search className="w-4 h-4 stroke-[2]" />
+            <Search className="w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[1.6]" />
           </button>
-          
+
+          {/* Profile / Account */}
           <button
-            onClick={() => setPage('wishlist')}
-            aria-label="Wishlist"
-            className="hover:text-brand-dustyRose transition-colors p-1 relative"
+            onClick={() => router.push('/account')}
+            aria-label="Customer Profile"
+            className="p-1.5 hover:text-[#555555] transition-colors focus:outline-none hidden sm:block"
           >
-            <Heart className={`w-4 h-4 stroke-[2] ${activePage === 'wishlist' ? 'fill-brand-dustyRose stroke-brand-dustyRose' : ''}`} />
+            <User className="w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[1.6]" />
+          </button>
+
+          {/* Wishlist */}
+          <button
+            onClick={() => {
+              setPage('wishlist');
+              router.push('/wishlist');
+            }}
+            aria-label="Wishlist"
+            className="p-1.5 hover:text-[#555555] transition-colors relative focus:outline-none"
+          >
+            <Heart className={`w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[1.6] ${activePage === 'wishlist' ? 'fill-[#181818]' : ''}`} />
             {wishlist.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[#F26A2E] text-brand-warmWhite text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
+              <span className="absolute 0 top-0.5 right-0.5 bg-[#181818] text-[#EFE6DA] text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center leading-none">
                 {wishlist.length}
               </span>
             )}
           </button>
 
-          <button
-            onClick={() => router.push('/account')}
-            aria-label="Account"
-            className="hover:text-[#F26A2E] transition-colors p-1"
-          >
-            <User className="w-4 h-4 stroke-[2]" />
-          </button>
-
+          {/* Shopping Bag */}
           <button
             onClick={() => router.push('/cart')}
-            aria-label="Cart"
-            className="hover:text-[#F26A2E] transition-colors p-1 relative"
+            aria-label="Shopping Cart"
+            className="p-1.5 hover:text-[#555555] transition-colors relative focus:outline-none"
           >
-            <ShoppingBag className="w-4 h-4 stroke-[2]" />
+            <ShoppingBag className="w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[1.6]" />
             {cartItemsCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[#F26A2E] text-brand-warmWhite text-[7px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
+              <span className="absolute top-0.5 right-0.5 bg-[#181818] text-[#EFE6DA] text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center leading-none">
                 {cartItemsCount}
               </span>
             )}
@@ -349,227 +322,149 @@ export const Navbar: React.FC = () => {
         </div>
       </header>
 
-      {/* Glossy Translucent Left Sidebar Menu (YouTube Studio Theme Style) */}
+      {/* 3. Re-themed Luxury Left Sidebar Navigation Drawer */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
-            {/* Dark blur background overlay */}
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSidebarOpen(false)}
-              className="fixed inset-0 z-50 bg-brand-espresso/30 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
             />
 
-            {/* Translucent white sidebar panel (opens from left) */}
+            {/* Slide-over panel */}
             <motion.div
               variants={sidebarVariants}
               initial="closed"
               animate="open"
               exit="closed"
-              className="fixed left-0 top-0 bottom-0 z-50 w-full max-w-xs bg-brand-warmWhite/75 backdrop-blur-2xl border-r border-brand-border/60 shadow-2xl p-6 flex flex-col justify-between"
+              className="fixed left-0 top-0 bottom-0 z-50 w-full max-w-xs bg-[#FAF7F2] border-r border-[#E5DACB] shadow-2xl p-6 flex flex-col justify-between"
             >
-              {/* Close Header */}
-              <div className="flex items-center justify-between border-b border-brand-border/60 pb-4">
-                <span className="font-display font-extrabold tracking-[0.25em] text-brand-espresso text-sm">AADHYA</span>
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-[#E5DACB] pb-4">
+                <div className="flex flex-col">
+                  <span className="font-serif font-black tracking-[0.2em] text-[#181818] text-base">AADHYA</span>
+                  <span className="text-[8px] tracking-[0.25em] text-[#7A6B5C] font-semibold uppercase">Luxury Atelier</span>
+                </div>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="p-1.5 hover:bg-brand-softBeige/65 rounded-full transition-colors"
+                  className="p-1.5 hover:bg-[#EFE6DA] rounded-full transition-colors text-[#181818]"
+                  aria-label="Close menu"
                 >
-                  <X className="w-4.5 h-4.5 text-brand-warmGray" />
+                  <X className="w-5 h-5 stroke-[1.8]" />
                 </button>
               </div>
 
-              {/* Glossy Link Items (Staggered inputs with icons) */}
-              <motion.div 
-                variants={listVariants}
-                className="flex-grow py-6 space-y-6 overflow-y-auto"
-              >
+              {/* Navigation Items */}
+              <div className="flex-grow py-6 space-y-6 overflow-y-auto">
                 <div className="space-y-2 text-left">
-                  <span className="text-[8px] tracking-[0.25em] font-extrabold text-brand-warmGray block px-3 uppercase">
-                    {isNumis ? 'NUMISMATICS EDITORIAL' : 'FASHION EDITORIAL'}
+                  <span className="text-[8px] tracking-[0.25em] font-extrabold text-[#7A6B5C] block px-3 uppercase">
+                    {isNumis ? 'NUMISMATICS ARCHIVE' : 'FASHION COLLECTIONS'}
                   </span>
                   
-                  <nav className="flex flex-col space-y-1 font-sans text-xs font-bold tracking-widest text-brand-espresso">
-                    {/* Home Link */}
-                    <motion.button
-                      variants={itemVariants}
+                  <nav className="flex flex-col space-y-1.5 font-sans text-xs font-bold tracking-widest text-[#181818]">
+                    <button
                       onClick={() => {
                         setSidebarOpen(false);
-                        if (isNumis) {
-                          if (pathname === '/numismatics') {
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                          } else {
-                            router.push('/numismatics');
-                          }
-                        } else {
-                          if (pathname === '/') {
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                          } else {
-                            router.push('/');
-                          }
-                          setPage('home');
-                        }
+                        if (isNumis) router.push('/numismatics');
+                        else router.push('/');
                       }}
-                      className={`flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full transition-all relative ${
-                        (isNumis ? pathname === '/numismatics' : pathname === '/')
-                          ? 'bg-[#FFF3EC] text-[#F26A2E] font-extrabold shadow-sm' 
-                          : 'hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E]'
-                      }`}
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#EFE6DA] transition-all"
                     >
-                      {(isNumis ? pathname === '/numismatics' : pathname === '/') && (
-                        <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#F26A2E] rounded-r-md" />
-                      )}
-                      <Home className="w-4 h-4 stroke-[2]" />
+                      <Home className="w-4 h-4 text-[#181818]" />
                       <span>HOME</span>
-                    </motion.button>
+                    </button>
                     
-                    {/* Bestsellers Link */}
-                    <motion.button
-                      variants={itemVariants}
+                    <button
                       onClick={() => handleNavClick('bestsellers')}
-                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#EFE6DA] transition-all"
                     >
-                      <Sparkles className="w-4 h-4 stroke-[2]" />
+                      <Sparkles className="w-4 h-4 text-[#181818]" />
                       <span>BEST SELLERS</span>
-                    </motion.button>
+                    </button>
                     
-                    {/* New Arrivals Link */}
-                    <motion.button
-                      variants={itemVariants}
+                    <button
                       onClick={() => handleNavClick('new-arrivals')}
-                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#EFE6DA] transition-all"
                     >
-                      <Compass className="w-4 h-4 stroke-[2]" />
+                      <Compass className="w-4 h-4 text-[#181818]" />
                       <span>NEW ARRIVALS</span>
-                    </motion.button>
+                    </button>
                     
-                    {/* Categories Link */}
-                    <motion.button
-                      variants={itemVariants}
+                    <button
                       onClick={() => handleNavClick('categories')}
-                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#EFE6DA] transition-all"
                     >
-                      <Grid className="w-4 h-4 stroke-[2]" />
+                      <Grid className="w-4 h-4 text-[#181818]" />
                       <span>CATEGORIES</span>
-                    </motion.button>
- 
-                    {/* Shop Link */}
-                    <motion.button
-                      variants={itemVariants}
+                    </button>
+
+                    <button
                       onClick={() => {
                         setSidebarOpen(false);
-                        if (isNumis) {
-                          router.push('/numismatics/catalog');
-                        } else {
-                          router.push('/catalog');
-                          setPage('home');
-                        }
+                        if (isNumis) router.push('/numismatics/catalog');
+                        else router.push('/catalog');
                       }}
-                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
+                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#EFE6DA] transition-all"
                     >
-                      <ShoppingBag className="w-4 h-4 stroke-[2]" />
-                      <span>{isNumis ? 'SHOP COINS & NOTES' : 'SHOP COLLECTION'}</span>
-                    </motion.button>
- 
-                    {/* About Link */}
-                    <motion.button
-                      variants={itemVariants}
-                      onClick={() => handleNavClick('categories')}
-                      className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
-                    >
-                      <Info className="w-4 h-4 stroke-[2]" />
-                      <span>ABOUT US</span>
-                    </motion.button>
+                      <ShoppingBag className="w-4 h-4 text-[#181818]" />
+                      <span>{isNumis ? 'ALL COINS & NOTES' : 'ALL FASHION'}</span>
+                    </button>
                   </nav>
                 </div>
 
-                <div className="w-full h-px bg-brand-border/60" />
-
-                {/* Coin / Fashion Special Drawer Link */}
-                <motion.div variants={itemVariants} className="px-3">
+                {/* Domain Switch Card */}
+                <div className="p-4 rounded-2xl bg-[#EFE6DA] border border-[#E5DACB] space-y-2">
+                  <span className="text-[9px] font-extrabold tracking-widest text-[#7A6B5C] uppercase block">
+                    CROSS DOMAIN EXPLORER
+                  </span>
+                  <p className="text-xs text-[#181818] font-medium leading-relaxed">
+                    {isNumis ? 'Looking for premium Indian womenswear?' : 'Explore historic numismatic coins and heritage paper currency.'}
+                  </p>
                   <button
                     onClick={() => {
                       setSidebarOpen(false);
                       if (isNumis) {
                         setPage('home');
                         triggerSectionTransition('fashion');
+                        router.push('/');
                       } else {
                         setPage('numismatics');
                         triggerSectionTransition('numismatics');
+                        router.push('/numismatics');
                       }
                     }}
-                    className={`flex items-center justify-between px-4 py-3 border rounded-2xl text-left font-sans text-[11px] font-extrabold w-full shadow-sm transition-all ${
-                      isNumis
-                        ? 'bg-[#F26A2E] text-white border-[#E0591D]'
-                        : 'bg-[#FFF3EC] text-[#F26A2E] border-[#F9E1D3]'
-                    }`}
+                    className="w-full py-2 bg-[#181818] text-[#EFE6DA] rounded-xl text-xs font-bold tracking-wider hover:bg-black transition-colors flex items-center justify-center space-x-2"
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-5 h-5 rounded-full overflow-hidden border border-[#2C2522] flex items-center justify-center bg-[#2C2522]">
-                        {isNumis ? (
-                          <span className="text-[10px]">👗</span>
-                        ) : (
-                          <img
-                            src="/coin_image_new.png"
-                            alt="Coin"
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </div>
-                      <span className="tracking-widest">
-                        {isNumis ? 'FASHION' : 'COINS & NOTES'}
-                      </span>
-                    </div>
+                    <span>{isNumis ? 'VISIT FASHION' : 'VISIT COINS & NOTES'}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
-                </motion.div>
+                </div>
+              </div>
 
-                <div className="w-full h-px bg-brand-border/60" />
-
-                {/* Account details links */}
-                <motion.div 
-                  variants={itemVariants}
-                  className="flex flex-col space-y-1 font-sans text-xs font-bold tracking-widest text-brand-espresso"
+              {/* Footer Account / Orders */}
+              <div className="pt-4 border-t border-[#E5DACB] flex items-center justify-between text-xs font-bold text-[#181818]">
+                <button
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    router.push('/account');
+                  }}
+                  className="hover:underline"
                 >
-                  <button
-                    onClick={() => { setAccountOpen(true); setSidebarOpen(false); }}
-                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
-                  >
-                    <User className="w-4 h-4 stroke-[2]" />
-                    <span>ACCOUNT</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => { setPage('wishlist'); setSidebarOpen(false); }}
-                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
-                  >
-                    <Heart className="w-4 h-4 stroke-[2]" />
-                    <span>WISHLIST</span>
-                  </button>
-
-                  <button
-                    onClick={() => { setAccountOpen(true); setSidebarOpen(false); }}
-                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
-                  >
-                    <Package className="w-4 h-4 stroke-[2]" />
-                    <span>ORDERS</span>
-                  </button>
-
-                  <button
-                    onClick={() => setSidebarOpen(false)}
-                    className="flex items-center space-x-3 py-3 px-4 rounded-xl text-left w-full hover:bg-[#FFF3EC] text-brand-warmGray hover:text-[#F26A2E] transition-all"
-                  >
-                    <HelpCircle className="w-4 h-4 stroke-[2]" />
-                    <span>HELP & SUPPORT</span>
-                  </button>
-                </motion.div>
-              </motion.div>
-
-              {/* Footer details */}
-              <div className="border-t border-brand-border/60 pt-4 text-[9px] text-brand-warmGray font-extrabold tracking-widest text-left uppercase">
-                © 2026 AADHYA. All Rights Reserved.
+                  My Account
+                </button>
+                <button
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    router.push('/cart');
+                  }}
+                  className="hover:underline flex items-center space-x-1"
+                >
+                  <span>Bag ({cartItemsCount})</span>
+                </button>
               </div>
             </motion.div>
           </>

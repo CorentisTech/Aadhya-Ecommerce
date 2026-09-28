@@ -1,19 +1,47 @@
+"use client";
+
 import React from 'react';
+import { motion } from 'framer-motion';
 
 export const Marquee: React.FC = () => {
-  const marqueeText = "BEST SELLERS ✦ AADHYA EDIT ✦ NEW ARRIVALS ✦ SHOP THE LOOK ✦ COINS & NOTES ✦ ";
-  const repeatedText = Array(12).fill(marqueeText).join("");
+  const marqueeItems = [
+    "SUSTAINABLE FASHION",
+    "EASY 7-DAY RETURNS",
+    "NATURALLY SOURCED FABRICS",
+    "FREE SHIPPING ABOVE ₹2,999",
+    "HANDCRAFTED WITH LUXURY",
+    "100% ARTISANAL AUTHENTICITY",
+    "ETHICAL CRAFTSMANSHIP",
+    "TIMELESS INDIAN SILHOUETTES"
+  ];
+
+  // Repeat for continuous seamless loop
+  const repeatedItems = [...marqueeItems, ...marqueeItems, ...marqueeItems];
 
   return (
-    <div className="w-full max-w-full overflow-hidden relative z-20 select-none py-2.5 sm:py-4 md:-mt-10 lg:-mt-14">
-      <div className="w-[105vw] -ml-[2.5vw] bg-[#F26A2E] py-2.5 md:py-3.5 border-y border-[#E0591D] rounded-none shadow-sm transform -rotate-2 md:-rotate-1">
-        <div className="flex whitespace-nowrap group cursor-pointer overflow-hidden">
-          <div className="animate-marquee-slow flex whitespace-nowrap group-hover:[animation-play-state:paused] ease-linear">
-            <span className="text-brand-white font-sans text-[10px] md:text-sm font-extrabold tracking-[0.25em] uppercase">
-              {repeatedText}
-            </span>
-          </div>
-        </div>
+    <div className="w-full max-w-full overflow-hidden relative z-20 select-none bg-[#001F3D] py-3 md:py-3.5 border-y border-[#001428]">
+      <div className="flex whitespace-nowrap overflow-hidden">
+        <motion.div
+          animate={{ x: ['0%', '-50%'] }}
+          transition={{
+            repeat: Infinity,
+            repeatType: 'loop',
+            duration: 28,
+            ease: 'linear'
+          }}
+          className="flex items-center space-x-6 sm:space-x-8 whitespace-nowrap will-change-transform"
+        >
+          {repeatedItems.map((item, idx) => (
+            <div key={idx} className="flex items-center space-x-6 sm:space-x-8">
+              <span className="text-[#F7F4EE] font-sans text-[11px] sm:text-xs md:text-sm font-bold tracking-[0.25em] uppercase">
+                {item}
+              </span>
+              <span className="text-[#C89B5C] text-xs sm:text-sm select-none">
+                ✦
+              </span>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </div>
   );

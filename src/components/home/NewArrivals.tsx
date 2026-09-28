@@ -182,18 +182,18 @@ export const NewArrivals: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Ambient background glow (optimized with blur-3xl) */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-r from-[#F26A2E]/15 via-[#D4AF37]/15 to-transparent blur-3xl opacity-30 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-r from-amber-600/15 via-[#C89B5C]/15 to-transparent blur-3xl opacity-30 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto space-y-8 md:space-y-12 relative z-10 text-center">
         
-        {/* Header Block (Inspired by media_1788455303236.png) */}
+        {/* Header Block */}
         <div className="flex flex-col items-center justify-center space-y-2.5 max-w-2xl mx-auto">
-          <span className="text-[9px] sm:text-[11px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase px-3 py-1 bg-white/5 border border-white/10 rounded-full flex items-center gap-1.5 shadow-sm">
-            <Sparkles className="w-3 h-3 text-[#F26A2E]" />
+          <span className="text-[9px] sm:text-[11px] text-[#C89B5C] font-extrabold tracking-[0.25em] uppercase px-3 py-1 bg-white/5 border border-white/10 rounded-full flex items-center gap-1.5 shadow-sm">
+            <Sparkles className="w-3 h-3 text-[#C89B5C]" />
             <span>NEW RUNWAY ARRIVALS</span>
           </span>
 
-          <h2 className="font-display font-medium text-3xl sm:text-4xl md:text-5xl text-white tracking-tight leading-[1.15]">
+          <h2 className="font-serif font-medium text-3xl sm:text-4xl md:text-5xl text-white tracking-tight leading-[1.15]">
             Fresh Off The Runway
           </h2>
           
@@ -283,13 +283,13 @@ export const NewArrivals: React.FC = () => {
                   <Heart className={`w-3.5 h-3.5 ${inWishlist ? 'fill-white' : ''}`} />
                 </button>
 
-                {/* Bottom Overlay Details (Exact Style from media_1788455303236.png) */}
+                {/* Bottom Overlay Details */}
                 <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 text-center flex flex-col items-center justify-end space-y-1.5">
-                  <span className="text-[8px] sm:text-[9px] font-extrabold text-[#F26A2E] tracking-[0.2em] uppercase">
+                  <span className="text-[8px] sm:text-[9px] font-extrabold text-[#C89B5C] tracking-[0.2em] uppercase">
                     {product.occasion || 'SUMMER RUNWAY'}
                   </span>
 
-                  <h3 className="font-display font-medium text-sm sm:text-base md:text-lg text-white leading-tight drop-shadow-md line-clamp-2">
+                  <h3 className="font-serif font-medium text-sm sm:text-base md:text-lg text-white leading-tight drop-shadow-md line-clamp-2">
                     {product.name}
                   </h3>
 
@@ -300,7 +300,7 @@ export const NewArrivals: React.FC = () => {
                     <span className="text-[10px] sm:text-xs text-white/60 line-through">
                       ₹{product.mrp.toLocaleString('en-IN')}
                     </span>
-                    <span className="text-[8px] sm:text-[9px] font-extrabold text-[#F26A2E] bg-white/10 px-1.5 py-0.5 rounded">
+                    <span className="text-[8px] sm:text-[9px] font-extrabold text-[#C89B5C] bg-white/10 px-1.5 py-0.5 rounded">
                       {product.discount}% OFF
                     </span>
                   </div>
@@ -310,11 +310,9 @@ export const NewArrivals: React.FC = () => {
           })}
         </div>
 
-        {/* ==================================================
-            CONTROLS: Left & Right Arrows (Web Screen) & Dots
-           ================================================== */}
+        {/* CONTROLS */}
         <div className="flex items-center justify-between pt-2 max-w-xs sm:max-w-md mx-auto">
-          {/* Left Arrow Button (Web screen) */}
+          {/* Left Arrow Button */}
           <button
             onClick={handlePrevWeb}
             className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black flex items-center justify-center transition-all shadow-md cursor-pointer backdrop-blur-xs"
@@ -330,7 +328,7 @@ export const NewArrivals: React.FC = () => {
                 key={i}
                 onClick={() => setActiveIndex(i)}
                 className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  activeIndex === i ? 'w-6 bg-[#F26A2E]' : 'w-1.5 bg-white/30 hover:bg-white/60'
+                  activeIndex === i ? 'w-6 bg-[#C89B5C]' : 'w-1.5 bg-white/30 hover:bg-white/60'
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
               />

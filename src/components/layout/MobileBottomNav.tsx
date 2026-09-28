@@ -104,7 +104,7 @@ export const MobileBottomNav: React.FC = () => {
                 alt="Fashion Collection" 
                 className="w-full h-full object-cover rounded-full shadow-inner"
               />
-              <div className="absolute right-0 top-0 bottom-0 w-3 bg-[#F26A2E] shadow-md rounded-r-full" />
+              <div className="absolute right-0 top-0 bottom-0 w-3 bg-[#C89B5C] shadow-md rounded-r-full" />
             </div>
           ) : (
             /* 3D Banknote Roll-to-Reveal Animation (Matching Image 1) */
@@ -117,7 +117,7 @@ export const MobileBottomNav: React.FC = () => {
                 alt="INR 100 Currency Note" 
                 className="h-[90%] max-w-[95%] object-contain rounded-md shadow-xs opacity-95"
               />
-              <div className="absolute right-0 top-0 bottom-0 w-3 bg-[#F26A2E] shadow-md rounded-r-full" />
+              <div className="absolute right-0 top-0 bottom-0 w-3 bg-[#C89B5C] shadow-md rounded-r-full" />
             </motion.div>
           )}
         </motion.div>
@@ -125,7 +125,7 @@ export const MobileBottomNav: React.FC = () => {
         {/* Layer 2: Default Initial State Content & Icons (Matching Images 1 & 2) */}
         <div className="relative z-20 flex items-center space-x-1.5 pl-0.5 pointer-events-none">
           {/* Badge Icon */}
-          <div className="w-8 h-8 rounded-full bg-[#FFF3EC] border border-[#F9E1D3] flex items-center justify-center text-sm shadow-xs flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#EFE6DA] border border-[#E2D7C9] flex items-center justify-center text-sm shadow-xs flex-shrink-0">
             {isNumismaticsPage ? '👗' : '🪙'}
           </div>
 
@@ -140,7 +140,7 @@ export const MobileBottomNav: React.FC = () => {
           style={{ opacity: textOpacity }}
           className="relative z-20 flex items-center justify-center flex-grow px-2 text-center pointer-events-none"
         >
-          <span className="font-sans font-bold text-[10px] sm:text-xs text-[#F26A2E] tracking-[0.14em] uppercase whitespace-nowrap drop-shadow-xs">
+          <span className="font-sans font-bold text-[10px] sm:text-xs text-[#C89B5C] tracking-[0.14em] uppercase whitespace-nowrap drop-shadow-xs">
             {isNumismaticsPage ? 'SWIPE RIGHT FOR FASHION' : 'SWIPE RIGHT TO COINS & NOTES'}
           </span>
         </motion.div>
@@ -150,7 +150,7 @@ export const MobileBottomNav: React.FC = () => {
           <motion.span 
             animate={{ x: [0, 4, 0] }}
             transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
-            className="font-mono font-bold text-xs sm:text-sm text-[#F26A2E] tracking-tighter"
+            className="font-mono font-bold text-xs sm:text-sm text-[#C89B5C] tracking-tighter"
           >
             &gt;&gt;
           </motion.span>
@@ -174,7 +174,7 @@ export const MobileBottomNav: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mt-1 text-[9px] font-bold text-[#F26A2E] tracking-wider uppercase"
+          className="text-center mt-1 text-[9px] font-bold text-[#C89B5C] tracking-wider uppercase"
         >
           {statusMessage}
         </motion.div>
