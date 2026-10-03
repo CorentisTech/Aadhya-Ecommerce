@@ -47,7 +47,8 @@ export async function PUT(request: Request) {
       quick_links
     } = body;
 
-    const updateSql = `
+    // 1. Update Common Fields across ALL sites
+    await queryDb(`
       UPDATE website_settings
       SET 
         brand_name = COALESCE($1, brand_name),
@@ -55,28 +56,34 @@ export async function PUT(request: Request) {
         contact_email = COALESCE($3, contact_email),
         contact_phone = COALESCE($4, contact_phone),
         contact_address = COALESCE($5, contact_address),
-        privacy_policy = COALESCE($6, privacy_policy),
-        refund_policy = COALESCE($7, refund_policy),
-        terms_conditions = COALESCE($8, terms_conditions),
-        shipping_policy = COALESCE($9, shipping_policy),
-        social_links = COALESCE($10, social_links),
-        quick_links = COALESCE($11, quick_links),
+        social_links = COALESCE($6, social_links),
         updated_at = NOW()
-      WHERE id = $12
-      RETURNING *
-    `;
-
-    const result = await queryDb(updateSql, [
+    `, [
       brand_name,
       logo_url,
       contact_email,
       contact_phone,
       contact_address,
+      social_links ? JSON.stringify(social_links) : null
+    ]);
+
+    // 2. Update Policies and Quick Links ONLY for the selected site
+    const result = await queryDb(`
+      UPDATE website_settings
+      SET 
+        privacy_policy = COALESCE($1, privacy_policy),
+        refund_policy = COALESCE($2, refund_policy),
+        terms_conditions = COALESCE($3, terms_conditions),
+        shipping_policy = COALESCE($4, shipping_policy),
+        quick_links = COALESCE($5, quick_links),
+        updated_at = NOW()
+      WHERE id = $6
+      RETURNING *
+    `, [
       privacy_policy,
       refund_policy,
       terms_conditions,
       shipping_policy,
-      social_links ? JSON.stringify(social_links) : null,
       quick_links ? JSON.stringify(quick_links) : null,
       site
     ]);

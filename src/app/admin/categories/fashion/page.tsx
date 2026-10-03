@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus, Tags, Shirt, Coins, Edit, Trash2, CheckCircle2, XCircle, RefreshCcw } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 
 export default function FashionCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -208,16 +209,11 @@ export default function FashionCategoriesPage() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-600 uppercase">Image URL (Optional)</label>
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://.../category.png"
-                  className="w-full bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-xl text-xs"
-                />
-              </div>
+              <ImageUpload 
+                value={imageUrl} 
+                onChange={setImageUrl} 
+                label="Category Cover Image (Optional)" 
+              />
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-gray-600 uppercase">Display Sort Order</label>

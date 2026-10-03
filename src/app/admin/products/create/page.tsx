@@ -15,6 +15,7 @@ import {
   Check, 
   AlertCircle 
 } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 
 function CreateProductContent() {
   const router = useRouter();
@@ -378,18 +379,11 @@ function CreateProductContent() {
             </select>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">
-              Main Product Image URL
-            </label>
-            <input
-              type="url"
-              value={mainImageUrl}
-              onChange={(e) => setMainImageUrl(e.target.value)}
-              placeholder="https://.../image.png"
-              className="w-full bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-[#cca05b]"
-            />
-          </div>
+          <ImageUpload 
+            value={mainImageUrl} 
+            onChange={setMainImageUrl} 
+            label="Main Product Image" 
+          />
         </div>
 
         <div className="space-y-1.5">

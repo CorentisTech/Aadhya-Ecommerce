@@ -217,27 +217,40 @@ export default function OrderDetailPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-2 pt-2">
+          <div className="grid grid-cols-4 gap-2 pt-2 relative">
+            {/* Connecting lines behind the icons */}
+            <div className="absolute top-5 left-[12.5%] right-[12.5%] h-1 bg-gray-100 -z-10 rounded-full" />
+            <div 
+              className="absolute top-5 left-[12.5%] h-1 bg-emerald-500 -z-10 rounded-full transition-all duration-500"
+              style={{ width: `${(Math.max(0, currentStep) / 3) * 75}%` }}
+            />
+            
             {[
-              { label: 'ORDER PLACED', icon: Clock, step: 0 },
-              { label: 'APPROVED', icon: CheckCircle2, step: 1 },
-              { label: 'DISPATCHED', icon: Truck, step: 2 },
-              { label: 'DELIVERED', icon: PackageCheck, step: 3 },
+              { label: 'ORDER PLACED', icon: Clock, step: 0, action: null },
+              { label: 'APPROVED', icon: CheckCircle2, step: 1, action: () => handleStatusAction('APPROVE') },
+              { label: 'DISPATCHED', icon: Truck, step: 2, action: () => setDispatchModalOpen(true) },
+              { label: 'DELIVERED', icon: PackageCheck, step: 3, action: () => handleStatusAction('DELIVER') },
             ].map((st, i) => {
               const isPast = currentStep >= st.step;
               const isCurrent = currentStep === st.step;
               const Icon = st.icon;
               return (
-                <div key={i} className="flex flex-col items-center text-center space-y-2">
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
+                <div 
+                  key={i} 
+                  className={`flex flex-col items-center text-center space-y-2 relative ${st.action ? 'cursor-pointer hover:opacity-80' : ''}`}
+                  onClick={() => {
+                    if (st.action && !updating) st.action();
+                  }}
+                >
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300 ${
                     isPast 
-                      ? 'bg-emerald-500 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-400'
+                      ? 'bg-emerald-500 text-white shadow-md scale-110' 
+                      : 'bg-white border-2 border-gray-200 text-gray-400 hover:border-emerald-300'
                   }`}>
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className={`text-[10px] font-extrabold uppercase tracking-wider ${
-                    isCurrent ? 'text-gray-900' : isPast ? 'text-emerald-700' : 'text-gray-400'
+                  <span className={`text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
+                    isCurrent ? 'text-gray-900 scale-105' : isPast ? 'text-emerald-700' : 'text-gray-400'
                   }`}>
                     {st.label}
                   </span>

@@ -49,7 +49,7 @@ export async function GET(
       LEFT JOIN profiles p ON o.user_id = p.id
       LEFT JOIN auth.users au ON p.id = au.id
       LEFT JOIN addresses a ON o.shipping_address_id = a.id
-      WHERE o.id = $1 OR o.order_number = $1
+      WHERE o.id::text = $1 OR o.order_number = $1
     `, [id]);
 
     if (!orderRows || orderRows.length === 0) {

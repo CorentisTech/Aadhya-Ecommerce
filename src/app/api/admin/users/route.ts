@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '20', 10)));
     const offset = (page - 1) * limit;
 
-    let whereConditions: string[] = [];
+    let whereConditions: string[] = ["(p.role IS NULL OR p.role NOT IN ('super_admin', 'admin', 'editor', 'support'))"];
     let params: any[] = [];
     let paramIdx = 1;
 
