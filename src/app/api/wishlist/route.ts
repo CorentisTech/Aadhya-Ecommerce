@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
 import { queryDb } from '@/utils/db';
+import { validateUserSession } from '@/utils/sessionValidation';
 
 function getHeaderOrParamDeviceId(request: Request, bodyDeviceId?: string): string {
   if (bodyDeviceId && bodyDeviceId.trim().length > 0) return bodyDeviceId.trim().slice(0, 100);
@@ -14,12 +14,11 @@ function getHeaderOrParamDeviceId(request: Request, bodyDeviceId?: string): stri
 
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized. Authentication required.' }, { status: 401 });
+    const session = await validateUserSession(request);
+    if (!session.valid) {
+      return NextResponse.json({ error: session.error, revoked: session.revoked }, { status: session.status });
     }
+    const user = session.user;
 
     const deviceId = getHeaderOrParamDeviceId(request);
 
@@ -67,12 +66,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized. Authentication required.' }, { status: 401 });
+    const session = await validateUserSession(request);
+    if (!session.valid) {
+      return NextResponse.json({ error: session.error, revoked: session.revoked }, { status: session.status });
     }
+    const user = session.user;
 
     const body = await request.json();
     const { productId, variantId } = body;
@@ -113,12 +111,11 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized. Authentication required.' }, { status: 401 });
+    const session = await validateUserSession(request);
+    if (!session.valid) {
+      return NextResponse.json({ error: session.error, revoked: session.revoked }, { status: session.status });
     }
+    const user = session.user;
 
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');

@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
 import { queryDb } from '@/utils/db';
+import { validateUserSession } from '@/utils/sessionValidation';
 
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized. Authentication required.' }, { status: 401 });
+    const session = await validateUserSession(request);
+    if (!session.valid) {
+      return NextResponse.json({ error: session.error, revoked: session.revoked }, { status: session.status });
     }
+    const user = session.user;
 
     const orders = await queryDb(
       `SELECT 
@@ -63,13 +62,11 @@ export async function GET(request: Request) {
 }
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    // SECURITY: Require authentication
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'You must be logged in to place an order.' }, { status: 401 });
+    const session = await validateUserSession(request);
+    if (!session.valid) {
+      return NextResponse.json({ success: false, error: session.error, revoked: session.revoked }, { status: session.status });
     }
+    const user = session.user;
 
     const body = await request.json();
     const { items, shipping_address, payment_method, idempotency_key } = body;

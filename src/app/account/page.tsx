@@ -147,7 +147,10 @@ export default function AccountPage() {
   useEffect(() => {
     if (activeModal === 'orders' && isLoggedIn) {
       setOrdersLoading(true);
-      fetch('/api/orders')
+      const deviceId = typeof window !== 'undefined' ? localStorage.getItem('aadhya_device_id') || '' : '';
+      fetch('/api/orders', {
+        headers: { 'x-device-id': deviceId }
+      })
         .then((res) => (res.ok ? res.json() : []))
         .then((data) => {
           setOrders(Array.isArray(data) ? data : []);

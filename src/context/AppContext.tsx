@@ -124,10 +124,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }).catch(() => null);
 
       // 2. Fetch authenticated profile
-      const profileRes = await fetch('/api/profile').catch(() => null);
-      if (profileRes && profileRes.ok) {
+      const profileRes = await fetch('/api/profile', {
+        headers: { 'x-device-id': deviceId }
+      }).catch(() => null);
+      
+      if (profileRes) {
         const profileData = await profileRes.json();
-        if (profileData?.user) {
+        if (profileData?.revoked) {
+          alert('Your account was signed in on another device.');
+          await logoutUser();
+          return;
+        }
+        if (profileRes.ok && profileData?.user) {
           setUser(profileData.user);
           setIsLoggedIn(true);
         }
@@ -521,9 +529,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUser((prev) => (prev ? { ...prev, ...details } : (details as UserDetails)));
     if (isLoggedIn) {
       try {
+        const deviceId = getDeviceId();
         await fetch('/api/profile', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-device-id': deviceId },
           body: JSON.stringify(details),
         });
       } catch (err) {

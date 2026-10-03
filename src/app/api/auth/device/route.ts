@@ -19,19 +19,23 @@ export async function POST(request: Request) {
     }
 
     const cleanDeviceId = deviceId.trim().slice(0, 100);
-    const cleanDeviceName = (deviceName || 'Web Client').slice(0, 100);
-    const userAgent = request.headers.get('user-agent') || '';
+    const sessionVersion = Math.random().toString(36).substring(2, 15);
 
-    // Register or update device record in DB
+    // Call the Postgres function to revoke all other devices and activate this one
     await queryDb(
-      `INSERT INTO user_devices (user_id, device_id, device_name, user_agent, last_active)
-       VALUES ($1, $2, $3, $4, NOW())
-       ON CONFLICT (user_id, device_id) 
-       DO UPDATE SET last_active = NOW(), device_name = EXCLUDED.device_name, user_agent = EXCLUDED.user_agent`,
-      [user.id, cleanDeviceId, cleanDeviceName, userAgent]
+      'SELECT handle_new_device_login($1, $2, $3)',
+      [user.id, cleanDeviceId, sessionVersion]
     );
 
-    return NextResponse.json({ success: true, deviceId: cleanDeviceId, userId: user.id });
+    const response = NextResponse.json({ success: true, deviceId: cleanDeviceId, userId: user.id });
+    response.cookies.set('aadhya_device_id', cleanDeviceId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/'
+    });
+
+    return response;
   } catch (error: any) {
     console.error('Device registration failed:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

@@ -241,9 +241,14 @@ export const CheckoutPage: React.FC = () => {
         idempotency_key: `chk_${Date.now()}_${Math.random()}`
       };
       
+      const deviceId = typeof window !== 'undefined' ? localStorage.getItem('aadhya_device_id') || '' : '';
+
       const res = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-device-id': deviceId
+        },
         body: JSON.stringify(payload)
       });
       const data = await res.json();

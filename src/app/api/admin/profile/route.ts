@@ -8,19 +8,7 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      // Default admin profile
-      return NextResponse.json({
-        success: true,
-        profile: {
-          id: 'admin',
-          first_name: 'Prem',
-          last_name: 'Karnawat',
-          email: 'admin@aadhya.co',
-          phone: '+91 98765 43210',
-          role: 'super_admin',
-          avatar: 'male'
-        }
-      });
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     const profiles = await queryDb(`SELECT * FROM profiles WHERE id = $1`, [user.id]);

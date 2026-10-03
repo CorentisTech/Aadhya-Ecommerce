@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
 import { queryDb } from '@/utils/db';
+import { validateUserSession } from '@/utils/sessionValidation';
 
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const session = await validateUserSession(request);
+    if (!session.valid) {
+      return NextResponse.json({ error: session.error, revoked: session.revoked }, { status: session.status });
     }
+    const user = session.user;
 
     // Check if profile exists, if not create default
     let profileRows = await queryDb(
@@ -71,12 +70,11 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const session = await validateUserSession(request);
+    if (!session.valid) {
+      return NextResponse.json({ error: session.error, revoked: session.revoked }, { status: session.status });
     }
+    const user = session.user;
 
     const body = await request.json();
     const { 

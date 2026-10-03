@@ -46,11 +46,23 @@ export default function AdminLoginPage() {
       }
 
       const role = profileData.profile.role;
-      if (role !== 'admin' && role !== 'super_admin') {
+      const validAdminRoles = ['super_admin', 'admin', 'editor', 'support'];
+      if (!validAdminRoles.includes(role)) {
         setError('This account does not have admin access.');
         await supabase.auth.signOut();
         return;
       }
+
+      // Register device for Single Device Policy
+      const deviceId = localStorage.getItem('aadhya_device_id') || 
+                       (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'dev_' + Date.now());
+      localStorage.setItem('aadhya_device_id', deviceId);
+
+      await fetch('/api/auth/device', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId, deviceName: 'Admin Portal' })
+      });
 
       router.push('/admin/dashboard');
     } catch (err: any) {

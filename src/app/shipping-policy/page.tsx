@@ -4,14 +4,14 @@ import { PolicyPage } from '@/components/ui/PolicyPage';
 // Opt out of static rendering so changes in admin CMS update immediately
 export const dynamic = 'force-dynamic';
 
-export default async function PrivacyPolicyPage() {
+export default async function ShippingPolicyPage() {
   let content = '';
 
   try {
-    const rows = await queryDb('SELECT privacy_policy FROM website_settings LIMIT 1');
-    content = rows && rows.length > 0 ? rows[0].privacy_policy : '';
+    const rows = await queryDb('SELECT shipping_policy FROM website_settings LIMIT 1');
+    content = rows && rows.length > 0 ? rows[0].shipping_policy : '';
   } catch (error) {
-    console.error('Failed to load Privacy Policy:', error);
+    console.error('Failed to load Shipping Policy:', error);
   }
 
   if (!content) {
@@ -20,8 +20,8 @@ export default async function PrivacyPolicyPage() {
 
   return (
     <PolicyPage 
-      title="Privacy Policy"
-      subtitle="Data Protection & User Privacy"
+      title="Shipping Policy"
+      subtitle="Delivery Information & Timelines"
       content={content}
     />
   );
