@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Globe, Save, Check, Plus, Trash2, Tag, Image as ImageIcon, ShieldCheck } from 'lucide-react';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 
 export default function WebsiteCMSPage() {
   const [activeSite, setActiveSite] = useState<'fashion' | 'coins'>('fashion');
@@ -361,46 +362,38 @@ export default function WebsiteCMSPage() {
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-6">
             <h2 className="text-base font-black text-gray-900">Legal Policies & Buyer Protections</h2>
 
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-600 uppercase">Privacy Policy</label>
-                <textarea
-                  rows={4}
-                  value={privacyPolicy}
-                  onChange={(e) => setPrivacyPolicy(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-xs leading-relaxed"
-                />
-              </div>
+            <div className="space-y-6">
+              <RichTextEditor
+                label="Privacy Policy"
+                value={privacyPolicy}
+                onChange={setPrivacyPolicy}
+                placeholder="Write your privacy policy with headings, bullet points, bold text..."
+                minHeight="280px"
+              />
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-600 uppercase">Return & Refund Policy</label>
-                <textarea
-                  rows={4}
-                  value={refundPolicy}
-                  onChange={(e) => setRefundPolicy(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-xs leading-relaxed"
-                />
-              </div>
+              <RichTextEditor
+                label="Return & Refund Policy"
+                value={refundPolicy}
+                onChange={setRefundPolicy}
+                placeholder="Write your refund/cancellation policy..."
+                minHeight="250px"
+              />
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-600 uppercase">Terms & Conditions</label>
-                <textarea
-                  rows={4}
-                  value={termsConditions}
-                  onChange={(e) => setTermsConditions(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-xs leading-relaxed"
-                />
-              </div>
+              <RichTextEditor
+                label="Terms & Conditions"
+                value={termsConditions}
+                onChange={setTermsConditions}
+                placeholder="Write your terms and conditions..."
+                minHeight="250px"
+              />
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-600 uppercase">Shipping Policy</label>
-                <textarea
-                  rows={3}
-                  value={shippingPolicy}
-                  onChange={(e) => setShippingPolicy(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-xs leading-relaxed"
-                />
-              </div>
+              <RichTextEditor
+                label="Shipping Policy"
+                value={shippingPolicy}
+                onChange={setShippingPolicy}
+                placeholder="Write your shipping policy..."
+                minHeight="200px"
+              />
             </div>
           </div>
 

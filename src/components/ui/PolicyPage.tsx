@@ -13,8 +13,8 @@ interface PolicyPageProps {
 export function PolicyPage({ title, subtitle, content }: PolicyPageProps) {
   // Sanitize the HTML content provided by the admin editor
   const sanitizedContent = DOMPurify.sanitize(content || '<p>Content is being updated. Please check back later.</p>', {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'br', 'span', 'div', 'blockquote'],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style']
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'u', 's', 'a', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'br', 'span', 'div', 'blockquote', 'pre', 'code', 'sub', 'sup', 'hr', 'img'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style', 'src', 'alt', 'width', 'height']
   });
 
   return (
