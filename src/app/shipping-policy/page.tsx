@@ -4,11 +4,13 @@ import { PolicyPage } from '@/components/ui/PolicyPage';
 // Opt out of static rendering so changes in admin CMS update immediately
 export const dynamic = 'force-dynamic';
 
-export default async function ShippingPolicyPage() {
+export default async function ShippingPolicyPage({ searchParams }: { searchParams: Promise<{ site?: string }> }) {
   let content = '';
+  const params = await searchParams;
+  const siteId = params?.site === 'coins' ? 'coins' : 'fashion';
 
   try {
-    const rows = await queryDb('SELECT shipping_policy FROM website_settings LIMIT 1');
+    const rows = await queryDb('SELECT shipping_policy FROM website_settings WHERE id = $1', [siteId]);
     content = rows && rows.length > 0 ? rows[0].shipping_policy : '';
   } catch (error) {
     console.error('Failed to load Shipping Policy:', error);

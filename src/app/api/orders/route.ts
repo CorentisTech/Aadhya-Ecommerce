@@ -113,7 +113,27 @@ export async function POST(request: Request) {
     }
 
     const shippingCost = serverSubtotal >= 5000 ? 0 : 150;
-    const discountAmount = Math.round(serverSubtotal * 0.1);
+    
+    // Apply real offer/discount if offer_code provided
+    let discountAmount = 0;
+    if (body.offer_code) {
+      const offerRows = await queryDb(
+        `SELECT * FROM offers WHERE code = $1 AND is_active = true AND (end_date IS NULL OR end_date > NOW())`,
+        [body.offer_code]
+      );
+      if (offerRows && offerRows.length > 0) {
+        const offer = offerRows[0];
+        const minOrder = Number(offer.min_order_amount || 0);
+        if (serverSubtotal >= minOrder) {
+          if (offer.discount_percentage && Number(offer.discount_percentage) > 0) {
+            discountAmount = Math.round(serverSubtotal * (Number(offer.discount_percentage) / 100));
+          } else if (offer.discount_amount && Number(offer.discount_amount) > 0) {
+            discountAmount = Math.min(Number(offer.discount_amount), serverSubtotal);
+          }
+        }
+      }
+    }
+
     const serverTotal = serverSubtotal + shippingCost - discountAmount;
 
     // Check idempotency (prevent duplicate orders if user clicked twice)
@@ -126,6 +146,9 @@ export async function POST(request: Request) {
 
     const orderNumber = 'AD-' + Math.floor(100000 + Math.random() * 900000);
     const userId = user.id;
+    const isCOD = (payment_method || 'CARD').toUpperCase() === 'COD';
+    const orderStatus = isCOD ? 'PLACED' : 'PENDING';
+    const paymentStatus = isCOD ? 'COD_PENDING' : 'PENDING';
     
     // Insert order with server-calculated totals
     const orderRows = await queryDb(`
@@ -133,16 +156,18 @@ export async function POST(request: Request) {
         order_number, user_id, status, subtotal, shipping_cost, discount_amount, total_amount, 
         payment_method, payment_status, shipping_address_id, first_name, last_name, customer_email, customer_phone, idempotency_key
       ) VALUES (
-        $1, $2, 'PENDING', $3, $4, $5, $6, $7, 'PENDING', NULL, $8, $9, $10, $11, $12
-      ) RETURNING id, order_number
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, NULL, $10, $11, $12, $13, $14
+      ) RETURNING id, order_number, status, payment_status
     `, [
       orderNumber, 
       userId, 
+      orderStatus,
       serverSubtotal, 
       shippingCost, 
       discountAmount, 
       serverTotal, 
       payment_method || 'CARD',
+      paymentStatus,
       addr.firstName || '',
       addr.lastName || '',
       addr.email || '',
@@ -152,9 +177,11 @@ export async function POST(request: Request) {
 
     const newOrder = orderRows[0];
 
-    // Insert items
+    // Insert items with server-verified prices
     if (items && items.length > 0) {
       for (const item of items) {
+        const priceRows = await queryDb('SELECT price FROM products WHERE id = $1', [item.product.id]);
+        const verifiedPrice = priceRows && priceRows.length > 0 ? Number(priceRows[0].price) : 0;
         await queryDb(`
           INSERT INTO order_items (order_id, product_id, quantity, unit_price, selected_size, selected_color)
           VALUES ($1, $2, $3, $4, $5, $6)
@@ -162,7 +189,7 @@ export async function POST(request: Request) {
           newOrder.id,
           item.product.id,
           item.quantity,
-          item.product.price,
+          verifiedPrice,
           item.selectedSize || null,
           item.selectedColor || null
         ]);

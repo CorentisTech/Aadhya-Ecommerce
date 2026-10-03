@@ -2,9 +2,20 @@ import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
 import { v4 as uuidv4 } from 'uuid';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const offers = await queryDb(`SELECT * FROM offers ORDER BY created_at DESC`);
+    const { searchParams } = new URL(request.url);
+    const department = searchParams.get('department');
+
+    let query = 'SELECT * FROM offers';
+    let params: any[] = [];
+    if (department && department !== 'all') {
+      query += " WHERE department = $1 OR department = 'global'";
+      params.push(department);
+    }
+    query += ' ORDER BY created_at DESC';
+
+    const offers = await queryDb(query, params);
     return NextResponse.json({ success: true, offers });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

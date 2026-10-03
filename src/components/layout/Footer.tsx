@@ -24,6 +24,9 @@ export const Footer: React.FC = () => {
     return null;
   }
 
+  const isCoins = pathname?.startsWith('/numismatics') || false;
+  const siteQuery = isCoins ? '?site=coins' : '?site=fashion';
+
   const handleNavClick = (sectionId: string) => {
     setPage('home');
     setTimeout(() => {
@@ -82,11 +85,11 @@ export const Footer: React.FC = () => {
             POLICIES & CARE
           </h4>
           <ul className="space-y-2.5 text-xs text-white/60 font-light tracking-wide">
-            <li><a href="/privacy-policy" className="hover:text-white transition-colors duration-300">Privacy Policy</a></li>
-            <li><a href="/terms-and-conditions" className="hover:text-white transition-colors duration-300">Terms & Conditions</a></li>
-            <li><a href="/track-order" className="hover:text-white transition-colors duration-300">Track Order</a></li>
-            <li><a href="/cancellation-and-refund" className="hover:text-white transition-colors duration-300">Cancellation & Refund</a></li>
-            <li><a href="/shipping-policy" className="hover:text-white transition-colors duration-300">Shipping Policy</a></li>
+            <li><a href={`/privacy-policy${siteQuery}`} className="hover:text-white transition-colors duration-300">Privacy Policy</a></li>
+            <li><a href={`/terms-and-conditions${siteQuery}`} className="hover:text-white transition-colors duration-300">Terms & Conditions</a></li>
+            <li><a href={`/track-order${siteQuery}`} className="hover:text-white transition-colors duration-300">Track Order</a></li>
+            <li><a href={`/cancellation-and-refund${siteQuery}`} className="hover:text-white transition-colors duration-300">Cancellation & Refund</a></li>
+            <li><a href={`/shipping-policy${siteQuery}`} className="hover:text-white transition-colors duration-300">Shipping Policy</a></li>
           </ul>
         </div>
 

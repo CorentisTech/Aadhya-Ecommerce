@@ -31,18 +31,22 @@ const DragToPaymentButton: React.FC<DragToPaymentButtonProps> = ({ onProceed, is
   type DragState = 'idle' | 'dragging' | 'completed' | 'cancelled' | 'resetting';
   const [dragState, setDragState] = useState<DragState>('idle');
   const [resetKey, setResetKey] = useState(0);
+  const [dragProgress, setDragProgress] = useState(0); // 0 to 1
 
-  // Automatically reset position & state when payment modal closes or opens
+  const DRAG_THRESHOLD = 120; // pixels to fully activate
+
   useEffect(() => {
     if (!isOpen) {
       setDragState('resetting');
+      setDragProgress(0);
       const timer = setTimeout(() => {
         setDragState('idle');
         setResetKey(prev => prev + 1);
-      }, 150);
+      }, 200);
       return () => clearTimeout(timer);
     } else {
       setDragState('completed');
+      setDragProgress(1);
     }
   }, [isOpen]);
 
@@ -50,62 +54,81 @@ const DragToPaymentButton: React.FC<DragToPaymentButtonProps> = ({ onProceed, is
     setDragState('dragging');
   };
 
+  const handleDrag = (event: any, info: any) => {
+    const progress = Math.min(1, Math.max(0, Math.abs(info.offset.y) / DRAG_THRESHOLD));
+    setDragProgress(progress);
+  };
+
   const handleDragEnd = (event: any, info: any) => {
-    if (info.offset.y < -30 || info.velocity.y < -150) {
+    const progress = Math.abs(info.offset.y) / DRAG_THRESHOLD;
+    if (progress >= 0.7 || info.velocity.y < -200) {
       setDragState('completed');
+      setDragProgress(1);
       onProceed();
     } else {
       setDragState('cancelled');
+      setDragProgress(0);
       setTimeout(() => {
         setDragState('idle');
         setResetKey(prev => prev + 1);
-      }, 200);
+      }, 250);
     }
   };
 
-  const handleClick = () => {
-    setDragState('completed');
-    onProceed();
-  };
+  const progressColor = dragProgress > 0.7 ? '#22c55e' : '#F26A2E';
 
   return (
-    <div className="relative pt-2 select-none">
-      <div className="flex flex-col items-center space-y-1 mb-2">
+    <div className="relative pt-3 select-none">
+      {/* Progress indicator */}
+      <div className="flex flex-col items-center space-y-1.5 mb-3">
         <motion.div
-          animate={{ y: [0, -6, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          className="text-[#F26A2E] text-base"
+          animate={{ y: [0, -8, 0], opacity: dragState === 'dragging' ? 0.3 : 1 }}
+          transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+          className="text-[#F26A2E] text-lg"
         >
           👆
         </motion.div>
         <span className="text-[8px] font-bold text-[#F26A2E] tracking-[0.25em] uppercase">
-          Drag up to pay
+          {dragState === 'dragging' 
+            ? dragProgress > 0.7 ? 'Release to pay' : 'Keep pulling...'
+            : 'Hold & drag up to pay'
+          }
         </span>
+        {/* Progress bar */}
+        <div className="w-32 h-1 bg-gray-200 rounded-full overflow-hidden">
+          <motion.div 
+            className="h-full rounded-full"
+            style={{ backgroundColor: progressColor }}
+            animate={{ width: `${dragProgress * 100}%` }}
+            transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+          />
+        </div>
       </div>
 
-      <div className="h-16 bg-brand-white rounded-full border-2 border-dashed border-[#F26A2E]/50 relative overflow-hidden flex items-center justify-center p-1.5 shadow-sm">
+      <div className="h-[72px] bg-brand-white rounded-full border-2 border-dashed border-[#F26A2E]/40 relative overflow-visible flex items-center justify-center p-1.5 shadow-sm">
         <motion.div
           key={resetKey}
           drag="y"
-          dragConstraints={{ top: -75, bottom: 0 }}
-          dragElastic={0.1}
+          dragConstraints={{ top: -DRAG_THRESHOLD - 30, bottom: 0 }}
+          dragElastic={0.15}
           dragSnapToOrigin={true}
           onDragStart={handleDragStart}
+          onDrag={handleDrag}
           onDragEnd={handleDragEnd}
-          onClick={handleClick}
           animate={
             dragState === 'idle' || dragState === 'resetting' || dragState === 'cancelled'
               ? { y: 0 }
               : undefined
           }
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="absolute inset-x-1.5 h-[50px] bg-[#F26A2E] rounded-full flex items-center justify-center cursor-pointer text-brand-white text-xs font-bold tracking-[0.25em] shadow-md touch-none"
-          whileTap={{ scale: 0.98 }}
+          className="absolute inset-x-1.5 h-[56px] bg-[#F26A2E] rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing text-brand-white text-xs font-bold tracking-[0.25em] shadow-lg touch-none z-10"
+          whileTap={{ scale: 0.97 }}
+          style={{ touchAction: 'none' }}
         >
-          <span className="flex items-center gap-2">
-            <ArrowUp className="w-3.5 h-3.5 animate-bounce" />
-            <span>
-              {dragState === 'completed' ? 'PROCESSING PAYMENT...' : 'DRAG UP FOR PAYMENT'}
+          <span className="flex items-center gap-2 pointer-events-none">
+            <ArrowUp className={`w-4 h-4 ${dragState !== 'dragging' ? 'animate-bounce' : ''}`} />
+            <span className="text-[11px]">
+              {dragState === 'completed' ? 'PROCESSING...' : dragState === 'dragging' && dragProgress > 0.7 ? 'RELEASE TO PAY' : 'DRAG UP TO PAY'}
             </span>
           </span>
         </motion.div>
@@ -237,7 +260,7 @@ export const CheckoutPage: React.FC = () => {
         shipping_cost: shippingCost,
         discount_amount: discount,
         total_amount: total,
-        payment_method: 'CARD',
+        payment_method: selectedCard === 'cod' ? 'COD' : 'CARD',
         idempotency_key: `chk_${Date.now()}_${Math.random()}`
       };
       

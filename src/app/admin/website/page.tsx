@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Globe, Save, Check, Plus, Trash2, Tag, Image as ImageIcon, ShieldCheck } from 'lucide-react';
 
 export default function WebsiteCMSPage() {
+  const [activeSite, setActiveSite] = useState<'fashion' | 'coins'>('fashion');
   const [activeTab, setActiveTab] = useState<'branding' | 'policies' | 'banners' | 'offers'>('branding');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,7 +45,7 @@ export default function WebsiteCMSPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/website');
+      const res = await fetch(`/api/admin/website?site=${activeSite}`);
       const data = await res.json();
       if (data.success && data.settings) {
         const s = data.settings;
@@ -82,7 +83,7 @@ export default function WebsiteCMSPage() {
 
   useEffect(() => {
     fetchSettings();
-  }, []);
+  }, [activeSite]);
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +91,7 @@ export default function WebsiteCMSPage() {
     setSavedSuccess(false);
 
     try {
-      const res = await fetch('/api/admin/website', {
+      const res = await fetch(`/api/admin/website?site=${activeSite}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -204,6 +205,27 @@ export default function WebsiteCMSPage() {
         <p className="text-xs font-semibold text-gray-500">
           Manage brand identity, contact information, legal policies, promotional banners and coupon codes
         </p>
+      </div>
+
+      {/* Site Selector */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mr-2">Site:</span>
+        {[
+          { id: 'fashion' as const, label: 'Fashion' },
+          { id: 'coins' as const, label: 'Coins & Notes' },
+        ].map((s) => (
+          <button
+            key={s.id}
+            onClick={() => setActiveSite(s.id)}
+            className={`px-4 py-2 text-[11px] font-extrabold tracking-wider uppercase rounded-xl border transition-all ${
+              activeSite === s.id
+                ? 'bg-[#181818] text-white border-[#181818] shadow-md'
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
       </div>
 
       {/* Tabs */}
