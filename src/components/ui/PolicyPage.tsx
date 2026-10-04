@@ -33,12 +33,12 @@ export function PolicyPage({ title, subtitle, content }: PolicyPageProps) {
         </div>
 
         {/* Content Box */}
-        <div className="bg-white border border-[#EFE6DA] shadow-sm rounded-3xl p-6 sm:p-10 md:p-16">
+        <div className="bg-white border border-[#EFE6DA] shadow-sm rounded-3xl p-6 sm:p-10 md:p-16 overflow-hidden max-w-full">
           <div 
-            className="prose prose-sm md:prose-base prose-stone max-w-none 
+            className="prose prose-sm md:prose-base prose-stone max-w-none break-words overflow-hidden [&_*]:break-words w-full
               prose-headings:font-serif prose-headings:font-bold prose-headings:text-[#181818]
               prose-a:text-[#F26A2E] prose-a:font-semibold hover:prose-a:text-[#cca05b]
-              prose-p:text-gray-600 prose-p:leading-relaxed
+              prose-p:text-gray-600 prose-p:leading-relaxed prose-p:whitespace-pre-wrap
               prose-li:text-gray-600 prose-li:leading-relaxed"
             dangerouslySetInnerHTML={{ __html: sanitizedContent }}
           />

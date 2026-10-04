@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp, UserDetails } from '../../context/AppContext';
+import { createClient } from '@/utils/supabase/client';
 import { ProductVisual } from './ProductVisual';
 import { 
   ArrowLeft, 
@@ -31,22 +32,18 @@ const DragToPaymentButton: React.FC<DragToPaymentButtonProps> = ({ onProceed, is
   type DragState = 'idle' | 'dragging' | 'completed' | 'cancelled' | 'resetting';
   const [dragState, setDragState] = useState<DragState>('idle');
   const [resetKey, setResetKey] = useState(0);
-  const [dragProgress, setDragProgress] = useState(0); // 0 to 1
 
-  const DRAG_THRESHOLD = 120; // pixels to fully activate
-
+  // Automatically reset position & state when payment modal closes or opens
   useEffect(() => {
     if (!isOpen) {
       setDragState('resetting');
-      setDragProgress(0);
       const timer = setTimeout(() => {
         setDragState('idle');
         setResetKey(prev => prev + 1);
-      }, 200);
+      }, 150);
       return () => clearTimeout(timer);
     } else {
       setDragState('completed');
-      setDragProgress(1);
     }
   }, [isOpen]);
 
@@ -54,81 +51,64 @@ const DragToPaymentButton: React.FC<DragToPaymentButtonProps> = ({ onProceed, is
     setDragState('dragging');
   };
 
-  const handleDrag = (event: any, info: any) => {
-    const progress = Math.min(1, Math.max(0, Math.abs(info.offset.y) / DRAG_THRESHOLD));
-    setDragProgress(progress);
-  };
-
   const handleDragEnd = (event: any, info: any) => {
-    const progress = Math.abs(info.offset.y) / DRAG_THRESHOLD;
-    if (progress >= 0.7 || info.velocity.y < -200) {
+    // Fast and smooth - activate early if pulled up fast, or pulled more than half
+    if (info.offset.y < -30 || info.velocity.y < -150) {
       setDragState('completed');
-      setDragProgress(1);
       onProceed();
     } else {
       setDragState('cancelled');
-      setDragProgress(0);
       setTimeout(() => {
         setDragState('idle');
         setResetKey(prev => prev + 1);
-      }, 250);
+      }, 200);
     }
   };
 
-  const progressColor = dragProgress > 0.7 ? '#22c55e' : '#F26A2E';
+  const handleClick = () => {
+    setDragState('completed');
+    onProceed();
+  };
 
   return (
-    <div className="relative pt-3 select-none">
+    <div className="relative pt-2 select-none">
       {/* Progress indicator */}
-      <div className="flex flex-col items-center space-y-1.5 mb-3">
+      <div className="flex flex-col items-center space-y-1 mb-2">
         <motion.div
           animate={{ y: [0, -8, 0], opacity: dragState === 'dragging' ? 0.3 : 1 }}
           transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
           className="text-[#F26A2E] text-lg"
         >
-          👆
+          ??
         </motion.div>
         <span className="text-[8px] font-bold text-[#F26A2E] tracking-[0.25em] uppercase">
-          {dragState === 'dragging' 
-            ? dragProgress > 0.7 ? 'Release to pay' : 'Keep pulling...'
-            : 'Hold & drag up to pay'
-          }
+          Drag up to pay
         </span>
-        {/* Progress bar */}
-        <div className="w-32 h-1 bg-gray-200 rounded-full overflow-hidden">
-          <motion.div 
-            className="h-full rounded-full"
-            style={{ backgroundColor: progressColor }}
-            animate={{ width: `${dragProgress * 100}%` }}
-            transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-          />
-        </div>
       </div>
 
-      <div className="h-[72px] bg-brand-white rounded-full border-2 border-dashed border-[#F26A2E]/40 relative overflow-visible flex items-center justify-center p-1.5 shadow-sm">
+      <div className="h-16 bg-brand-white rounded-full border-2 border-dashed border-[#F26A2E]/50 relative overflow-hidden flex items-center justify-center p-1.5 shadow-sm">
         <motion.div
           key={resetKey}
           drag="y"
-          dragConstraints={{ top: -DRAG_THRESHOLD - 30, bottom: 0 }}
-          dragElastic={0.15}
+          dragConstraints={{ top: -75, bottom: 0 }}
+          dragElastic={0.1}
           dragSnapToOrigin={true}
           onDragStart={handleDragStart}
-          onDrag={handleDrag}
           onDragEnd={handleDragEnd}
+          onClick={handleClick}
           animate={
             dragState === 'idle' || dragState === 'resetting' || dragState === 'cancelled'
               ? { y: 0 }
               : undefined
           }
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="absolute inset-x-1.5 h-[56px] bg-[#F26A2E] rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing text-brand-white text-xs font-bold tracking-[0.25em] shadow-lg touch-none z-10"
-          whileTap={{ scale: 0.97 }}
-          style={{ touchAction: 'none' }}
+          transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+          className="absolute inset-x-1.5 h-[50px] bg-[#F26A2E] rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing text-brand-white text-xs font-bold tracking-[0.25em] shadow-md touch-none"
+          whileTap={{ scale: 0.98 }}
         >
-          <span className="flex items-center gap-2 pointer-events-none">
-            <ArrowUp className={`w-4 h-4 ${dragState !== 'dragging' ? 'animate-bounce' : ''}`} />
-            <span className="text-[11px]">
-              {dragState === 'completed' ? 'PROCESSING...' : dragState === 'dragging' && dragProgress > 0.7 ? 'RELEASE TO PAY' : 'DRAG UP TO PAY'}
+          <span className="flex items-center gap-2">
+            <ArrowUp className="w-3.5 h-3.5 animate-bounce" />
+            <span>
+              {dragState === 'completed' ? 'PROCESSING PAYMENT...' : 'DRAG UP FOR PAYMENT'}
             </span>
           </span>
         </motion.div>
@@ -150,6 +130,8 @@ export const CheckoutPage: React.FC = () => {
   const [checkoutOtp, setCheckoutOtp] = useState('');
   const [checkoutOtpSent, setCheckoutOtpSent] = useState(false);
   const [checkoutOtpError, setCheckoutOtpError] = useState(false);
+  const [checkoutAuthLoading, setCheckoutAuthLoading] = useState(false);
+  const [checkoutAuthMsg, setCheckoutAuthMsg] = useState('');
   const [checkoutRegForm, setCheckoutRegForm] = useState({
     firstName: '',
     lastName: '',
@@ -163,6 +145,47 @@ export const CheckoutPage: React.FC = () => {
     otherPhone: '',
     avatar: 'male' as 'male' | 'female',
   });
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!checkoutEmail) return;
+    setCheckoutAuthLoading(true);
+    setCheckoutAuthMsg('');
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOtp({
+      email: checkoutEmail.trim(),
+      options: { shouldCreateUser: true }
+    });
+    setCheckoutAuthLoading(false);
+    if (error) {
+      setCheckoutAuthMsg(error.message);
+    } else {
+      setCheckoutOtpSent(true);
+      setCheckoutAuthMsg('OTP sent to your email.');
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCheckoutAuthLoading(true);
+    setCheckoutAuthMsg('');
+    setCheckoutOtpError(false);
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: checkoutEmail.trim(),
+      token: checkoutOtp.trim(),
+      type: 'email'
+    });
+    
+    if (error) {
+      setCheckoutOtpError(true);
+      setCheckoutAuthMsg(error.message);
+      setCheckoutAuthLoading(false);
+    } else {
+      setCheckoutLoginScreen('register');
+      setCheckoutAuthLoading(false);
+    }
+  };
 
   // Mock inputs inside payment methods
   const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvv: '', name: '' });
@@ -352,12 +375,6 @@ export const CheckoutPage: React.FC = () => {
                   <Mail className="w-3.5 h-3.5 text-[#F26A2E]" />
                   <span>Continue with Email</span>
                 </button>
-                <button 
-                  onClick={() => loginUser("ananya.sharma@example.com")}
-                  className="w-full py-3 bg-[#F26A2E] text-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-95 rounded-xl transition-all shadow-sm"
-                >
-                  Quick Guest Checkout
-                </button>
               </div>
             </div>
           )}
@@ -367,7 +384,7 @@ export const CheckoutPage: React.FC = () => {
               <h2 className="font-display font-bold text-lg text-brand-espresso">Welcome Back</h2>
               
               {!checkoutOtpSent ? (
-                <form onSubmit={(e) => { e.preventDefault(); setCheckoutOtpSent(true); }} className="space-y-4">
+                <form onSubmit={handleSendOtp} className="space-y-4">
                   <div className="space-y-1.5 text-left">
                     <label className="text-[9px] font-bold text-brand-warmGray uppercase tracking-wider block">Email Address</label>
                     <input
@@ -379,24 +396,16 @@ export const CheckoutPage: React.FC = () => {
                       className="w-full bg-[#FCFAF7] border border-brand-border/60 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-brand-espresso"
                     />
                   </div>
-                  <button type="submit" className="w-full py-3 bg-[#F26A2E] text-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-95 rounded-xl">
-                    Send Verification OTP
+                  {checkoutAuthMsg && <span className="text-[9px] font-bold text-brand-sale block">{checkoutAuthMsg}</span>}
+                  <button type="submit" disabled={checkoutAuthLoading} className="w-full py-3 bg-[#F26A2E] text-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-95 rounded-xl disabled:opacity-50">
+                    {checkoutAuthLoading ? 'Sending...' : 'Send Verification OTP'}
                   </button>
                 </form>
               ) : (
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  if (checkoutOtp === '1234') {
-                    setCheckoutOtpError(false);
-                    // Open register form to let them enter name etc.
-                    setCheckoutLoginScreen('register');
-                  } else {
-                    setCheckoutOtpError(true);
-                  }
-                }} className="space-y-4">
+                <form onSubmit={handleVerifyOtp} className="space-y-4">
                   <div className="text-left bg-[#FFF3EC] p-3 rounded-xl border border-[#F9E1D3]/50">
                     <p className="text-[9px] font-bold text-[#F26A2E] tracking-wider uppercase">
-                      ✓ OTP sent! Enter code "1234" to verify.
+                      OTP sent to {checkoutEmail}
                     </p>
                   </div>
                   <div className="space-y-1 text-left">
@@ -404,16 +413,16 @@ export const CheckoutPage: React.FC = () => {
                     <input
                       required
                       type="text"
-                      placeholder="Enter 4-digit code"
-                      maxLength={4}
+                      placeholder="Enter 6-digit code"
+                      maxLength={6}
                       value={checkoutOtp}
                       onChange={(e) => setCheckoutOtp(e.target.value)}
                       className="w-full bg-[#FCFAF7] border border-brand-border/60 p-3 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold text-center tracking-[0.4em]"
                     />
                   </div>
-                  {checkoutOtpError && <span className="text-[9px] font-bold text-brand-sale block">✕ Invalid Code. Use "1234".</span>}
-                  <button type="submit" className="w-full py-3 bg-brand-espresso text-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-95 rounded-xl">
-                    Verify Code
+                  {checkoutOtpError && <span className="text-[9px] font-bold text-brand-sale block">{checkoutAuthMsg || 'Invalid Code.'}</span>}
+                  <button type="submit" disabled={checkoutAuthLoading} className="w-full py-3 bg-brand-espresso text-white text-[10px] font-extrabold tracking-widest uppercase hover:opacity-95 rounded-xl disabled:opacity-50">
+                    {checkoutAuthLoading ? 'Verifying...' : 'Verify Code'}
                   </button>
                 </form>
               )}

@@ -9,6 +9,7 @@ export default function FashionCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Form fields
@@ -40,8 +41,10 @@ export default function FashionCategoriesPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch('/api/admin/categories', {
-        method: 'POST',
+      const method = editingId ? 'PUT' : 'POST';
+      const url = editingId ? `/api/admin/categories/${editingId}` : '/api/admin/categories';
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
@@ -56,10 +59,11 @@ export default function FashionCategoriesPage() {
         setName('');
         setDescription('');
         setImageUrl('');
+        setEditingId(null);
         setShowModal(false);
         fetchCategories();
       } else {
-        alert(data.error || 'Failed to create category');
+        alert(data.error || 'Failed to save category');
       }
     } catch (err) {
       console.error(err);
@@ -79,6 +83,24 @@ export default function FashionCategoriesPage() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const openEditModal = (c: any) => {
+    setEditingId(c.id);
+    setName(c.name);
+    setDescription(c.description || '');
+    setImageUrl(c.image_url || '');
+    setSortOrder(c.sort_order || 0);
+    setShowModal(true);
+  };
+
+  const openCreateModal = () => {
+    setEditingId(null);
+    setName('');
+    setDescription('');
+    setImageUrl('');
+    setSortOrder(0);
+    setShowModal(true);
   };
 
   return (
@@ -105,7 +127,7 @@ export default function FashionCategoriesPage() {
             <span>Switch to Coins & Notes</span>
           </Link>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openCreateModal}
             className="px-4 py-2 bg-[#cca05b] text-[#15171c] font-black text-xs rounded-xl shadow hover:bg-[#d8ae69] transition-all flex items-center space-x-1.5"
           >
             <Plus className="w-4 h-4" />
@@ -123,7 +145,7 @@ export default function FashionCategoriesPage() {
         <div className="bg-white rounded-3xl p-12 text-center text-xs font-bold text-gray-400 space-y-2">
           <div>No fashion categories configured yet.</div>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openCreateModal}
             className="text-[#cca05b] underline"
           >
             + Create First Category
@@ -141,14 +163,22 @@ export default function FashionCategoriesPage() {
                   <span className="font-mono text-[10px] text-gray-400 font-bold uppercase">
                     Order: {c.sort_order || 0}
                   </span>
-                  <button
-                    onClick={() => handleToggleActive(c.id, c.is_active)}
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                      c.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    {c.is_active ? 'Active' : 'Hidden'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openEditModal(c)}
+                      className="p-1 rounded-md text-gray-400 hover:text-[#cca05b] hover:bg-amber-50"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleToggleActive(c.id, c.is_active)}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                        c.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                      }`}
+                    >
+                      {c.is_active ? 'Active' : 'Hidden'}
+                    </button>
+                  </div>
                 </div>
 
                 <h3 className="text-base font-black text-gray-900">{c.name}</h3>
@@ -174,14 +204,14 @@ export default function FashionCategoriesPage() {
         </div>
       )}
 
-      {/* New Category Modal */}
+      {/* Category Modal (Create / Edit) */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 text-left">
             <div>
-              <h2 className="text-xl font-black text-gray-900">New Fashion Category</h2>
+              <h2 className="text-xl font-black text-gray-900">{editingId ? 'Edit' : 'New'} Fashion Category</h2>
               <p className="text-xs font-semibold text-gray-400">
-                Adds a dynamic category to the storefront and catalog filters
+                {editingId ? 'Update category details' : 'Adds a dynamic category to the storefront and catalog filters'}
               </p>
             </div>
 
@@ -239,7 +269,7 @@ export default function FashionCategoriesPage() {
                   disabled={submitting}
                   className="px-6 py-2.5 rounded-xl bg-[#cca05b] text-[#15171c] font-black text-xs hover:bg-[#d8ae69] shadow disabled:opacity-50"
                 >
-                  {submitting ? 'Creating...' : 'Create Category'}
+                  {submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Category'}
                 </button>
               </div>
             </form>

@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Coins, Shirt } from 'lucide-react';
+import { Plus, Coins, Shirt, Edit } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 
 export default function NumismaticsCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [name, setName] = useState('');
@@ -39,8 +40,10 @@ export default function NumismaticsCategoriesPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch('/api/admin/categories', {
-        method: 'POST',
+      const method = editingId ? 'PUT' : 'POST';
+      const url = editingId ? `/api/admin/categories/${editingId}` : '/api/admin/categories';
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
@@ -55,10 +58,11 @@ export default function NumismaticsCategoriesPage() {
         setName('');
         setDescription('');
         setImageUrl('');
+        setEditingId(null);
         setShowModal(false);
         fetchCategories();
       } else {
-        alert(data.error || 'Failed to create numismatics category');
+        alert(data.error || 'Failed to save numismatics category');
       }
     } catch (err) {
       console.error(err);
@@ -78,6 +82,24 @@ export default function NumismaticsCategoriesPage() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const openEditModal = (c: any) => {
+    setEditingId(c.id);
+    setName(c.name);
+    setDescription(c.description || '');
+    setImageUrl(c.image_url || '');
+    setSortOrder(c.sort_order || 0);
+    setShowModal(true);
+  };
+
+  const openCreateModal = () => {
+    setEditingId(null);
+    setName('');
+    setDescription('');
+    setImageUrl('');
+    setSortOrder(0);
+    setShowModal(true);
   };
 
   return (
@@ -104,7 +126,7 @@ export default function NumismaticsCategoriesPage() {
             <span>Switch to Fashion</span>
           </Link>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openCreateModal}
             className="px-4 py-2 bg-[#cca05b] text-[#15171c] font-black text-xs rounded-xl shadow hover:bg-[#d8ae69] transition-all flex items-center space-x-1.5"
           >
             <Plus className="w-4 h-4" />
@@ -121,7 +143,7 @@ export default function NumismaticsCategoriesPage() {
       ) : categories.length === 0 ? (
         <div className="bg-white rounded-3xl p-12 text-center text-xs font-bold text-gray-400 space-y-2">
           <div>No numismatics categories configured yet.</div>
-          <button onClick={() => setShowModal(true)} className="text-[#cca05b] underline">
+          <button onClick={openCreateModal} className="text-[#cca05b] underline">
             + Create First Category
           </button>
         </div>
@@ -137,14 +159,22 @@ export default function NumismaticsCategoriesPage() {
                   <span className="font-mono text-[10px] text-gray-400 font-bold uppercase">
                     Order: {c.sort_order || 0}
                   </span>
-                  <button
-                    onClick={() => handleToggleActive(c.id, c.is_active)}
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                      c.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    {c.is_active ? 'Active' : 'Hidden'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openEditModal(c)}
+                      className="p-1 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleToggleActive(c.id, c.is_active)}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                        c.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                      }`}
+                    >
+                      {c.is_active ? 'Active' : 'Hidden'}
+                    </button>
+                  </div>
                 </div>
 
                 <h3 className="text-base font-black text-gray-900">{c.name}</h3>
@@ -170,14 +200,14 @@ export default function NumismaticsCategoriesPage() {
         </div>
       )}
 
-      {/* New Category Modal */}
+      {/* Category Modal (Create / Edit) */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 text-left">
             <div>
-              <h2 className="text-xl font-black text-gray-900">New Coins & Notes Category</h2>
+              <h2 className="text-xl font-black text-gray-900">{editingId ? 'Edit' : 'New'} Coins & Notes Category</h2>
               <p className="text-xs font-semibold text-gray-400">
-                Adds a historical category to the Numismatics storefront & marquees
+                {editingId ? 'Update category details' : 'Adds a historical category to the Numismatics storefront & marquees'}
               </p>
             </div>
 
@@ -235,7 +265,7 @@ export default function NumismaticsCategoriesPage() {
                   disabled={submitting}
                   className="px-6 py-2.5 rounded-xl bg-[#cca05b] text-[#15171c] font-black text-xs hover:bg-[#d8ae69] shadow disabled:opacity-50"
                 >
-                  {submitting ? 'Creating...' : 'Create Category'}
+                  {submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Category'}
                 </button>
               </div>
             </form>
