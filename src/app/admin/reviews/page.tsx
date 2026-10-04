@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Star } from 'lucide-react';
-import ImageUpload from '@/components/ui/ImageUpload';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import Image from 'next/image';
 
 interface Product {
@@ -333,8 +333,8 @@ export default function AdminReviewsPage() {
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Review Image (Optional)</label>
                   <ImageUpload
-                    onUpload={(url) => setFormData({...formData, image: Array.isArray(url) ? url[0] : url})}
-                    defaultValue={formData.image ? [formData.image] : []}
+                    value={formData.image || ''}
+                    onChange={(url) => setFormData({...formData, image: url})}
                   />
                 </div>
 

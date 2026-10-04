@@ -183,7 +183,6 @@ export async function PUT(
         numismatic_details.collection_label,
         id
       ]);
-      ]);
     }
 
     // 3. Update Media
@@ -199,10 +198,10 @@ export async function PUT(
         if (Array.isArray(body.media) && body.media.length > 0) {
           for (let i = 0; i < body.media.length; i++) {
             const m = body.media[i];
-            await client.query(
+            await client.query(`
               INSERT INTO product_media (product_id, variant_id, media_url, sort_order, is_primary, color_name, color_hex)
               VALUES ($1, $2, $3, $4, $5, $6, $7)
-            , [
+            `, [
               dbProductId,
               m.variant_id || null,
               m.media_url,

@@ -202,7 +202,7 @@ export default function AccountPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customer_name: user ? `${user.first_name} ${user.last_name}` : '',
+          customer_name: user ? `${user.firstName} ${user.lastName}` : '',
           customer_email: user?.email || '',
           customer_phone: user?.phone || '',
           subject: helpSubject,

@@ -557,7 +557,6 @@ export default function OrderDetailPage() {
                 Confirm Dispatch
               </button>
             </div>
-            </div>
           </div>
         </div>
       )}

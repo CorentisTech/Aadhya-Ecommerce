@@ -53,7 +53,7 @@ export default function EditProductPage() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const res = await fetch(/api/admin/products/ + id);
+        const res = await fetch('/api/admin/products/' + id);
         const data = await res.json();
         if (data.success && data.product) {
           const p = data.product;
@@ -85,7 +85,7 @@ export default function EditProductPage() {
           }
 
           // Fetch categories for this department
-          const catRes = await fetch(/api/admin/categories?department= + p.department);
+          const catRes = await fetch('/api/admin/categories?department=' + p.department);
           const catData = await catRes.json();
           if (catData.success) setCategories(catData.categories);
 
@@ -179,7 +179,7 @@ export default function EditProductPage() {
         payload.numismatic_details = { era, year, mint, material, rarity };
       }
 
-      const res = await fetch(/api/admin/products/ + id, {
+      const res = await fetch('/api/admin/products/' + id, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -276,7 +276,7 @@ export default function EditProductPage() {
                         <ImageUpload
                           value={img}
                           onChange={(val) => updateVariantImage(vIdx, iIdx, val)}
-                          label={Image }
+                          label={`Image ${iIdx + 1}`}
                         />
                       </div>
                     ))}
@@ -307,7 +307,7 @@ export default function EditProductPage() {
                       copy[idx] = val;
                       setAdditionalImages(copy);
                     }}
-                    label={Gallery Image }
+                    label={`Gallery Image ${idx + 1}`}
                   />
                 ))}
               </div>
