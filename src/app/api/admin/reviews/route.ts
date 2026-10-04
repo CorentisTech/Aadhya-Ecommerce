@@ -4,13 +4,33 @@ import { queryDb } from '@/utils/db';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const department = searchParams.get('department') || 'fashion';
+    const department = searchParams.get('department');
+    const search = searchParams.get('q');
+    
+    let query = 
+      SELECT r.*, p.name as product_name, p.department as product_department 
+      FROM reviews r
+      LEFT JOIN products p ON r.product_id = p.id
+      WHERE 1=1
+    ;
+    const params: any[] = [];
+    let paramCount = 1;
 
-    const reviews = await queryDb(
-      `SELECT * FROM featured_reviews WHERE department = $1 ORDER BY sort_order ASC, created_at DESC`,
-      [department]
-    );
+    if (department && department !== 'all') {
+      query +=  AND r.site_type = $ + paramCount;
+      params.push(department);
+      paramCount++;
+    }
 
+    if (search) {
+      query +=  AND (r.reviewer_name ILIKE $ + paramCount +  OR r.title ILIKE $ + paramCount +  OR p.name ILIKE $ + paramCount + );
+      params.push(% + search + %);
+      paramCount++;
+    }
+
+    query +=  ORDER BY r.is_featured DESC, r.display_order ASC, r.created_at DESC;
+
+    const reviews = await queryDb(query, params);
     return NextResponse.json({ success: true, reviews });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -20,16 +40,16 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { department, reviewer_name, reviewer_location, rating, review_text } = body;
+    const { product_id, site_type, reviewer_name, rating, title, text, image_url, is_approved, is_featured, display_order } = body;
 
-    if (!review_text || !department) {
-      return NextResponse.json({ success: false, error: 'Review text and department are required' }, { status: 400 });
+    if (!product_id || !site_type || !text) {
+      return NextResponse.json({ success: false, error: 'Product, site type, and content are required' }, { status: 400 });
     }
 
     await queryDb(
-      `INSERT INTO featured_reviews (department, reviewer_name, reviewer_location, rating, review_text)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [department, reviewer_name || 'Anonymous', reviewer_location || '', rating || 5, review_text]
+      INSERT INTO reviews (product_id, site_type, reviewer_name, rating, title, text, image_url, is_approved, is_featured, display_order)
+       VALUES (, , , , , , , , , ),
+      [product_id, site_type, reviewer_name || 'Anonymous', rating || 5, title || '', text, image_url || null, is_approved !== false, is_featured || false, display_order || 0]
     );
 
     return NextResponse.json({ success: true });
@@ -41,20 +61,25 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, reviewer_name, reviewer_location, rating, review_text, is_active, sort_order } = body;
+    const { id, product_id, site_type, reviewer_name, rating, title, text, image_url, is_approved, is_featured, display_order } = body;
 
     if (!id) return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
 
     await queryDb(
-      `UPDATE featured_reviews SET
-        reviewer_name = COALESCE($2, reviewer_name),
-        reviewer_location = COALESCE($3, reviewer_location),
-        rating = COALESCE($4, rating),
-        review_text = COALESCE($5, review_text),
-        is_active = COALESCE($6, is_active),
-        sort_order = COALESCE($7, sort_order)
-       WHERE id = $1`,
-      [id, reviewer_name, reviewer_location, rating, review_text, is_active, sort_order]
+      UPDATE reviews SET
+        product_id = COALESCE(, product_id),
+        site_type = COALESCE(, site_type),
+        reviewer_name = COALESCE(, reviewer_name),
+        rating = COALESCE(, rating),
+        title = COALESCE(, title),
+        text = COALESCE(, text),
+        image_url = ,
+        is_approved = COALESCE(, is_approved),
+        is_featured = COALESCE(, is_featured),
+        display_order = COALESCE(, display_order),
+        updated_at = NOW()
+       WHERE id = ,
+      [id, product_id, site_type, reviewer_name, rating, title, text, image_url, is_approved, is_featured, display_order]
     );
 
     return NextResponse.json({ success: true });
@@ -69,7 +94,7 @@ export async function DELETE(request: Request) {
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
 
-    await queryDb('DELETE FROM featured_reviews WHERE id = $1', [id]);
+    await queryDb('DELETE FROM reviews WHERE id = ', [id]);
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

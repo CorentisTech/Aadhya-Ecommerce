@@ -40,15 +40,34 @@ export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [announcementIdx, setAnnouncementIdx] = useState(0);
-
-  const announcements = [
+  const [announcements, setAnnouncements] = useState<string[]>([
     "Free Shipping On Orders Above ₹2,999",
     "Handcrafted Pure Silks & Breathable Cottons",
     "Easy 7-Day Returns & Exchanges Across India"
-  ];
+  ]);
+
+  // Fetch offer strip messages from DB (fashion only)
+  useEffect(() => {
+    const fetchStrips = async () => {
+      try {
+        const res = await fetch('/api/strips?department=fashion&type=offer');
+        const data = await res.json();
+        if (data.success && data.strips && data.strips.length > 0) {
+          const msgs: string[] = [];
+          data.strips.forEach((s: any) => {
+            const content = typeof s.text_content === 'string' ? JSON.parse(s.text_content) : s.text_content;
+            if (Array.isArray(content)) msgs.push(...content);
+          });
+          if (msgs.length > 0) setAnnouncements(msgs);
+        }
+      } catch {}
+    };
+    fetchStrips();
+  }, []);
 
   // Rotate announcement bar every 5 seconds
   useEffect(() => {
+    if (announcements.length === 0) return;
     const timer = setInterval(() => {
       setAnnouncementIdx((prev) => (prev + 1) % announcements.length);
     }, 5000);

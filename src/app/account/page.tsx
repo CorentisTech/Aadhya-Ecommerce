@@ -22,7 +22,11 @@ import {
   Loader2,
   Package,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  HelpCircle,
+  Clock,
+  Truck,
+  CheckCircle2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,6 +45,15 @@ interface OrderItem {
   product_image?: string;
 }
 
+interface StatusHistoryEntry {
+  status: string;
+  action: string;
+  timestamp: string;
+  note?: string;
+  courier?: string;
+  tracking_number?: string;
+}
+
 interface Order {
   id: string;
   order_number: string;
@@ -54,6 +67,11 @@ interface Order {
   courier?: string;
   tracking_number?: string;
   tracking_url?: string;
+  dispatched_at?: string;
+  delivered_at?: string;
+  expected_delivery_date?: string;
+  status_history?: StatusHistoryEntry[];
+  rejection_reason?: string;
   created_at: string;
   items: OrderItem[];
 }
@@ -91,6 +109,14 @@ export default function AccountPage() {
   const [activeModal, setActiveModal] = useState<'profile' | 'address' | 'orders' | 'notifications' | 'help' | 'devices' | null>(null);
   const [isSavedToast, setIsSavedToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('Profile details saved successfully');
+
+  // Tracking and Help Modals
+  const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
+  const [helpOrder, setHelpOrder] = useState<Order | null>(null);
+  const [helpSubject, setHelpSubject] = useState('');
+  const [helpCategory, setHelpCategory] = useState('Order Issue');
+  const [helpDescription, setHelpDescription] = useState('');
+  const [helpSubmitting, setHelpSubmitting] = useState(false);
 
   // Supabase Auth Email OTP State
   const [authEmail, setAuthEmail] = useState('');
@@ -164,6 +190,42 @@ export default function AccountPage() {
     setToastMessage(msg);
     setIsSavedToast(true);
     setTimeout(() => setIsSavedToast(false), 2500);
+  };
+
+  // Handle order help submission
+  const handleHelpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!helpOrder) return;
+    setHelpSubmitting(true);
+    try {
+      const res = await fetch('/api/admin/support', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_name: user ? `${user.first_name} ${user.last_name}` : '',
+          customer_email: user?.email || '',
+          customer_phone: user?.phone || '',
+          subject: helpSubject,
+          category: helpCategory,
+          related_order_id: helpOrder.id,
+          message: helpDescription
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setHelpOrder(null);
+        setHelpSubject('');
+        setHelpCategory('Order Issue');
+        setHelpDescription('');
+        showToast('Support ticket created successfully!');
+      } else {
+        alert(data.error || 'Failed to submit help request');
+      }
+    } catch (err) {
+      alert('Error submitting help request');
+    } finally {
+      setHelpSubmitting(false);
+    }
   };
 
   // Handle saving basic profile details
@@ -1108,22 +1170,24 @@ export default function AccountPage() {
                         ))}
                       </div>
 
-                      {/* Summary & Courier */}
-                      <div className="pt-2 border-t border-[#EFE6DA] flex items-center justify-between text-xs">
-                        <div>
-                          {ord.tracking_number && (
-                            <div className="flex items-center gap-1.5 text-[10px] text-[#7A6B5C]">
-                              <span>Courier: {ord.courier || 'Express'} • Trk: {ord.tracking_number}</span>
-                              {ord.tracking_url && (
-                                <a href={ord.tracking_url} target="_blank" rel="noopener noreferrer" className="text-[#181818] hover:underline flex items-center gap-0.5">
-                                  <ExternalLink className="w-3 h-3" />
-                                </a>
-                              )}
-                            </div>
-                          )}
+                      {/* Summary & Actions */}
+                      <div className="pt-2 border-t border-[#EFE6DA] flex flex-col sm:flex-row gap-3 sm:items-center justify-between text-xs">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setTrackingOrder(ord)}
+                            className="px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-lg font-semibold flex items-center gap-1.5 transition-colors"
+                          >
+                            <Truck className="w-3.5 h-3.5" /> Track Order
+                          </button>
+                          <button
+                            onClick={() => setHelpOrder(ord)}
+                            className="px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 rounded-lg font-semibold flex items-center gap-1.5 transition-colors"
+                          >
+                            <HelpCircle className="w-3.5 h-3.5" /> Help
+                          </button>
                         </div>
-                        <div className="text-right">
-                          <span className="text-[10px] text-[#7A6B5C] block">Total</span>
+                        <div className="text-right sm:text-right flex items-center justify-between sm:block">
+                          <span className="text-[10px] text-[#7A6B5C] sm:block">Total Amount</span>
                           <span className="font-bold text-sm text-[#181818]">₹{Number(ord.total_amount).toLocaleString('en-IN')}</span>
                         </div>
                       </div>
@@ -1277,6 +1341,219 @@ export default function AccountPage() {
                   <p className="text-[10px] text-[#7A6B5C]">Direct numismatic appraisals & couture fitting guidance.</p>
                 </div>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ==================================================
+          MODAL 7: ORDER TRACKING
+         ================================================== */}
+      <AnimatePresence>
+        {trackingOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              onClick={() => setTrackingOrder(null)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-lg bg-[#FAF7F2] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-[#EFE6DA] bg-white">
+                <div>
+                  <h3 className="font-serif font-bold text-xl text-[#181818]">Track Order</h3>
+                  <p className="text-xs text-[#7A6B5C]">Order #{trackingOrder.order_number}</p>
+                </div>
+                <button 
+                  onClick={() => setTrackingOrder(null)}
+                  className="p-2 bg-[#FAF7F2] hover:bg-[#EFE6DA] rounded-full transition-colors"
+                >
+                  <X className="w-4 h-4 text-[#7A6B5C]" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto p-6 space-y-6">
+                {/* Timeline */}
+                <div className="space-y-6 relative">
+                  {trackingOrder.status_history && trackingOrder.status_history.length > 0 ? (
+                    <div className="relative pl-6 border-l-2 border-emerald-100 space-y-8">
+                      {trackingOrder.status_history.map((step, idx) => (
+                        <div key={idx} className="relative">
+                          <div className={`absolute -left-[31px] w-4 h-4 rounded-full border-4 border-white ${
+                            idx === trackingOrder.status_history!.length - 1 && step.status !== 'DELIVERED'
+                              ? 'bg-amber-400' 
+                              : 'bg-emerald-500'
+                          }`} />
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-bold text-sm text-[#181818] capitalize">
+                                {step.status === 'PENDING' ? 'Order Received' : step.status.replace('_', ' ').toLowerCase()}
+                              </h4>
+                              <span className="text-[10px] text-[#7A6B5C] bg-white px-2 py-0.5 rounded-full border border-[#EFE6DA]">
+                                {new Date(step.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} • {new Date(step.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            {step.note && <p className="text-xs text-[#7A6B5C] italic">{step.note}</p>}
+                            {step.courier && step.tracking_number && (
+                              <div className="mt-2 p-3 bg-white rounded-xl border border-[#EFE6DA] text-xs">
+                                <span className="text-[#7A6B5C]">Courier:</span> <span className="font-semibold text-[#181818]">{step.courier}</span><br />
+                                <span className="text-[#7A6B5C]">Tracking ID:</span> <span className="font-mono font-bold text-[#181818]">{step.tracking_number}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center p-6 bg-white rounded-2xl border border-[#EFE6DA]">
+                      <Clock className="w-8 h-8 text-[#7A6B5C] mx-auto mb-2 opacity-20" />
+                      <p className="text-sm font-semibold text-[#181818]">Timeline unavailable</p>
+                      <p className="text-xs text-[#7A6B5C]">Detailed tracking steps are not yet recorded for this order.</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Expected Delivery */}
+                {trackingOrder.expected_delivery_date && (
+                   <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                       <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                         <Truck className="w-4 h-4 text-emerald-600" />
+                       </div>
+                       <div>
+                         <p className="text-[10px] text-emerald-800 font-semibold uppercase tracking-wider">Expected Delivery</p>
+                         <p className="text-sm font-bold text-emerald-950">
+                           {new Date(trackingOrder.expected_delivery_date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+                         </p>
+                       </div>
+                     </div>
+                   </div>
+                )}
+
+                {/* Items Summary */}
+                <div className="space-y-3">
+                  <h4 className="font-bold text-xs text-[#181818] uppercase tracking-wider">Order Items</h4>
+                  <div className="space-y-2">
+                    {trackingOrder.items.map((it, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-[#EFE6DA]">
+                        <div className="w-12 h-12 rounded-lg bg-[#FAF7F2] border border-[#D5C7B5] overflow-hidden flex-shrink-0">
+                          {it.product_image ? (
+                            <img src={it.product_image} alt={it.product_name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[9px] text-[#7A6B5C]">item</div>
+                          )}
+                        </div>
+                        <div className="flex-grow min-w-0">
+                          <p className="text-xs font-semibold text-[#181818] truncate">{it.product_name}</p>
+                          <span className="text-[10px] text-[#7A6B5C]">
+                            Qty: {it.quantity} {it.selected_size ? `• Size: ${it.selected_size}` : ''}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ==================================================
+          MODAL 8: ORDER HELP / SUPPORT
+         ================================================== */}
+      <AnimatePresence>
+        {helpOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              onClick={() => setHelpOrder(null)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-[#FAF7F2] rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-[#EFE6DA] bg-white">
+                <div>
+                  <h3 className="font-serif font-bold text-xl text-[#181818]">Get Help</h3>
+                  <p className="text-xs text-[#7A6B5C]">Order #{helpOrder.order_number}</p>
+                </div>
+                <button 
+                  onClick={() => setHelpOrder(null)}
+                  className="p-2 bg-[#FAF7F2] hover:bg-[#EFE6DA] rounded-full transition-colors"
+                >
+                  <X className="w-4 h-4 text-[#7A6B5C]" />
+                </button>
+              </div>
+
+              <form onSubmit={handleHelpSubmit} className="p-6 space-y-5">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#7A6B5C] uppercase tracking-wider">Issue Category</label>
+                  <div className="relative">
+                    <select
+                      value={helpCategory}
+                      onChange={(e) => setHelpCategory(e.target.value)}
+                      className="w-full bg-white border border-[#D5C7B5] px-4 py-3 rounded-xl text-xs font-semibold text-[#181818] appearance-none focus:outline-none focus:border-[#cca05b]"
+                    >
+                      <option value="Order Issue">Order Issue</option>
+                      <option value="Delivery Problem">Delivery Problem</option>
+                      <option value="Return/Refund">Return/Refund</option>
+                      <option value="Product Quality">Product Quality</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <ChevronRight className="w-4 h-4 text-[#7A6B5C] rotate-90" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#7A6B5C] uppercase tracking-wider">Subject</label>
+                  <input
+                    type="text"
+                    required
+                    value={helpSubject}
+                    onChange={(e) => setHelpSubject(e.target.value)}
+                    placeholder="Briefly describe the issue..."
+                    className="w-full bg-white border border-[#D5C7B5] px-4 py-3 rounded-xl text-xs font-semibold text-[#181818] focus:outline-none focus:border-[#cca05b]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#7A6B5C] uppercase tracking-wider">Detailed Description</label>
+                  <textarea
+                    required
+                    value={helpDescription}
+                    onChange={(e) => setHelpDescription(e.target.value)}
+                    rows={4}
+                    placeholder="Please provide any relevant details..."
+                    className="w-full bg-white border border-[#D5C7B5] px-4 py-3 rounded-xl text-xs font-medium text-[#181818] resize-none focus:outline-none focus:border-[#cca05b]"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={helpSubmitting}
+                  className="w-full bg-[#181818] text-[#cca05b] py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-black transition-colors disabled:opacity-50 flex items-center justify-center space-x-2 shadow-xl"
+                >
+                  {helpSubmitting ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /><span>Submitting...</span></>
+                  ) : (
+                    <span>Submit Request</span>
+                  )}
+                </button>
+              </form>
             </motion.div>
           </div>
         )}

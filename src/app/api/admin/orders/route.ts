@@ -235,7 +235,9 @@ export async function PUT(request: Request) {
       courier,
       tracking_number,
       tracking_url,
-      admin_note
+      expected_delivery_date,
+      admin_note,
+      admin_id
     } = body;
 
     if (!order_id || !action) {
@@ -282,6 +284,7 @@ export async function PUT(request: Request) {
         tracking_url = COALESCE($5, tracking_url),
         dispatched_at = COALESCE($6, dispatched_at),
         delivered_at = COALESCE($7, delivered_at),
+        expected_delivery_date = COALESCE($10, expected_delivery_date),
         status_history = COALESCE(status_history, '[]'::jsonb) || $8::jsonb,
         updated_at = NOW()
       WHERE id = $9
@@ -297,12 +300,24 @@ export async function PUT(request: Request) {
       dispatchedAt,
       deliveredAt,
       historyEntry,
-      order_id
+      order_id,
+      expected_delivery_date || null
     ]);
 
     if (!result || result.length === 0) {
       return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 });
     }
+
+    // Insert into order_status_history for proper audit trail
+    await queryDb(`
+      INSERT INTO order_status_history (order_id, status, note, changed_by)
+      VALUES ($1, $2, $3, $4)
+    `, [
+      order_id,
+      newStatus,
+      admin_note || (action === 'REJECT' ? rejection_reason : null),
+      admin_id || null
+    ]);
 
     await queryDb(`
       INSERT INTO audit_logs (action, entity, entity_id, details)

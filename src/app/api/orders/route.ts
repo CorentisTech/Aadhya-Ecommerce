@@ -24,6 +24,11 @@ export async function GET(request: Request) {
         o.courier,
         o.tracking_number,
         o.tracking_url,
+        o.dispatched_at,
+        o.delivered_at,
+        o.expected_delivery_date,
+        o.status_history,
+        o.rejection_reason,
         o.created_at,
         o.updated_at,
         (

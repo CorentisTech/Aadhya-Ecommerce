@@ -6,7 +6,7 @@ import { RichTextEditor } from '@/components/ui/RichTextEditor';
 
 export default function WebsiteCMSPage() {
   const [activeSite, setActiveSite] = useState<'fashion' | 'coins'>('fashion');
-  const [activeTab, setActiveTab] = useState<'branding' | 'policies' | 'banners' | 'offers' | 'reviews'>('branding');
+  const [activeTab, setActiveTab] = useState<'branding' | 'policies' | 'banners' | 'offers' | 'strips'>('branding');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -28,7 +28,9 @@ export default function WebsiteCMSPage() {
   // Banners & Offers Lists
   const [banners, setBanners] = useState<any[]>([]);
   const [offers, setOffers] = useState<any[]>([]);
-  const [reviews, setReviews] = useState<any[]>([]);
+  
+  // Strips
+  const [strips, setStrips] = useState<any[]>([]);
 
   // Banner Modal
   const [showBannerModal, setShowBannerModal] = useState(false);
@@ -44,12 +46,15 @@ export default function WebsiteCMSPage() {
   const [offerCode, setOfferCode] = useState('');
   const [offerDiscount, setOfferDiscount] = useState<number>(10);
 
-  // Review Modal
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewCustomerName, setReviewCustomerName] = useState('');
-  const [reviewRating, setReviewRating] = useState<number>(5);
-  const [reviewContent, setReviewContent] = useState('');
-  const [reviewDepartment, setReviewDepartment] = useState('fashion');
+  // Strip Modal
+  const [showStripModal, setShowStripModal] = useState(false);
+  const [stripId, setStripId] = useState<string | null>(null);
+  const [stripType, setStripType] = useState<'offer' | 'marquee'>('offer');
+  const [stripTextContent, setStripTextContent] = useState('');
+  const [stripBgColor, setStripBgColor] = useState('#000000');
+  const [stripTextColor, setStripTextColor] = useState('#FFFFFF');
+  const [stripIsActive, setStripIsActive] = useState(true);
+  const [stripSortOrder, setStripSortOrder] = useState<number>(0);
 
   const fetchSettings = async () => {
     try {
@@ -75,7 +80,7 @@ export default function WebsiteCMSPage() {
         }
       }
 
-      // Fetch banners, offers, and reviews
+      // Fetch banners, offers
       const bRes = await fetch('/api/admin/banners');
       const bData = await bRes.json();
       if (bData.success) setBanners(bData.banners || []);
@@ -84,9 +89,11 @@ export default function WebsiteCMSPage() {
       const oData = await oRes.json();
       if (oData.success) setOffers(oData.offers || []);
       
-      const rRes = await fetch('/api/admin/reviews');
-      const rData = await rRes.json();
-      if (rData.success) setReviews(rData.reviews || []);
+      if (activeSite === 'fashion') {
+        const sRes = await fetch('/api/admin/strips?department=fashion');
+        const sData = await sRes.json();
+        if (sData.success) setStrips(sData.strips || []);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -96,6 +103,9 @@ export default function WebsiteCMSPage() {
 
   useEffect(() => {
     fetchSettings();
+    if (activeSite !== 'fashion' && activeTab === 'strips') {
+      setActiveTab('branding');
+    }
   }, [activeSite]);
 
   const handleSaveSettings = async (e: React.FormEvent) => {
@@ -206,25 +216,56 @@ export default function WebsiteCMSPage() {
     }
   };
 
-  const handleCreateReview = async (e: React.FormEvent) => {
+  const openNewStripModal = () => {
+    setStripId(null);
+    setStripType('offer');
+    setStripTextContent('');
+    setStripBgColor('#000000');
+    setStripTextColor('#FFFFFF');
+    setStripIsActive(true);
+    setStripSortOrder(0);
+    setShowStripModal(true);
+  };
+
+  const handleEditStrip = (strip: any) => {
+    setStripId(strip.id || strip._id);
+    setStripType(strip.strip_type);
+    setStripTextContent(Array.isArray(strip.text_content) ? strip.text_content.join('\\n') : '');
+    setStripBgColor(strip.bg_color || '#000000');
+    setStripTextColor(strip.text_color || '#FFFFFF');
+    setStripIsActive(strip.is_active ?? true);
+    setStripSortOrder(strip.sort_order || 0);
+    setShowStripModal(true);
+  };
+
+  const handleSaveStrip = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/admin/reviews', {
-        method: 'POST',
+      const method = stripId ? 'PUT' : 'POST';
+      const text_content_array = stripTextContent.split('\\n').map(s => s.trim()).filter(Boolean);
+      
+      const payload: any = {
+        department: 'fashion',
+        strip_type: stripType,
+        text_content: text_content_array,
+        bg_color: stripBgColor,
+        text_color: stripTextColor,
+        is_active: stripIsActive,
+        sort_order: stripSortOrder
+      };
+      
+      if (stripId) {
+        payload.id = stripId;
+      }
+
+      const res = await fetch('/api/admin/strips', {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer_name: reviewCustomerName,
-          rating: Number(reviewRating),
-          content: reviewContent,
-          department: reviewDepartment
-        })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (data.success) {
-        setShowReviewModal(false);
-        setReviewCustomerName('');
-        setReviewContent('');
-        setReviewRating(5);
+        setShowStripModal(false);
         fetchSettings();
       }
     } catch (err) {
@@ -232,18 +273,19 @@ export default function WebsiteCMSPage() {
     }
   };
 
-  const handleDeleteReview = async (id: string) => {
-    if (!confirm('Delete this featured review?')) return;
-    try {
-      await fetch(`/api/admin/reviews?id=${id}`, { method: 'DELETE' });
-      fetchSettings();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   if (loading) {
     return <div className="p-12 text-center text-xs font-bold text-gray-400">Loading website configuration...</div>;
+  }
+
+  const tabs = [
+    { id: 'branding', label: 'Brand & Contact' },
+    { id: 'policies', label: 'Store Policies' },
+    { id: 'banners', label: `Banners (${banners.length})` },
+    { id: 'offers', label: `Offers & Codes (${offers.length})` },
+  ];
+
+  if (activeSite === 'fashion') {
+    tabs.push({ id: 'strips', label: `Website Strips (${strips.length})` });
   }
 
   return (
@@ -279,13 +321,7 @@ export default function WebsiteCMSPage() {
 
       {/* Tabs */}
       <div className="flex items-center space-x-2 bg-white p-1 rounded-2xl border border-gray-200 text-xs font-bold text-gray-600">
-        {[
-          { id: 'branding', label: 'Brand & Contact' },
-          { id: 'policies', label: 'Store Policies' },
-          { id: 'banners', label: `Banners (${banners.length})` },
-          { id: 'offers', label: `Offers & Codes (${offers.length})` },
-          { id: 'reviews', label: `Featured Reviews` },
-        ].map((t) => (
+        {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setActiveTab(t.id as any)}
@@ -546,53 +582,60 @@ export default function WebsiteCMSPage() {
         </div>
       )}
 
-      {/* 5. FEATURED REVIEWS */}
-      {activeTab === 'reviews' && (
+      {/* 5. STRIPS SECTION */}
+      {activeTab === 'strips' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-black text-gray-900">Featured Customer Reviews</h2>
+            <h2 className="text-base font-black text-gray-900">Website Strips (Fashion)</h2>
             <button
-              onClick={() => setShowReviewModal(true)}
+              onClick={openNewStripModal}
               className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#cca05b] text-[#15171c] font-black text-xs rounded-xl shadow"
             >
               <Plus className="w-4 h-4" />
-              <span>Add Featured Review</span>
+              <span>Add Strip</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {reviews.filter(r => r.department === activeSite).map((r) => (
-              <div key={r.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-3 relative">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-sm">{r.customer_name}</h4>
-                    <div className="flex text-[#cca05b] text-xs font-bold space-x-1 mt-1">
-                      {Array.from({ length: r.rating }).map((_, i) => (
-                        <span key={i}>?</span>
-                      ))}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteReview(r.id)}
-                    className="text-gray-400 hover:text-rose-500"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {strips.map((s) => (
+              <div key={s.id || s._id} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 space-y-3 cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleEditStrip(s)}>
+                <div className="flex items-center justify-between">
+                  <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-800 font-bold text-xs uppercase">
+                    {s.strip_type}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${s.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                    {s.is_active ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
-                <p className="text-xs text-gray-600 leading-relaxed">"{r.content}"</p>
-                <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest pt-2">
-                  Dept: {r.department}
+                <div className="space-y-1 max-h-24 overflow-hidden relative">
+                  {Array.isArray(s.text_content) ? s.text_content.map((text: string, i: number) => (
+                    <p key={i} className="text-xs text-gray-700 truncate">{text}</p>
+                  )) : (
+                    <p className="text-xs text-gray-700 truncate">{s.text_content}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 pt-2 border-t border-gray-50">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">BG</span>
+                    <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: s.bg_color }} title="Background Color"></div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">Text</span>
+                    <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: s.text_color }} title="Text Color"></div>
+                  </div>
+                  <span className="text-[10px] text-gray-400 ml-auto">Order: {s.sort_order}</span>
                 </div>
               </div>
             ))}
-            {reviews.filter(r => r.department === activeSite).length === 0 && (
+            {strips.length === 0 && (
               <div className="col-span-full py-8 text-center text-xs font-bold text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                No featured reviews found for {activeSite}. Add one to showcase on the homepage!
+                No strips found. Add one to show a marquee or top offer strip!
               </div>
             )}
           </div>
         </div>
       )}
+
       {/* Banner Creation Modal */}
       {showBannerModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -703,52 +746,74 @@ export default function WebsiteCMSPage() {
           </div>
         </div>
       )}
-      {/* Review Creation Modal */}
 
-      {showReviewModal && (
+      {/* Strip Modal */}
+      {showStripModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 text-left">
-            <h3 className="text-lg font-black text-gray-900">Add Featured Review</h3>
-            <form onSubmit={handleCreateReview} className="space-y-3">
-              <input
-                type="text"
-                required
-                value={reviewCustomerName}
-                onChange={(e) => setReviewCustomerName(e.target.value)}
-                placeholder="Customer Name"
+            <h3 className="text-lg font-black text-gray-900">{stripId ? 'Edit' : 'Add'} Website Strip</h3>
+            <form onSubmit={handleSaveStrip} className="space-y-3">
+              <select
+                value={stripType}
+                onChange={(e) => setStripType(e.target.value as any)}
                 className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-bold"
-              />
+              >
+                <option value="offer">Top Offer Strip (offer)</option>
+                <option value="marquee">Information Marquee (marquee)</option>
+              </select>
               <textarea
                 required
-                rows={3}
-                value={reviewContent}
-                onChange={(e) => setReviewContent(e.target.value)}
-                placeholder="Review Content"
+                rows={4}
+                value={stripTextContent}
+                onChange={(e) => setStripTextContent(e.target.value)}
+                placeholder="Text Content (One item per line)"
                 className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs"
               />
               <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  min={1}
-                  max={5}
-                  value={reviewRating}
-                  onChange={(e) => setReviewRating(Number(e.target.value))}
-                  placeholder="Rating (1-5)"
-                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-bold"
-                />
-                <select
-                  value={reviewDepartment}
-                  onChange={(e) => setReviewDepartment(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-bold"
-                >
-                  <option value="fashion">Fashion</option>
-                  <option value="coins">Coins & Notes</option>
-                </select>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Background Color</label>
+                  <input
+                    type="color"
+                    value={stripBgColor}
+                    onChange={(e) => setStripBgColor(e.target.value)}
+                    className="w-full h-8 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer"
+                  />
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Text Color</label>
+                  <input
+                    type="color"
+                    value={stripTextColor}
+                    onChange={(e) => setStripTextColor(e.target.value)}
+                    className="w-full h-8 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Sort Order</label>
+                  <input
+                    type="number"
+                    value={stripSortOrder}
+                    onChange={(e) => setStripSortOrder(Number(e.target.value))}
+                    className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-bold"
+                  />
+                </div>
+                <div className="flex items-center space-x-2 pt-5">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={stripIsActive}
+                    onChange={(e) => setStripIsActive(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-[#cca05b] focus:ring-[#cca05b]"
+                  />
+                  <label htmlFor="isActive" className="text-xs font-bold text-gray-700">Is Active?</label>
+                </div>
               </div>
               <div className="flex justify-end space-x-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowReviewModal(false)}
+                  onClick={() => setShowStripModal(false)}
                   className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs"
                 >
                   Cancel
@@ -757,13 +822,14 @@ export default function WebsiteCMSPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#cca05b] text-[#15171c] font-bold text-xs shadow"
                 >
-                  Save Review
+                  Save Strip
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 }

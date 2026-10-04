@@ -10,13 +10,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: 'Order number is required' }, { status: 400 });
     }
 
-    // Fetch order details by order_number
-    // We only expose public tracking info to avoid leaking customer PII.
     const query = `
       SELECT 
         order_number, status, total_amount, created_at,
         courier, tracking_number, tracking_url,
-        dispatched_at, delivered_at, rejection_reason, status_history
+        dispatched_at, delivered_at, expected_delivery_date,
+        rejection_reason, status_history
       FROM orders
       WHERE order_number = $1
     `;
@@ -29,9 +28,20 @@ export async function GET(request: Request) {
 
     const order = rows[0];
 
-    return NextResponse.json({ success: true, tracking: order });
+    // Also fetch detailed status history from order_status_history table
+    let timeline: any[] = [];
+    try {
+      const historyRows = await queryDb(
+        `SELECT id, status, note, created_at FROM order_status_history WHERE order_id = (SELECT id FROM orders WHERE order_number = $1 LIMIT 1) ORDER BY created_at ASC`,
+        [orderNo]
+      );
+      timeline = historyRows || [];
+    } catch {}
+
+    return NextResponse.json({ success: true, tracking: order, timeline });
   } catch (err: any) {
     console.error('Error fetching order tracking:', err);
     return NextResponse.json({ success: false, error: 'Failed to retrieve tracking info' }, { status: 500 });
   }
 }
+

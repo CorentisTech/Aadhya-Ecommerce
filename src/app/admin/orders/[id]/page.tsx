@@ -35,6 +35,7 @@ export default function OrderDetailPage() {
   const [courier, setCourier] = useState('Blue Dart Express');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [trackingUrl, setTrackingUrl] = useState('');
+  const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
 
   const [updating, setUpdating] = useState(false);
 
@@ -284,6 +285,57 @@ export default function OrderDetailPage() {
             )}
           </div>
         )}
+
+        {/* Expected Delivery Date */}
+        {order.expected_delivery_date && (
+          <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex items-center gap-3 text-xs">
+            <Truck className="w-5 h-5 text-emerald-600" />
+            <div>
+              <span className="font-extrabold text-emerald-900 block uppercase tracking-wider text-[10px]">Expected Delivery Date</span>
+              <span className="text-emerald-700 font-bold text-sm">
+                {new Date(order.expected_delivery_date).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Detailed Vertical Status History */}
+        {order.status_history && Array.isArray(order.status_history) && order.status_history.length > 0 && (
+          <div className="pt-6 border-t border-gray-100 space-y-6">
+            <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest">Detailed Timeline</h3>
+            <div className="relative pl-6 border-l-2 border-emerald-100 space-y-6">
+              {order.status_history.map((step: any, idx: number) => (
+                <div key={idx} className="relative">
+                  <div className={`absolute -left-[31px] w-4 h-4 rounded-full border-4 border-white ${
+                    idx === order.status_history.length - 1 && step.status !== 'DELIVERED' && step.status !== 'CANCELLED'
+                      ? 'bg-amber-400' 
+                      : step.status === 'CANCELLED' 
+                      ? 'bg-rose-500'
+                      : 'bg-emerald-500'
+                  }`} />
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-sm text-[#181818] capitalize">
+                        {step.status === 'PENDING' ? 'Order Received' : step.status.replace('_', ' ').toLowerCase()}
+                      </h4>
+                      <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
+                        {new Date(step.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} • {new Date(step.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    {step.note && <p className="text-xs text-gray-500">{step.note}</p>}
+                    {step.courier && step.tracking_number && (
+                      <div className="mt-2 p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs text-gray-600">
+                        <span className="font-semibold text-gray-800">Courier:</span> {step.courier}
+                        <br />
+                        <span className="font-semibold text-gray-800">Tracking Number:</span> <span className="font-mono">{step.tracking_number}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 2. Order Summary & Customer Info */}
@@ -473,6 +525,15 @@ export default function OrderDetailPage() {
                   className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs"
                 />
               </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Expected Delivery Date</label>
+                <input
+                  type="date"
+                  value={expectedDeliveryDate}
+                  onChange={(e) => setExpectedDeliveryDate(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs"
+                />
+              </div>
             </div>
             <div className="flex justify-end space-x-2 pt-3">
               <button
@@ -484,11 +545,18 @@ export default function OrderDetailPage() {
               </button>
               <button
                 type="button"
-                onClick={() => handleStatusAction('DISPATCH', { courier, tracking_number: trackingNumber, tracking_url: trackingUrl })}
-                className="px-5 py-2 rounded-xl bg-purple-600 text-white font-bold text-xs shadow"
+                disabled={!trackingNumber}
+                onClick={() => handleStatusAction('DISPATCH', { 
+                  courier, 
+                  tracking_number: trackingNumber, 
+                  tracking_url: trackingUrl,
+                  expected_delivery_date: expectedDeliveryDate || null
+                })}
+                className="px-5 py-2 rounded-xl bg-sky-600 text-white font-bold text-xs shadow disabled:opacity-50"
               >
                 Confirm Dispatch
               </button>
+            </div>
             </div>
           </div>
         </div>

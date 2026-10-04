@@ -1,10 +1,10 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 export const Marquee: React.FC = () => {
-  const marqueeItems = [
+  const [marqueeItems, setMarqueeItems] = useState<string[]>([
     "SUSTAINABLE FASHION",
     "EASY 7-DAY RETURNS",
     "NATURALLY SOURCED FABRICS",
@@ -13,7 +13,26 @@ export const Marquee: React.FC = () => {
     "100% ARTISANAL AUTHENTICITY",
     "ETHICAL CRAFTSMANSHIP",
     "TIMELESS INDIAN SILHOUETTES"
-  ];
+  ]);
+
+  // Fetch marquee strip messages from DB
+  useEffect(() => {
+    const fetchMarquee = async () => {
+      try {
+        const res = await fetch('/api/strips?department=fashion&type=marquee');
+        const data = await res.json();
+        if (data.success && data.strips && data.strips.length > 0) {
+          const msgs: string[] = [];
+          data.strips.forEach((s: any) => {
+            const content = typeof s.text_content === 'string' ? JSON.parse(s.text_content) : s.text_content;
+            if (Array.isArray(content)) msgs.push(...content);
+          });
+          if (msgs.length > 0) setMarqueeItems(msgs);
+        }
+      } catch {}
+    };
+    fetchMarquee();
+  }, []);
 
   // Repeat for continuous seamless loop
   const repeatedItems = [...marqueeItems, ...marqueeItems, ...marqueeItems];
