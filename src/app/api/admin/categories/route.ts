@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
 import { v4 as uuidv4 } from 'uuid';
+import { invalidateCachePattern } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -80,6 +81,10 @@ export async function POST(request: Request) {
       INSERT INTO audit_logs (action, entity, entity_id, details)
       VALUES ('CREATE_CATEGORY', 'categories', $1, $2)
     `, [id, JSON.stringify({ name, department, slug })]);
+
+    // Invalidate categories and homepage caches
+    await invalidateCachePattern('aadhya:cache:*:categories');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
 
     return NextResponse.json({ success: true, category: result[0] });
   } catch (err: any) {

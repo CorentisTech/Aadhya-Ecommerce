@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { queryDb, getDbPool } from '@/utils/db';
+import { invalidateCache, invalidateCachePattern, CacheKeys } from '@/lib/cache';
 
 export async function GET(
   request: Request,
@@ -227,6 +228,14 @@ export async function PUT(
     ]);
 
     await client.query('COMMIT');
+
+    // Invalidate Redis product caches immediately
+    await invalidateCache(CacheKeys.productDetail('all', id));
+    await invalidateCache(CacheKeys.productDetail('fashion', id));
+    await invalidateCache(CacheKeys.productDetail('numismatics', id));
+    await invalidateCachePattern('aadhya:cache:*:products:*');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, message: 'Product updated successfully' });
 
   } catch (err: any) {
@@ -251,6 +260,13 @@ export async function DELETE(
       INSERT INTO audit_logs (action, entity, entity_id, details)
       VALUES ('ARCHIVE_PRODUCT', 'products', $1, '{"status": "archived"}')
     `, [id]);
+
+    // Invalidate Redis product caches immediately
+    await invalidateCache(CacheKeys.productDetail('all', id));
+    await invalidateCache(CacheKeys.productDetail('fashion', id));
+    await invalidateCache(CacheKeys.productDetail('numismatics', id));
+    await invalidateCachePattern('aadhya:cache:*:products:*');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
 
     return NextResponse.json({ success: true, message: 'Product archived successfully' });
   } catch (err: any) {

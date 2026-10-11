@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
 import { v4 as uuidv4 } from 'uuid';
+import { invalidateCachePattern } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -40,6 +41,11 @@ export async function POST(request: Request) {
     `;
 
     const result = await queryDb(insertSql, [id, title, subtitle || '', image_url, cta_text || 'EXPLORE', cta_link || '/catalog', department, sort_order]);
+
+    // Invalidate banners and homepage caches
+    await invalidateCachePattern('aadhya:cache:*:banners');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, banner: result[0] });
   } catch (err: any) {
     console.error('Error creating banner:', err);
@@ -71,6 +77,11 @@ export async function PUT(request: Request) {
     `;
 
     const result = await queryDb(updateSql, [title, subtitle, image_url, cta_text, cta_link, department, sort_order, is_active, id]);
+
+    // Invalidate banners and homepage caches
+    await invalidateCachePattern('aadhya:cache:*:banners');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, banner: result[0] });
   } catch (err: any) {
     console.error('Error updating banner:', err);
@@ -85,6 +96,11 @@ export async function DELETE(request: Request) {
     if (!id) return NextResponse.json({ success: false, error: 'Banner ID required' }, { status: 400 });
 
     await queryDb(`DELETE FROM banners WHERE id = $1`, [id]);
+
+    // Invalidate banners and homepage caches
+    await invalidateCachePattern('aadhya:cache:*:banners');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, message: 'Banner deleted' });
   } catch (err: any) {
     console.error('Error deleting banner:', err);

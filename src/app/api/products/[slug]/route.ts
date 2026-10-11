@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
+import { getCache, setCache, CacheKeys } from '@/lib/cache';
 
 export async function GET(
   request: Request,
@@ -14,7 +15,14 @@ export async function GET(
     const decodedSlug = decodeURIComponent(slug).trim();
     const normalizedSlug = decodedSlug.toLowerCase().replace(/ /g, '-');
 
-    // Flexible query by UUID, product_no, slug, or normalized name
+    // 1. Cache Lookup
+    const cacheKey = CacheKeys.productDetail('all', normalizedSlug);
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) {
+      return NextResponse.json(cachedData);
+    }
+
+    // 2. Fallback to Database
     const products = await queryDb(
       `SELECT 
         p.id,
@@ -117,7 +125,14 @@ export async function GET(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    return NextResponse.json(products[0]);
+    const responseData = products[0];
+
+    // 3. Store in Cache (TTL: 10 mins)
+    await setCache(cacheKey, responseData, 600);
+    // Also cache by ID to be robust
+    await setCache(CacheKeys.productDetail('all', responseData.id), responseData, 600);
+
+    return NextResponse.json(responseData);
   } catch (error: any) {
     console.error('Single product fetch error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
 import { createClient } from '@/utils/supabase/server';
+import { getOrSetCache, invalidateCache, CacheKeys, CACHE_TTL } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -11,15 +12,23 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: 'Product ID required' }, { status: 400 });
     }
 
-    const rows = await queryDb(`
-      SELECT 
-        r.id, r.rating, r.text, r.is_verified, r.created_at,
-        p.first_name, p.last_name, p.avatar
-      FROM reviews r
-      JOIN profiles p ON r.user_id = p.id
-      WHERE r.product_id = $1 AND r.is_approved = true
-      ORDER BY r.created_at DESC
-    `, [productId]);
+    const cacheKey = CacheKeys.reviews('all', productId);
+
+    const rows = await getOrSetCache(
+      cacheKey,
+      async () => {
+        return await queryDb(`
+          SELECT 
+            r.id, r.rating, r.text, r.is_verified, r.created_at,
+            p.first_name, p.last_name, p.avatar
+          FROM reviews r
+          JOIN profiles p ON r.user_id = p.id
+          WHERE r.product_id = $1 AND r.is_approved = true
+          ORDER BY r.created_at DESC
+        `, [productId]);
+      },
+      CACHE_TTL.REVIEWS
+    );
 
     return NextResponse.json({ success: true, reviews: rows });
   } catch (err: any) {
@@ -57,6 +66,9 @@ export async function POST(request: Request) {
       INSERT INTO reviews (product_id, user_id, rating, text, is_verified, is_approved)
       VALUES ($1, $2, $3, $4, $5, false)
     `, [productId, user.id, rating, text, isVerified]);
+
+    // Invalidate product reviews cache
+    await invalidateCache(CacheKeys.reviews('all', productId));
 
     return NextResponse.json({ success: true, message: 'Review submitted for approval' });
   } catch (err: any) {

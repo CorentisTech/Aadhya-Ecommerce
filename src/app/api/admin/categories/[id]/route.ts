@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
+import { invalidateCachePattern } from '@/lib/cache';
 
 export async function PUT(
   request: Request,
@@ -30,6 +31,10 @@ export async function PUT(
       VALUES ('UPDATE_CATEGORY', 'categories', $1, $2)
     `, [id, JSON.stringify({ name, is_active })]);
 
+    // Invalidate Redis categories and homepage caches
+    await invalidateCachePattern('aadhya:cache:*:categories');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, category: result[0] });
   } catch (err: any) {
     console.error('Error updating category:', err);
@@ -48,6 +53,10 @@ export async function DELETE(
       INSERT INTO audit_logs (action, entity, entity_id, details)
       VALUES ('ARCHIVE_CATEGORY', 'categories', $1, '{"is_active": false}')
     `, [id]);
+
+    // Invalidate Redis categories and homepage caches
+    await invalidateCachePattern('aadhya:cache:*:categories');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
 
     return NextResponse.json({ success: true, message: 'Category archived successfully' });
   } catch (err: any) {

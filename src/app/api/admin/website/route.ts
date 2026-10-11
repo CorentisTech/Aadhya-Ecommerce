@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
+import { invalidateCachePattern } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -92,6 +93,10 @@ export async function PUT(request: Request) {
       INSERT INTO audit_logs (action, entity, entity_id, details)
       VALUES ('UPDATE_WEBSITE_SETTINGS', 'website_settings', $1, $2)
     `, [site, JSON.stringify({ brand_name, contact_email })]);
+
+    // Invalidate Redis CMS and homepage caches immediately
+    await invalidateCachePattern('aadhya:cache:*:cms*');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
 
     return NextResponse.json({
       success: true,

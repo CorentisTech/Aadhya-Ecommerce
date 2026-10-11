@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { queryDb } from '@/utils/db';
+import { invalidateCachePattern, setCache, CACHE_TTL } from '@/lib/cache';
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { deviceId, deviceName } = body;
+    const { deviceId } = body;
 
     if (!deviceId || typeof deviceId !== 'string' || deviceId.trim().length === 0) {
       return NextResponse.json({ error: 'Valid device ID is required.' }, { status: 400 });
@@ -21,11 +22,15 @@ export async function POST(request: Request) {
     const cleanDeviceId = deviceId.trim().slice(0, 100);
     const sessionVersion = Math.random().toString(36).substring(2, 15);
 
-    // Call the Postgres function to revoke all other devices and activate this one
+    // 1. Authoritative Postgres update (revokes all other devices and sets this active)
     await queryDb(
       'SELECT handle_new_device_login($1, $2, $3)',
       [user.id, cleanDeviceId, sessionVersion]
     );
+
+    // 2. Redis Session Acceleration (invalidate previous device caches, cache active device)
+    await invalidateCachePattern(`aadhya:session:device:${user.id}:*`);
+    await setCache(`aadhya:session:device:${user.id}:${cleanDeviceId}`, { isActive: true }, CACHE_TTL.SESSION_DEVICE);
 
     const response = NextResponse.json({ success: true, deviceId: cleanDeviceId, userId: user.id });
     response.cookies.set('aadhya_device_id', cleanDeviceId, {

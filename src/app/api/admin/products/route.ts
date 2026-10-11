@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { queryDb, getDbPool } from '@/utils/db';
 import { v4 as uuidv4 } from 'uuid';
+import { invalidateCachePattern } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -352,6 +353,10 @@ export async function POST(request: Request) {
     ]);
 
     await client.query('COMMIT');
+
+    // Invalidate Redis product listing and homepage caches immediately
+    await invalidateCachePattern('aadhya:cache:*:products:*');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
 
     return NextResponse.json({
       success: true,

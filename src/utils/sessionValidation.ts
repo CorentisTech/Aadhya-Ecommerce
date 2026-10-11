@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { queryDb } from '@/utils/db';
+import { getCache, setCache, CACHE_TTL } from '@/lib/cache';
 
 export async function validateUserSession(request: Request) {
   const supabase = await createClient();
@@ -25,19 +26,35 @@ export async function validateUserSession(request: Request) {
     return { valid: true, user, deviceId: null } as const;
   }
 
-  // Check if this device is the currently active one
+  // 1-ACTIVE-DEVICE CHECK (Redis accelerated with Supabase DB fallback)
+  const sessionCacheKey = `aadhya:session:device:${user.id}:${deviceId}`;
   try {
+    // 1. Check Redis cache first
+    const cachedState = await getCache<{ isActive: boolean }>(sessionCacheKey);
+    if (cachedState !== null) {
+      if (!cachedState.isActive) {
+        return { valid: false, error: 'Session Revoked. Your account was signed in on another device.', status: 403, revoked: true } as const;
+      }
+      return { valid: true, user, deviceId } as const;
+    }
+
+    // 2. Cache miss / evicted -> Authoritative query from DB
     const rows = await queryDb(
       'SELECT is_active FROM user_devices WHERE user_id = $1 AND device_id = $2',
       [user.id, deviceId]
     );
+
+    const isActive = rows && rows.length > 0 ? rows[0].is_active !== false : true;
+
+    // Cache state in Redis with 10-day TTL (accelerator only)
+    await setCache(sessionCacheKey, { isActive }, CACHE_TTL.SESSION_DEVICE);
 
     if (rows && rows.length > 0 && rows[0].is_active === false) {
       return { valid: false, error: 'Session Revoked. Your account was signed in on another device.', status: 403, revoked: true } as const;
     }
   } catch (err) {
     console.error('Device validation error:', err);
-    // Don't block requests if device table query fails
+    // Fail-safe: Don't block requests if Redis or device table query encounters a transient error
   }
 
   return { valid: true, user, deviceId } as const;
@@ -52,18 +69,30 @@ export async function validateAdminSession(request?: Request) {
     return { valid: false, error: 'Unauthorized', status: 401 } as const;
   }
 
-  // Check role from profiles table
+  // Check role from profiles table (Redis accelerated)
+  const adminCacheKey = `aadhya:session:admin:${user.id}`;
   try {
-    const rows = await queryDb(
-      'SELECT role, status FROM profiles WHERE id = $1',
-      [user.id]
-    );
+    let profile = await getCache<{ role: string; status: string }>(adminCacheKey);
 
-    if (!rows || rows.length === 0) {
+    if (!profile) {
+      const rows = await queryDb(
+        'SELECT role, status FROM profiles WHERE id = $1',
+        [user.id]
+      );
+
+      if (!rows || rows.length === 0) {
+        return { valid: false, error: 'No admin profile found', status: 403 } as const;
+      }
+
+      profile = rows[0];
+      // Cache admin role for 5 minutes
+      await setCache(adminCacheKey, profile, 300);
+    }
+
+    if (!profile) {
       return { valid: false, error: 'No admin profile found', status: 403 } as const;
     }
 
-    const profile = rows[0];
     const validRoles = ['super_admin', 'admin', 'editor', 'support'];
     
     if (!validRoles.includes(profile.role)) {

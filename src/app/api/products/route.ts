@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { getCache, setCache, CacheKeys } from '@/lib/cache';
+import crypto from 'crypto';
 
 export async function GET(request: Request) {
-  const supabase = await createClient();
   const { searchParams } = new URL(request.url);
 
   // Pagination
@@ -13,6 +14,19 @@ export async function GET(request: Request) {
 
   // Filters
   const department = searchParams.get('department');
+  
+  const searchParamsString = searchParams.toString() || 'default';
+  const queryHash = crypto.createHash('md5').update(searchParamsString).digest('hex');
+  const cacheKey = CacheKeys.productsList(department || 'all', queryHash);
+
+  // Cache Lookup
+  const cachedData = await getCache(cacheKey);
+  if (cachedData) {
+    return NextResponse.json(cachedData);
+  }
+
+  // Cache Miss
+  const supabase = await createClient();
   const categorySlug = searchParams.get('category');
   const isHero = searchParams.get('is_hero');
   const isBestseller = searchParams.get('is_bestseller');
@@ -49,7 +63,7 @@ export async function GET(request: Request) {
   }
 
   if (searchQuery) {
-    query = query.ilike('name', `%${searchQuery}%`); // Simple search for now
+    query = query.ilike('name', `%${searchQuery}%`);
   }
 
   // Sorting
@@ -66,11 +80,7 @@ export async function GET(request: Request) {
     case 'bestseller':
       query = query.order('is_bestseller', { ascending: false }).order('reviews_count', { ascending: false });
       break;
-    case 'newest':
-      query = query.order('created_at', { ascending: false });
-      break;
     default:
-      // 'recommended' or default
       query = query.order('is_bestseller', { ascending: false }).order('avg_rating', { ascending: false });
       break;
   }
@@ -84,7 +94,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
 
-  return NextResponse.json({
+  const responseData = {
     data,
     meta: {
       total: count,
@@ -92,5 +102,10 @@ export async function GET(request: Request) {
       limit,
       totalPages: count ? Math.ceil(count / limit) : 0,
     }
-  });
+  };
+
+  // Set Cache for 5 minutes
+  await setCache(cacheKey, responseData, 300);
+
+  return NextResponse.json(responseData);
 }

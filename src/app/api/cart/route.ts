@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
 import { validateUserSession } from '@/utils/sessionValidation';
+import { getCache, setCache, invalidateCache, CacheKeys, CACHE_TTL } from '@/lib/cache';
 
 function getHeaderOrParamDeviceId(request: Request, bodyDeviceId?: string): string {
   if (bodyDeviceId && bodyDeviceId.trim().length > 0) return bodyDeviceId.trim().slice(0, 100);
@@ -49,8 +50,16 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: session.error, revoked: session.revoked }, { status: session.status });
     }
     const user = session.user;
-
     const deviceId = getHeaderOrParamDeviceId(request);
+
+    // 1. Try Redis Cart Cache (accelerator)
+    const cartCacheKey = CacheKeys.cart(user.id, deviceId);
+    const cachedCart = await getCache<any>(cartCacheKey);
+    if (cachedCart) {
+      return NextResponse.json(cachedCart);
+    }
+
+    // 2. Fallback to Supabase / Database (authoritative source of truth)
     const cartId = await getOrCreateDeviceCart(user.id, deviceId);
 
     // Fetch items with validated product details
@@ -102,13 +111,18 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({
+    const responsePayload = {
       cartId,
       deviceId,
       items: formattedItems,
       subtotal,
       itemCount: items.reduce((acc: number, cur: any) => acc + cur.quantity, 0)
-    });
+    };
+
+    // 3. Populate Redis cache (short-lived accelerator)
+    await setCache(cartCacheKey, responsePayload, CACHE_TTL.CART);
+
+    return NextResponse.json(responsePayload);
   } catch (error: any) {
     console.error('Cart GET error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -171,6 +185,9 @@ export async function POST(request: Request) {
       );
     }
 
+    // Invalidate cart cache for user + device
+    await invalidateCache(CacheKeys.cart(user.id, deviceId));
+
     return NextResponse.json({ success: true, message: 'Added to device cart' });
   } catch (error: any) {
     console.error('Cart POST error:', error);
@@ -230,6 +247,9 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Cart Item ID or Product ID is required.' }, { status: 400 });
     }
 
+    // Invalidate cart cache
+    await invalidateCache(CacheKeys.cart(user.id, deviceId));
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Cart PUT error:', error);
@@ -257,6 +277,7 @@ export async function DELETE(request: Request) {
 
     if (clearAll) {
       await queryDb(`DELETE FROM cart_items WHERE cart_id = $1`, [cartId]);
+      await invalidateCache(CacheKeys.cart(user.id, deviceId));
       return NextResponse.json({ success: true, message: 'Cart cleared' });
     }
 
@@ -265,6 +286,7 @@ export async function DELETE(request: Request) {
         `DELETE FROM cart_items WHERE id = $1 AND cart_id = $2`,
         [cartItemId, cartId]
       );
+      await invalidateCache(CacheKeys.cart(user.id, deviceId));
       return NextResponse.json({ success: true, message: 'Item removed from cart' });
     }
 
@@ -277,6 +299,7 @@ export async function DELETE(request: Request) {
            AND ($4::text IS NULL OR selected_color = $4)`,
         [cartId, productId, size || null, color || null]
       );
+      await invalidateCache(CacheKeys.cart(user.id, deviceId));
       return NextResponse.json({ success: true, message: 'Item removed from cart' });
     }
 

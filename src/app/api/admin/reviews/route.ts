@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
+import { invalidateCache, invalidateCachePattern, CacheKeys } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -65,6 +66,13 @@ export async function POST(request: Request) {
       reviewer_name, image_url, status, is_featured, display_order
     ]);
 
+    // Invalidate review caches
+    if (product_id) {
+      await invalidateCache(CacheKeys.reviews('all', product_id));
+    }
+    await invalidateCachePattern('aadhya:cache:*:reviews:*');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, review: result[0] });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -108,6 +116,13 @@ export async function PUT(request: Request) {
       reviewer_name, image_url, status, is_featured, display_order, id
     ]);
 
+    // Invalidate review caches
+    if (product_id) {
+      await invalidateCache(CacheKeys.reviews('all', product_id));
+    }
+    await invalidateCachePattern('aadhya:cache:*:reviews:*');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, review: result[0] });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -122,6 +137,11 @@ export async function DELETE(request: Request) {
     if (!id) return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
 
     await queryDb(`DELETE FROM reviews WHERE id = $1`, [id]);
+
+    // Invalidate review caches
+    await invalidateCachePattern('aadhya:cache:*:reviews:*');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, message: 'Review deleted' });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

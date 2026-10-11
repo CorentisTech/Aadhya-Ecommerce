@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
+import { invalidateCachePattern } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -32,6 +33,11 @@ export async function POST(request: Request) {
       [department, strip_type, JSON.stringify(text_content || []), link_url || null, bg_color || '#000000', text_color || '#FFFFFF']
     );
 
+    // Invalidate Redis strips and marquee caches immediately
+    await invalidateCachePattern('aadhya:cache:*:strips*');
+    await invalidateCachePattern('aadhya:cache:*:marquee*');
+    await invalidateCachePattern('aadhya:cache:*:offers*');
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -58,6 +64,11 @@ export async function PUT(request: Request) {
       [id, text_content ? JSON.stringify(text_content) : null, link_url, bg_color, text_color, is_active, sort_order]
     );
 
+    // Invalidate Redis strips and marquee caches immediately
+    await invalidateCachePattern('aadhya:cache:*:strips*');
+    await invalidateCachePattern('aadhya:cache:*:marquee*');
+    await invalidateCachePattern('aadhya:cache:*:offers*');
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -71,6 +82,12 @@ export async function DELETE(request: Request) {
     if (!id) return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
 
     await queryDb('DELETE FROM website_strips WHERE id = $1', [id]);
+
+    // Invalidate Redis strips and marquee caches immediately
+    await invalidateCachePattern('aadhya:cache:*:strips*');
+    await invalidateCachePattern('aadhya:cache:*:marquee*');
+    await invalidateCachePattern('aadhya:cache:*:offers*');
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

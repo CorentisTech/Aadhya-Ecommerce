@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { queryDb } from '@/utils/db';
 import { v4 as uuidv4 } from 'uuid';
+import { invalidateCachePattern } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -48,6 +49,10 @@ export async function POST(request: Request) {
       end_date || null
     ]);
 
+    // Invalidate offers and homepage caches
+    await invalidateCachePattern('aadhya:cache:*:offers*');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, offer: result[0] });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -73,6 +78,11 @@ export async function PUT(request: Request) {
     `;
 
     const result = await queryDb(updateSql, [title, code?.toUpperCase(), discount_percentage, discount_amount, department, is_active, id]);
+
+    // Invalidate offers and homepage caches
+    await invalidateCachePattern('aadhya:cache:*:offers*');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, offer: result[0] });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -84,6 +94,11 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     await queryDb(`DELETE FROM offers WHERE id = $1`, [id]);
+
+    // Invalidate offers and homepage caches
+    await invalidateCachePattern('aadhya:cache:*:offers*');
+    await invalidateCachePattern('aadhya:cache:*:homepage*');
+
     return NextResponse.json({ success: true, message: 'Offer deleted' });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
