@@ -6,8 +6,34 @@ import { Star, Quote, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Reviews: React.FC = () => {
+  const [reviewsList, setReviewsList] = useState<any[]>(() => 
+    REVIEWS.filter(r => !r.productName.toLowerCase().includes('rupee') && !r.productName.toLowerCase().includes('coin'))
+  );
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Fetch real fashion reviews from Supabase
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch('/api/reviews?department=fashion&featured=true');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.reviews) && data.reviews.length > 0) {
+          setReviewsList(data.reviews.map((r: any) => ({
+            id: r.id,
+            rating: r.rating || 5,
+            text: r.text || '',
+            author: r.author || r.reviewer_name || 'Verified Customer',
+            verified: Boolean(r.is_verified),
+            productName: r.product_name || r.title || 'Fashion Collection'
+          })));
+        }
+      } catch (err) {
+        console.error('Error fetching fashion reviews:', err);
+      }
+    };
+    fetchReviews();
+  }, []);
 
   // Monitor window resize to scale down the 3D Arc dynamically
   useEffect(() => {
@@ -21,18 +47,21 @@ export const Reviews: React.FC = () => {
 
   // Auto-play loop running at exactly 3 seconds (3000ms)
   useEffect(() => {
+    if (reviewsList.length === 0) return;
     const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % REVIEWS.length);
+      setActiveIndex((prev) => (prev + 1) % reviewsList.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [reviewsList.length]);
 
   const handleNext = () => {
-    setActiveIndex((prev) => (prev + 1) % REVIEWS.length);
+    if (reviewsList.length === 0) return;
+    setActiveIndex((prev) => (prev + 1) % reviewsList.length);
   };
 
   const handlePrev = () => {
-    setActiveIndex((prev) => (prev - 1 + REVIEWS.length) % REVIEWS.length);
+    if (reviewsList.length === 0) return;
+    setActiveIndex((prev) => (prev - 1 + reviewsList.length) % reviewsList.length);
   };
 
   // Drag handler for swipe gestures
@@ -47,7 +76,8 @@ export const Reviews: React.FC = () => {
 
   // Get positioning styles for each card based on its index (Dynamically scales for Mobile view)
   const getCardStyle = (index: number) => {
-    const total = REVIEWS.length;
+    const total = reviewsList.length;
+    if (total === 0) return {};
     const diff = (index - activeIndex + total) % total;
     let relIndex = diff;
     if (relIndex > 2) relIndex -= total; // map to -2, -1, 0, 1, 2
@@ -151,7 +181,7 @@ export const Reviews: React.FC = () => {
 
           {/* Staggered cards */}
           <div className="absolute inset-0 flex items-center justify-center">
-            {REVIEWS.map((review, idx) => {
+            {reviewsList.map((review, idx) => {
               const style = getCardStyle(idx);
               const isActive = idx === activeIndex;
               return (
@@ -208,7 +238,7 @@ export const Reviews: React.FC = () => {
 
         {/* Swipe indicator dots */}
         <div className="flex justify-center space-x-2 pt-2">
-          {REVIEWS.map((_, idx) => (
+          {reviewsList.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setActiveIndex(idx)}

@@ -230,7 +230,7 @@ export default function WebsiteCMSPage() {
   const handleEditStrip = (strip: any) => {
     setStripId(strip.id || strip._id);
     setStripType(strip.strip_type);
-    setStripTextContent(Array.isArray(strip.text_content) ? strip.text_content.join('\\n') : '');
+    setStripTextContent(Array.isArray(strip.text_content) ? strip.text_content.join('\n') : (typeof strip.text_content === 'string' ? strip.text_content : ''));
     setStripBgColor(strip.bg_color || '#000000');
     setStripTextColor(strip.text_color || '#FFFFFF');
     setStripIsActive(strip.is_active ?? true);
@@ -242,7 +242,7 @@ export default function WebsiteCMSPage() {
     e.preventDefault();
     try {
       const method = stripId ? 'PUT' : 'POST';
-      const text_content_array = stripTextContent.split('\\n').map(s => s.trim()).filter(Boolean);
+      const text_content_array = stripTextContent.split('\n').map(s => s.trim()).filter(Boolean);
       
       const payload: any = {
         department: 'fashion',

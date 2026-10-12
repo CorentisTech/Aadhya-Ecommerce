@@ -52,13 +52,22 @@ export const Navbar: React.FC = () => {
       try {
         const res = await fetch('/api/strips?department=fashion&type=offer');
         const data = await res.json();
-        if (data.success && data.strips && data.strips.length > 0) {
-          const msgs: string[] = [];
-          data.strips.forEach((s: any) => {
-            const content = typeof s.text_content === 'string' ? JSON.parse(s.text_content) : s.text_content;
-            if (Array.isArray(content)) msgs.push(...content);
-          });
-          if (msgs.length > 0) setAnnouncements(msgs);
+        if (data.success && data.strips) {
+          if (data.strips.length === 0) {
+            setAnnouncements([]);
+            return;
+          }
+          const strip = data.strips[0];
+          if (!strip.is_active) {
+            setAnnouncements([]);
+            return;
+          }
+          const content = typeof strip.text_content === 'string' ? JSON.parse(strip.text_content) : strip.text_content;
+          if (Array.isArray(content) && content.length > 0) {
+            setAnnouncements(content);
+          } else {
+            setAnnouncements([]);
+          }
         }
       } catch {}
     };
@@ -142,38 +151,39 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      {/* 1. Top Announcement Bar (Reference 1 Inspiration: Thin Black Bar with Centered Offers) */}
-      {/* 1. Top Announcement Bar */}
-      <div className="w-full bg-[#111111] text-[#EFE6DA] py-2 px-4 flex items-center justify-between text-[11px] font-medium tracking-widest uppercase select-none z-50 relative border-b border-black/20">
-        <button 
-          onClick={() => setAnnouncementIdx((prev) => (prev - 1 + announcements.length) % announcements.length)}
-          className="p-0.5 text-[#EFE6DA]/60 hover:text-white transition-colors"
-          aria-label="Previous announcement"
-        >
-          <ChevronLeft className="w-3.5 h-3.5" />
-        </button>
-        
-        <AnimatePresence mode="wait">
-          <motion.span
-            key={announcementIdx}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.25 }}
-            className="text-center font-sans tracking-[0.16em] text-[10px] sm:text-[11px] font-semibold text-[#F4ECE1]"
+      {/* 1. Top Announcement Bar (Fashion Only) */}
+      {!isNumis && announcements.length > 0 && (
+        <div className="w-full bg-[#111111] text-[#EFE6DA] py-2 px-4 flex items-center justify-between text-[11px] font-medium tracking-widest uppercase select-none z-50 relative border-b border-black/20">
+          <button 
+            onClick={() => setAnnouncementIdx((prev) => (prev - 1 + announcements.length) % announcements.length)}
+            className="p-0.5 text-[#EFE6DA]/60 hover:text-white transition-colors"
+            aria-label="Previous announcement"
           >
-            {announcements[announcementIdx]}
-          </motion.span>
-        </AnimatePresence>
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={announcementIdx}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.25 }}
+              className="text-center font-sans tracking-[0.16em] text-[10px] sm:text-[11px] font-semibold text-[#F4ECE1]"
+            >
+              {announcements[announcementIdx]}
+            </motion.span>
+          </AnimatePresence>
 
-        <button 
-          onClick={() => setAnnouncementIdx((prev) => (prev + 1) % announcements.length)}
-          className="p-0.5 text-[#EFE6DA]/60 hover:text-white transition-colors"
-          aria-label="Next announcement"
-        >
-          <ChevronRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
+          <button 
+            onClick={() => setAnnouncementIdx((prev) => (prev + 1) % announcements.length)}
+            className="p-0.5 text-[#EFE6DA]/60 hover:text-white transition-colors"
+            aria-label="Next announcement"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* 2. Main Luxury Header: Warm Beige #EFE6DA, Centered AADHYA Branding */}
       <header 

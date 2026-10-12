@@ -124,27 +124,31 @@ export async function POST(request: Request) {
         if (!item.product?.id || !item.quantity || item.quantity < 1) {
           return NextResponse.json({ success: false, error: 'Invalid item in cart.' }, { status: 400 });
         }
-        // Fetch authoritative price from DB
-        const productRows = await queryDb('SELECT price, is_active FROM products WHERE id = $1', [item.product.id]);
+        // Fetch authoritative price from DB (column is base_price)
+        const productRows = await queryDb('SELECT base_price, is_active FROM products WHERE id = $1', [item.product.id]);
         if (!productRows || productRows.length === 0 || !productRows[0].is_active) {
           return NextResponse.json({ success: false, error: `Product not available: ${item.product.id}` }, { status: 400 });
         }
-        serverSubtotal += Number(productRows[0].price) * item.quantity;
+        serverSubtotal += Number(productRows[0].base_price) * item.quantity;
       }
 
       const shippingCost = serverSubtotal >= 5000 ? 0 : 150;
       
       // Authoritative offer calculation
       let discountAmount = 0;
-      if (body.offer_code) {
+      let appliedOfferCode: string | null = null;
+      const offerCode = body.offer_code || body.promo_code;
+      if (offerCode) {
+        const cleanCode = String(offerCode).trim().toUpperCase();
         const offerRows = await queryDb(
-          `SELECT * FROM offers WHERE code = $1 AND is_active = true AND (end_date IS NULL OR end_date > NOW())`,
-          [body.offer_code]
+          `SELECT * FROM offers WHERE UPPER(code) = $1 AND is_active = true AND (end_date IS NULL OR end_date > NOW())`,
+          [cleanCode]
         );
         if (offerRows && offerRows.length > 0) {
           const offer = offerRows[0];
           const minOrder = Number(offer.min_order_amount || 0);
           if (serverSubtotal >= minOrder) {
+            appliedOfferCode = offer.code;
             if (offer.discount_percentage && Number(offer.discount_percentage) > 0) {
               discountAmount = Math.round(serverSubtotal * (Number(offer.discount_percentage) / 100));
             } else if (offer.discount_amount && Number(offer.discount_amount) > 0) {
@@ -154,54 +158,73 @@ export async function POST(request: Request) {
         }
       }
 
-      const serverTotal = serverSubtotal + shippingCost - discountAmount;
+      const serverTotal = Math.max(0, serverSubtotal + shippingCost - discountAmount);
 
-      // Database-level idempotency protection
-      if (idempotency_key) {
-        const existing = await queryDb('SELECT id, order_number FROM orders WHERE idempotency_key = $1', [idempotency_key]);
-        if (existing && existing.length > 0) {
-          return NextResponse.json({ success: true, order: existing[0], message: 'Order already exists' });
-        }
-      }
+      // Create or link shipping address record
+      const addressRows = await queryDb(`
+        INSERT INTO addresses (
+          id, user_id, full_name, email, street_name, address_line1, landmark, city, state, zip_code, country, alt_phone, is_default
+        ) VALUES (
+          gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, true
+        ) RETURNING id
+      `, [
+        user.id,
+        `${addr.firstName || ''} ${addr.lastName || ''}`.trim(),
+        addr.email || user.email || '',
+        addr.streetName || '',
+        addr.address || '',
+        addr.landmark || '',
+        addr.city || '',
+        addr.state || '',
+        addr.zip || '',
+        addr.country || 'India',
+        addr.phone || ''
+      ]);
+
+      const shippingAddressId = addressRows?.[0]?.id || null;
 
       const orderNumber = 'AD-' + Math.floor(100000 + Math.random() * 900000);
       const userId = user.id;
-      const isCOD = (payment_method || 'CARD').toUpperCase() === 'COD';
-      const orderStatus = isCOD ? 'PLACED' : 'PENDING';
-      const paymentStatus = isCOD ? 'COD_PENDING' : 'PENDING';
+
+      // Validate payment method against database enum ('CARD', 'UPI', 'NET_BANKING', 'COD')
+      const rawMethod = String(payment_method || 'CARD').toUpperCase();
+      const validMethods = ['CARD', 'UPI', 'NET_BANKING', 'COD'];
+      const paymentMethod = validMethods.includes(rawMethod) ? rawMethod : 'CARD';
+      const isCOD = paymentMethod === 'COD';
+
+      // Statuses strictly constrained to Postgres order_status and payment_status enums
+      const orderStatus = isCOD ? 'CONFIRMED' : 'PENDING';
+      const paymentStatus = isCOD ? 'PENDING' : 'PAID';
       
       // Authoritative order insertion in Supabase / Postgres
       const orderRows = await queryDb(`
         INSERT INTO orders (
-          order_number, user_id, status, subtotal, shipping_cost, discount_amount, total_amount, 
-          payment_method, payment_status, shipping_address_id, first_name, last_name, customer_email, customer_phone, idempotency_key
+          order_number, user_id, status, subtotal, shipping_cost, discount_amount, promo_code, total_amount, 
+          payment_method, payment_status, shipping_address_id
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, NULL, $10, $11, $12, $13, $14
-        ) RETURNING id, order_number, status, payment_status
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+        ) RETURNING id, order_number, status, payment_status, total_amount
       `, [
         orderNumber, 
         userId, 
         orderStatus,
         serverSubtotal, 
         shippingCost, 
-        discountAmount, 
+        discountAmount,
+        appliedOfferCode,
         serverTotal, 
-        payment_method || 'CARD',
+        paymentMethod,
         paymentStatus,
-        addr.firstName || '',
-        addr.lastName || '',
-        addr.email || '',
-        addr.phone || '',
-        idempotency_key || null
+        shippingAddressId
       ]);
 
       const newOrder = orderRows[0];
 
-      // Insert items with verified prices
+      // Insert items with verified base_price
       if (items && items.length > 0) {
         for (const item of items) {
-          const priceRows = await queryDb('SELECT price FROM products WHERE id = $1', [item.product.id]);
-          const verifiedPrice = priceRows && priceRows.length > 0 ? Number(priceRows[0].price) : 0;
+          const priceRows = await queryDb('SELECT base_price FROM products WHERE id = $1', [item.product.id]);
+          const verifiedPrice = priceRows && priceRows.length > 0 ? Number(priceRows[0].base_price) : 0;
           await queryDb(`
             INSERT INTO order_items (order_id, product_id, quantity, unit_price, selected_size, selected_color)
             VALUES ($1, $2, $3, $4, $5, $6)

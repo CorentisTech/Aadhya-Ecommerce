@@ -15,24 +15,38 @@ export const Marquee: React.FC = () => {
     "TIMELESS INDIAN SILHOUETTES"
   ]);
 
+  const [isVisible, setIsVisible] = useState(true);
+
   // Fetch marquee strip messages from DB
   useEffect(() => {
     const fetchMarquee = async () => {
       try {
         const res = await fetch('/api/strips?department=fashion&type=marquee');
         const data = await res.json();
-        if (data.success && data.strips && data.strips.length > 0) {
-          const msgs: string[] = [];
-          data.strips.forEach((s: any) => {
-            const content = typeof s.text_content === 'string' ? JSON.parse(s.text_content) : s.text_content;
-            if (Array.isArray(content)) msgs.push(...content);
-          });
-          if (msgs.length > 0) setMarqueeItems(msgs);
+        if (data.success && data.strips) {
+          if (data.strips.length === 0) {
+            setIsVisible(false);
+            return;
+          }
+          const strip = data.strips[0];
+          if (!strip.is_active) {
+            setIsVisible(false);
+            return;
+          }
+          const content = typeof strip.text_content === 'string' ? JSON.parse(strip.text_content) : strip.text_content;
+          if (Array.isArray(content) && content.length > 0) {
+            setMarqueeItems(content);
+            setIsVisible(true);
+          } else {
+            setIsVisible(false);
+          }
         }
       } catch {}
     };
     fetchMarquee();
   }, []);
+
+  if (!isVisible || marqueeItems.length === 0) return null;
 
   // Repeat for continuous seamless loop
   const repeatedItems = [...marqueeItems, ...marqueeItems, ...marqueeItems];

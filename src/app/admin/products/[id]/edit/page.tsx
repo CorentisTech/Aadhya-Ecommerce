@@ -35,6 +35,11 @@ export default function EditProductPage() {
   const [pattern, setPattern] = useState('');
   const [fit, setFit] = useState('');
   const [occasion, setOccasion] = useState('');
+  const [neckType, setNeckType] = useState('');
+  const [sleeves, setSleeves] = useState('');
+  const [lengthVal, setLengthVal] = useState('');
+  const [fabricCare, setFabricCare] = useState('');
+  const [modelInfo, setModelInfo] = useState('');
 
   // Numismatics fields
   const [era, setEra] = useState('');
@@ -42,11 +47,15 @@ export default function EditProductPage() {
   const [mint, setMint] = useState('');
   const [material, setMaterial] = useState('');
   const [rarity, setRarity] = useState('Common');
+  const [denomination, setDenomination] = useState('');
+  const [weight, setWeight] = useState('');
+  const [condition, setCondition] = useState('');
+  const [collectionLabel, setCollectionLabel] = useState('');
 
   // Media
   const [mainImageUrl, setMainImageUrl] = useState('');
-  const [additionalImages, setAdditionalImages] = useState<string[]>([]); // for numismatics
-  const [fashionVariants, setFashionVariants] = useState<any[]>([]); // for fashion
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  const [fashionVariants, setFashionVariants] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -75,12 +84,21 @@ export default function EditProductPage() {
               setPattern(data.domainDetails.pattern || '');
               setFit(data.domainDetails.fit || '');
               setOccasion(data.domainDetails.occasion || '');
+              setNeckType(data.domainDetails.neck_type || '');
+              setSleeves(data.domainDetails.sleeves || '');
+              setLengthVal(data.domainDetails.length || '');
+              setFabricCare(data.domainDetails.fabric_care || '');
+              setModelInfo(data.domainDetails.model_info || '');
             } else {
               setEra(data.domainDetails.era || '');
               setYear(data.domainDetails.year || '');
               setMint(data.domainDetails.mint || '');
               setMaterial(data.domainDetails.material || '');
               setRarity(data.domainDetails.rarity || 'Common');
+              setDenomination(data.domainDetails.denomination || '');
+              setWeight(data.domainDetails.weight || '');
+              setCondition(data.domainDetails.condition || '');
+              setCollectionLabel(data.domainDetails.collection_label || '');
             }
           }
 
@@ -89,15 +107,13 @@ export default function EditProductPage() {
           const catData = await catRes.json();
           if (catData.success) setCategories(catData.categories);
 
-          // Populate Media & Variants
+          // Populate Media & Variants (Preserve both primary and additional gallery images)
           if (data.media) {
             const primary = data.media.find((m: any) => m.is_primary);
             if (primary) setMainImageUrl(primary.media_url);
 
-            if (p.department === 'numismatics') {
-              const extra = data.media.filter((m: any) => !m.is_primary).map((m: any) => m.media_url);
-              setAdditionalImages(extra);
-            }
+            const extra = data.media.filter((m: any) => !m.is_primary && !m.variant_id).map((m: any) => m.media_url);
+            setAdditionalImages(extra);
           }
 
           if (p.department === 'fashion' && data.variants) {
@@ -133,24 +149,26 @@ export default function EditProductPage() {
     setError(null);
 
     try {
-      // Build media array
-      const media = [];
+      // Build media array preserving both variant media and general additional gallery images
+      const media: any[] = [];
       if (mainImageUrl.trim()) {
         media.push({ media_url: mainImageUrl.trim(), is_primary: true });
       }
 
-      if (product.department === 'numismatics') {
-        additionalImages.forEach(img => {
-          if (img.trim()) media.push({ media_url: img.trim(), is_primary: false });
-        });
-      } else {
+      additionalImages.forEach(img => {
+        if (img && img.trim()) {
+          media.push({ media_url: img.trim(), is_primary: false });
+        }
+      });
+
+      if (product.department === 'fashion' && fashionVariants.length > 0) {
         fashionVariants.forEach((v) => {
           v.images.forEach((img: string) => {
-            if (img.trim()) {
+            if (img && img.trim()) {
               media.push({
                 media_url: img.trim(),
                 is_primary: false,
-                variant_id: v.id || null, // Associate with variant
+                variant_id: v.id || null,
                 color_name: v.color,
                 color_hex: v.color_hex
               });
@@ -174,9 +192,29 @@ export default function EditProductPage() {
       };
 
       if (product.department === 'fashion') {
-        payload.fashion_details = { fabric, pattern, fit, occasion };
+        payload.fashion_details = { 
+          fabric, 
+          pattern, 
+          fit, 
+          occasion, 
+          neck_type: neckType, 
+          sleeves, 
+          length: lengthVal, 
+          fabric_care: fabricCare, 
+          model_info: modelInfo 
+        };
       } else {
-        payload.numismatic_details = { era, year, mint, material, rarity };
+        payload.numismatic_details = { 
+          era, 
+          year, 
+          mint, 
+          material, 
+          rarity, 
+          denomination, 
+          weight, 
+          condition, 
+          collection_label: collectionLabel 
+        };
       }
 
       const res = await fetch('/api/admin/products/' + id, {
@@ -294,13 +332,16 @@ export default function EditProductPage() {
             </div>
           )}
 
-          {product?.department === 'numismatics' && (
-            <div className="space-y-4 pt-4 border-t border-gray-100">
+          {/* Additional Gallery Images (Available for all products) */}
+          <div className="space-y-4 pt-4 border-t border-gray-100">
+            <div>
               <h3 className="text-sm font-black text-gray-800">Additional Images (Gallery)</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {additionalImages.map((img, idx) => (
+              <p className="text-[11px] text-gray-400 font-semibold">Editorial, texture, and catalog shots displayed on the product page</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {additionalImages.map((img, idx) => (
+                <div key={idx} className="relative">
                   <ImageUpload
-                    key={idx}
                     value={img}
                     onChange={(val) => {
                       const copy = [...additionalImages];
@@ -309,18 +350,30 @@ export default function EditProductPage() {
                     }}
                     label={`Gallery Image ${idx + 1}`}
                   />
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => setAdditionalImages([...additionalImages, ''])}
-                className="text-[10px] font-bold text-[#cca05b] uppercase tracking-wider flex items-center space-x-1"
-              >
-                <Plus className="w-3 h-3" />
-                <span>Add Gallery Image</span>
-              </button>
+                  {additionalImages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const copy = additionalImages.filter((_, i) => i !== idx);
+                        setAdditionalImages(copy);
+                      }}
+                      className="absolute top-2 right-2 p-1 bg-red-50 text-red-600 rounded-lg text-[9px] font-bold hover:bg-red-100 z-10"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
+            <button
+              type="button"
+              onClick={() => setAdditionalImages([...additionalImages, ''])}
+              className="text-[10px] font-bold text-[#cca05b] uppercase tracking-wider flex items-center space-x-1"
+            >
+              <Plus className="w-3 h-3" />
+              <span>Add Gallery Image</span>
+            </button>
+          </div>
         </div>
 
         {/* Basic Information */}
@@ -411,12 +464,13 @@ export default function EditProductPage() {
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-6">
           <div>
             <h2 className="text-base font-black text-gray-900">
-              {product?.department === 'fashion' ? 'Fashion Attributes' : 'Numismatics Attributes'}
+              {product?.department === 'fashion' ? 'Fashion Specifications' : 'Numismatics Specifications'}
             </h2>
+            <p className="text-xs text-gray-400 font-semibold">Authoritative catalog metadata</p>
           </div>
 
           {product?.department === 'fashion' ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-gray-600 uppercase">Fabric</label>
                 <input
@@ -424,6 +478,7 @@ export default function EditProductPage() {
                   value={fabric}
                   onChange={(e) => setFabric(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Pure Rayon / Silk"
                 />
               </div>
               <div className="space-y-1">
@@ -433,6 +488,7 @@ export default function EditProductPage() {
                   value={pattern}
                   onChange={(e) => setPattern(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Floral / Solid"
                 />
               </div>
               <div className="space-y-1">
@@ -442,6 +498,7 @@ export default function EditProductPage() {
                   value={fit}
                   onChange={(e) => setFit(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Regular / Flared"
                 />
               </div>
               <div className="space-y-1">
@@ -451,27 +508,100 @@ export default function EditProductPage() {
                   value={occasion}
                   onChange={(e) => setOccasion(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Festive / Daily Wear"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Neck Type</label>
+                <input
+                  type="text"
+                  value={neckType}
+                  onChange={(e) => setNeckType(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Round Neck / V-Neck"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Sleeves</label>
+                <input
+                  type="text"
+                  value={sleeves}
+                  onChange={(e) => setSleeves(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. 3/4 Sleeves / Sleeveless"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Length</label>
+                <input
+                  type="text"
+                  value={lengthVal}
+                  onChange={(e) => setLengthVal(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Calf Length / Ankle"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Fabric Care</label>
+                <input
+                  type="text"
+                  value={fabricCare}
+                  onChange={(e) => setFabricCare(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Hand Wash / Dry Clean"
+                />
+              </div>
+              <div className="col-span-2 space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Model / Sizing Info</label>
+                <input
+                  type="text"
+                  value={modelInfo}
+                  onChange={(e) => setModelInfo(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Model is 5'8 wearing size S"
                 />
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-600 uppercase">Material</label>
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Era</label>
                 <input
                   type="text"
-                  value={material}
-                  onChange={(e) => setMaterial(e.target.value)}
+                  value={era}
+                  onChange={(e) => setEra(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Mughal / British India"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-600 uppercase">Year</label>
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Year / Period</label>
                 <input
                   type="text"
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. 1940 or AH 1205"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Mint</label>
+                <input
+                  type="text"
+                  value={mint}
+                  onChange={(e) => setMint(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Bombay / Calcutta"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Material / Metal</label>
+                <input
+                  type="text"
+                  value={material}
+                  onChange={(e) => setMaterial(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Silver 0.917 / Copper"
                 />
               </div>
               <div className="space-y-1">
@@ -481,19 +611,61 @@ export default function EditProductPage() {
                   value={rarity}
                   onChange={(e) => setRarity(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Rare / Extremely Rare"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Denomination</label>
+                <input
+                  type="text"
+                  value={denomination}
+                  onChange={(e) => setDenomination(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. One Rupee / Mohur"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Weight</label>
+                <input
+                  type="text"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. 11.66g"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Condition / Grade</label>
+                <input
+                  type="text"
+                  value={condition}
+                  onChange={(e) => setCondition(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. UNC / Very Fine"
+                />
+              </div>
+              <div className="col-span-2 space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Collection Label</label>
+                <input
+                  type="text"
+                  value={collectionLabel}
+                  onChange={(e) => setCollectionLabel(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold"
+                  placeholder="e.g. Heritage Imperial Collection"
                 />
               </div>
             </div>
           )}
         </div>
 
-        {/* Display Flags */}
+        {/* Display Flags & Hero Placement */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-6">
           <div>
             <h2 className="text-base font-black text-gray-900">Visibility & Flags</h2>
+            <p className="text-xs text-gray-400 font-semibold">Control storefront spotlight, hero placement, and status</p>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <label className="flex items-center space-x-3 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50">
               <input
                 type="checkbox"
@@ -501,8 +673,12 @@ export default function EditProductPage() {
                 onChange={(e) => setIsBestseller(e.target.checked)}
                 className="w-4 h-4 text-[#cca05b] border-gray-300 rounded focus:ring-[#cca05b]"
               />
-              <span className="text-sm font-bold text-gray-800">Mark as Bestseller</span>
+              <div>
+                <span className="text-sm font-bold text-gray-800 block">Bestseller</span>
+                <span className="text-[10px] text-gray-400 font-medium block">Show in Best Sellers</span>
+              </div>
             </label>
+
             <label className="flex items-center space-x-3 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50">
               <input
                 type="checkbox"
@@ -510,8 +686,36 @@ export default function EditProductPage() {
                 onChange={(e) => setIsActive(e.target.checked)}
                 className="w-4 h-4 text-[#cca05b] border-gray-300 rounded focus:ring-[#cca05b]"
               />
-              <span className="text-sm font-bold text-gray-800">Active (Visible)</span>
+              <div>
+                <span className="text-sm font-bold text-gray-800 block">Active (Visible)</span>
+                <span className="text-[10px] text-gray-400 font-medium block">Live on storefront</span>
+              </div>
             </label>
+
+            <label className="flex items-center space-x-3 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50">
+              <input
+                type="checkbox"
+                checked={isHero}
+                onChange={(e) => setIsHero(e.target.checked)}
+                className="w-4 h-4 text-[#cca05b] border-gray-300 rounded focus:ring-[#cca05b]"
+              />
+              <div>
+                <span className="text-sm font-bold text-gray-800 block">Hero Spotlight</span>
+                <span className="text-[10px] text-gray-400 font-medium block">Homepage carousel hero</span>
+              </div>
+            </label>
+
+            <div className="p-4 border border-gray-100 rounded-2xl space-y-1">
+              <label className="text-[10px] font-bold text-gray-600 uppercase block">Hero Display Order</label>
+              <input
+                type="number"
+                min={0}
+                value={heroOrder}
+                onChange={(e) => setHeroOrder(Number(e.target.value))}
+                className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs font-bold"
+                placeholder="0"
+              />
+            </div>
           </div>
         </div>
 

@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useApp, UserDetails } from '../../context/AppContext';
 import { createClient } from '@/utils/supabase/client';
 import { ProductVisual } from './ProductVisual';
 import { 
   ArrowLeft, 
+  ArrowRight,
   CheckCircle, 
   CreditCard, 
   Building, 
@@ -118,11 +120,20 @@ const DragToPaymentButton: React.FC<DragToPaymentButtonProps> = ({ onProceed, is
 };
 
 export const CheckoutPage: React.FC = () => {
-  const { cart, clearCart, setPage, isLoggedIn, loginUser, registerUser, user } = useApp();
+  const router = useRouter();
+  const { cart, clearCart, setPage, isLoggedIn, loginUser, registerUser, user, appliedOffer } = useApp();
   const [success, setSuccess] = useState(false);
   const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const [confirmedOrderSummary, setConfirmedOrderSummary] = useState<{
+    orderNumber: string;
+    totalAmount: number;
+    itemsCount: number;
+    shippingAddress: string;
+    city: string;
+    zip: string;
+  } | null>(null);
   
   // Checkout login inline panel states
   const [checkoutLoginScreen, setCheckoutLoginScreen] = useState<'landing' | 'email' | 'register'>('landing');
@@ -233,9 +244,16 @@ export const CheckoutPage: React.FC = () => {
   const isFreeShipping = subtotal >= shippingThreshold;
   const shippingCost = isFreeShipping ? 0 : 150;
   
-  // Dynamic 10% Festive Discount
-  const discount = Math.round(subtotal * 0.1);
-  const total = subtotal + shippingCost - discount;
+  // Authoritative discount calculation matching cart
+  let discount = 0;
+  if (appliedOffer) {
+    if (appliedOffer.discountPercentage && appliedOffer.discountPercentage > 0) {
+      discount = Math.round(subtotal * (appliedOffer.discountPercentage / 100));
+    } else if (appliedOffer.discountAmount && appliedOffer.discountAmount > 0) {
+      discount = Math.min(Number(appliedOffer.discountAmount), subtotal);
+    }
+  }
+  const total = Math.max(0, subtotal + shippingCost - discount);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -271,6 +289,14 @@ export const CheckoutPage: React.FC = () => {
     
     try {
       setOrderLoading(true);
+      const mappedMethod = selectedCard === 'cod' 
+        ? 'COD' 
+        : selectedCard === 'upi' 
+          ? 'UPI' 
+          : selectedCard === 'net-banking' 
+            ? 'NET_BANKING' 
+            : 'CARD';
+
       const payload = {
         items: cart.map(item => ({
           product: { id: item.product.id, price: item.product.price },
@@ -282,8 +308,9 @@ export const CheckoutPage: React.FC = () => {
         subtotal,
         shipping_cost: shippingCost,
         discount_amount: discount,
+        offer_code: appliedOffer?.code || null,
         total_amount: total,
-        payment_method: selectedCard === 'cod' ? 'COD' : 'CARD',
+        payment_method: mappedMethod,
         idempotency_key: `chk_${Date.now()}_${Math.random()}`
       };
       
@@ -299,8 +326,16 @@ export const CheckoutPage: React.FC = () => {
       });
       const data = await res.json();
       
-      if (data.success) {
+      if (data.success && data.order) {
         setPlacedOrderNo(data.order.order_number);
+        setConfirmedOrderSummary({
+          orderNumber: data.order.order_number,
+          totalAmount: total,
+          itemsCount: cart.reduce((acc, it) => acc + it.quantity, 0),
+          shippingAddress: `${formData.address}, ${formData.streetName}`,
+          city: formData.city,
+          zip: formData.zip,
+        });
         setPaymentModalOpen(false);
         setSuccess(true);
         clearCart();
@@ -317,30 +352,71 @@ export const CheckoutPage: React.FC = () => {
 
   if (success && placedOrderNo) {
     return (
-      <div className="w-full min-h-screen bg-brand-warmWhite flex items-center justify-center py-20 px-6">
+      <div className="w-full min-h-screen bg-[#FCFAF7] flex items-center justify-center py-20 px-4 md:px-6 select-none">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-brand-white p-8 md:p-12 rounded-3xl border border-brand-border shadow-lg max-w-md text-center space-y-6"
+          className="bg-brand-white p-8 md:p-10 rounded-3xl border border-brand-border/40 shadow-xl max-w-lg w-full text-center space-y-6"
         >
           <CheckCircle className="w-16 h-16 text-brand-success mx-auto stroke-[1.5]" />
-          <div className="space-y-2">
-            <h2 className="font-display font-bold text-2xl text-brand-espresso uppercase tracking-wider">
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-extrabold tracking-widest text-[#F26A2E] uppercase">
+              Authoritative Confirmation
+            </span>
+            <h2 className="font-display font-bold text-2xl sm:text-3xl text-brand-espresso uppercase tracking-wider">
               ORDER PLACED SUCCESSFULLY
             </h2>
             <p className="text-xs text-brand-warmGray font-semibold tracking-wider">
-              Your order ID is <strong className="text-brand-espresso">{placedOrderNo}</strong>.
+              Order Reference: <strong className="text-brand-espresso font-mono text-sm">{placedOrderNo}</strong>
             </p>
           </div>
+
+          {confirmedOrderSummary && (
+            <div className="bg-[#FAF7F2] border border-brand-border/30 rounded-2xl p-4 text-left space-y-2.5 text-xs">
+              <div className="flex justify-between items-center border-b border-brand-border/20 pb-2">
+                <span className="text-brand-warmGray font-semibold">Total Paid</span>
+                <span className="font-extrabold text-sm text-[#F26A2E]">
+                  ₹{confirmedOrderSummary.totalAmount.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-[11px]">
+                <span className="text-brand-warmGray">Items</span>
+                <span className="font-bold text-brand-espresso">{confirmedOrderSummary.itemsCount} pcs</span>
+              </div>
+              <div className="text-[11px] space-y-0.5 border-t border-brand-border/20 pt-2">
+                <span className="text-brand-warmGray block">Shipping Address:</span>
+                <span className="font-medium text-brand-espresso block">
+                  {confirmedOrderSummary.shippingAddress}, {confirmedOrderSummary.city} - {confirmedOrderSummary.zip}
+                </span>
+              </div>
+              <div className="text-[10px] text-brand-warmGray pt-1 flex items-center gap-1 font-semibold">
+                <Truck className="w-3.5 h-3.5 text-[#F26A2E]" />
+                <span>Expected Delivery: 3 to 5 business days</span>
+              </div>
+            </div>
+          )}
+
           <p className="text-xs text-brand-warmGray leading-relaxed font-semibold">
-            Thank you for shopping at Aadhya. We have sent a confirmation email to your address with tracking details. Your treasures will arrive in 3-5 business days.
+            Thank you for shopping at Aadhya. We have sent a confirmation email to your registered address with live dispatch tracking details.
           </p>
-          <button
-            onClick={() => setPage('home')}
-            className="w-full py-3 bg-[#F26A2E] text-brand-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#F26A2E]/90 transition-colors rounded-xl"
-          >
-            CONTINUE SHOPPING
-          </button>
+          
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <button
+              onClick={() => router.push('/account')}
+              className="flex-1 py-3 bg-[#EFE6DA] border border-[#E5DACB] text-brand-espresso text-xs font-bold tracking-widest uppercase hover:bg-[#E5DACB] transition-colors rounded-xl"
+            >
+              VIEW IN ACCOUNT
+            </button>
+            <button
+              onClick={() => {
+                setPage('home');
+                router.push('/');
+              }}
+              className="flex-1 py-3 bg-[#F26A2E] text-brand-white text-xs font-bold tracking-[0.15em] uppercase hover:bg-[#F26A2E]/90 transition-colors rounded-xl shadow-sm"
+            >
+              CONTINUE SHOPPING
+            </button>
+          </div>
         </motion.div>
       </div>
     );
@@ -745,11 +821,19 @@ export const CheckoutPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* State-Safe Drag to Payment CTA */}
-              <DragToPaymentButton
-                onProceed={() => setPaymentModalOpen(true)}
-                isOpen={isPaymentModalOpen}
-              />
+              {/* Clean Click-to-Pay CTA Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (validateForm()) {
+                    setPaymentModalOpen(true);
+                  }
+                }}
+                className="w-full py-4 px-8 bg-[#F26A2E] text-brand-white text-xs font-bold tracking-[0.25em] uppercase hover:bg-[#F26A2E]/90 transition-all shadow-md rounded-full flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
+              >
+                <span>PROCEED TO PAYMENT</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
 
             </div>
 
@@ -800,10 +884,17 @@ export const CheckoutPage: React.FC = () => {
                   <span>INSURED EXPRESS SHIPPING</span>
                   <span>{shippingCost === 0 ? '₹0.00 (Free)' : `₹${shippingCost}`}</span>
                 </div>
-                <div className="flex justify-between text-brand-success font-extrabold">
-                  <span>FESTIVE SPECIAL DISCOUNT</span>
-                  <span>-₹{discount.toLocaleString('en-IN')}</span>
-                </div>
+                {appliedOffer && discount > 0 ? (
+                  <div className="flex justify-between text-brand-success font-extrabold">
+                    <span>DISCOUNT ({appliedOffer.code})</span>
+                    <span>-₹{discount.toLocaleString('en-IN')}</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between text-brand-warmGray font-bold">
+                    <span>DISCOUNT</span>
+                    <span>₹0</span>
+                  </div>
+                )}
                 
                 <div className="flex justify-between text-sm font-bold text-brand-espresso border-t border-brand-border/30 pt-4">
                   <span className="font-display font-bold">TOTAL</span>
@@ -881,8 +972,8 @@ export const CheckoutPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Stacked Wallet container (Starts immediately below title, zero top white gap) */}
-              <div className="relative h-[290px] w-full flex flex-col justify-start mt-2 mb-1 select-none">
+              {/* Stacked Wallet container */}
+              <div className={`relative ${selectedCard ? 'min-h-[380px]' : 'h-[300px]'} w-full flex flex-col justify-start mt-2 mb-2 select-none transition-all duration-300`}>
                 
                 {paymentCards.map((card) => {
                   const Icon = card.icon;
@@ -906,25 +997,27 @@ export const CheckoutPage: React.FC = () => {
                     <motion.div
                       key={card.id}
                       onClick={() => {
-                        setSelectedCard(selectedCard === card.id ? null : card.id);
+                        if (!isSelected) {
+                          setSelectedCard(card.id);
+                        }
                       }}
                       onMouseEnter={() => !selectedCard && setHoveredCard(card.id)}
                       onMouseLeave={() => !selectedCard && setHoveredCard(null)}
                       animate={{
-                        y: yVal,
-                        scale: isSelected ? 1.04 : isHovered && !selectedCard ? 1.015 : 1,
-                        filter: isOtherSelected ? 'blur(4px)' : 'blur(0px)',
-                        opacity: isOtherSelected ? 0.35 : 1,
-                        zIndex: zVal,
+                        y: isSelected ? 0 : isOtherSelected ? card.yOffset + 140 : yVal,
+                        scale: isSelected ? 1.02 : isOtherSelected ? 0.92 : isHovered && !selectedCard ? 1.015 : 1,
+                        filter: isOtherSelected ? 'blur(6px)' : 'blur(0px)',
+                        opacity: isOtherSelected ? 0.15 : 1,
+                        zIndex: isSelected ? 100 : zVal,
                       }}
                       transition={{ type: 'spring', damping: 28, stiffness: 180 }}
-                      className={`absolute left-0 right-0 h-[175px] rounded-2xl p-4 flex flex-col justify-between text-white cursor-pointer shadow-xl border border-white/15 transition-all ${card.bgColor}`}
+                      className={`absolute left-0 right-0 ${isSelected ? 'min-h-[295px] h-auto p-5' : 'h-[175px] p-4'} rounded-2xl flex flex-col justify-between text-white cursor-pointer shadow-xl border border-white/20 transition-all ${card.bgColor}`}
                     >
                       {/* Top Header Row */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <Icon className="w-5 h-5 stroke-[1.5]" />
-                          <span className="font-display text-[12px] sm:text-[13px] font-bold tracking-wider uppercase">
+                          <span className="font-display text-[13px] sm:text-[14px] font-bold tracking-wider uppercase">
                             {card.title}
                           </span>
                         </div>
@@ -932,14 +1025,15 @@ export const CheckoutPage: React.FC = () => {
                           <span className="font-sans text-[13px] font-extrabold">
                             {card.amount}
                           </span>
-                          {/* Close/Deselect cut option on popped-up selected card */}
+                          {/* Close/Deselect option on popped-up selected card */}
                           {isSelected && (
                             <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedCard(null);
                               }}
-                              className="p-1 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors ml-1"
+                              className="p-1 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors ml-1 cursor-pointer"
                               aria-label="Deselect card"
                             >
                               <X className="w-3.5 h-3.5" />
@@ -948,40 +1042,54 @@ export const CheckoutPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Card Middle Mock Chip & dynamic layout inputs */}
+                      {/* Card Middle & dynamic layout inputs */}
                       <div className="flex-grow flex flex-col justify-center pt-2">
                         {isSelected ? (
                           <motion.div 
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.3, delay: 0.1 }}
-                            className="w-full space-y-2 text-left"
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="w-full space-y-2 text-left py-1"
                             onClick={(e) => e.stopPropagation()} // Keep focus on inputs
                           >
                             {/* Option 1: Card fields */}
                             {card.id === 'card' && (
-                              <div className="space-y-1.5 text-[8px] font-bold text-white/80">
-                                <input
-                                  type="text"
-                                  placeholder="Cardholder Name"
-                                  value={cardDetails.name}
-                                  onChange={(e) => setCardDetails({ ...cardDetails, name: e.target.value })}
-                                  className="w-full bg-white/15 border border-white/20 p-2 rounded-lg text-[9px] text-white placeholder-white/50 outline-none"
-                                />
-                                <div className="grid grid-cols-3 gap-1.5">
+                              <div className="space-y-2 text-xs font-semibold text-white/90">
+                                <div>
                                   <input
                                     type="text"
-                                    placeholder="Card Number"
+                                    placeholder="Cardholder Full Name"
+                                    value={cardDetails.name}
+                                    onChange={(e) => setCardDetails({ ...cardDetails, name: e.target.value })}
+                                    className="w-full bg-white/20 border border-white/30 p-2.5 rounded-xl text-xs text-white placeholder-white/60 outline-none focus:bg-white/30 transition-colors"
+                                  />
+                                </div>
+                                <div>
+                                  <input
+                                    type="text"
+                                    placeholder="Card Number (16 digits)"
+                                    maxLength={19}
                                     value={cardDetails.number}
                                     onChange={(e) => setCardDetails({ ...cardDetails, number: e.target.value })}
-                                    className="col-span-2 bg-white/15 border border-white/20 p-2 rounded-lg text-[9px] text-white placeholder-white/50 outline-none"
+                                    className="w-full bg-white/20 border border-white/30 p-2.5 rounded-xl text-xs text-white placeholder-white/60 outline-none focus:bg-white/30 transition-colors"
                                   />
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
                                   <input
                                     type="text"
+                                    placeholder="MM / YY"
+                                    maxLength={5}
+                                    value={cardDetails.expiry}
+                                    onChange={(e) => setCardDetails({ ...cardDetails, expiry: e.target.value })}
+                                    className="bg-white/20 border border-white/30 p-2.5 rounded-xl text-xs text-white placeholder-white/60 outline-none focus:bg-white/30 transition-colors"
+                                  />
+                                  <input
+                                    type="password"
                                     placeholder="CVV"
+                                    maxLength={4}
                                     value={cardDetails.cvv}
                                     onChange={(e) => setCardDetails({ ...cardDetails, cvv: e.target.value })}
-                                    className="bg-white/15 border border-white/20 p-2 rounded-lg text-[9px] text-white placeholder-white/50 outline-none"
+                                    className="bg-white/20 border border-white/30 p-2.5 rounded-xl text-xs text-white placeholder-white/60 outline-none focus:bg-white/30 transition-colors"
                                   />
                                 </div>
                               </div>
@@ -989,43 +1097,55 @@ export const CheckoutPage: React.FC = () => {
 
                             {/* Option 2: UPI fields */}
                             {card.id === 'upi' && (
-                              <div className="space-y-1.5 text-center flex flex-col items-center">
-                                <div className="w-9 h-9 bg-white/25 rounded p-1 flex flex-col justify-between">
-                                  <div className="flex justify-between"><div className="w-1.5 h-1.5 bg-white rounded-xs"/><div className="w-1.5 h-1.5 bg-white rounded-xs"/></div>
-                                  <div className="flex justify-between"><div className="w-1.5 h-1.5 bg-white rounded-xs"/><div className="w-1.5 h-1.5 bg-white rounded-xs"/></div>
+                              <div className="space-y-2 text-center flex flex-col items-center py-1">
+                                <div className="w-10 h-10 bg-white/25 rounded-lg p-1.5 flex flex-col justify-between shadow-inner">
+                                  <div className="flex justify-between"><div className="w-2 h-2 bg-white rounded-xs"/><div className="w-2 h-2 bg-white rounded-xs"/></div>
+                                  <div className="flex justify-between"><div className="w-2 h-2 bg-white rounded-xs"/><div className="w-2 h-2 bg-white rounded-xs"/></div>
                                 </div>
                                 <input
                                   type="text"
-                                  placeholder="Enter UPI ID (e.g. name@upi)"
+                                  placeholder="Enter UPI ID (e.g. name@okhdfcbank)"
                                   value={upiId}
                                   onChange={(e) => setUpiId(e.target.value)}
-                                  className="w-full bg-white/15 border border-white/20 p-1.5 rounded-lg text-[9px] text-white placeholder-white/50 outline-none text-center"
+                                  className="w-full bg-white/20 border border-white/30 p-2.5 rounded-xl text-xs text-white placeholder-white/60 outline-none text-center focus:bg-white/30 transition-colors"
                                 />
+                                <span className="text-[9px] text-white/70 block">
+                                  You will receive a payment request on your UPI app.
+                                </span>
                               </div>
                             )}
 
                             {/* Option 3: Netbanking banks dropdown */}
                             {card.id === 'net-banking' && (
-                              <div className="space-y-1.5">
+                              <div className="space-y-2 py-1">
+                                <label className="text-[10px] text-white/80 font-bold block uppercase tracking-wider">
+                                  Select Your Bank:
+                                </label>
                                 <select
                                   value={selectedBank}
                                   onChange={(e) => setSelectedBank(e.target.value)}
-                                  className="w-full bg-white/15 border border-white/20 p-2 rounded-lg text-[9px] text-white outline-none select-bank"
+                                  className="w-full bg-white/20 border border-white/30 p-2.5 rounded-xl text-xs text-white outline-none select-bank focus:bg-white/30 transition-colors"
                                 >
-                                  <option value="" className="text-brand-espresso">Select your Bank</option>
-                                  <option value="sbi" className="text-brand-espresso">State Bank of India</option>
+                                  <option value="" className="text-brand-espresso">Select bank from list</option>
+                                  <option value="sbi" className="text-brand-espresso">State Bank of India (SBI)</option>
                                   <option value="hdfc" className="text-brand-espresso">HDFC Bank</option>
                                   <option value="icici" className="text-brand-espresso">ICICI Bank</option>
                                   <option value="axis" className="text-brand-espresso">Axis Bank</option>
+                                  <option value="kotak" className="text-brand-espresso">Kotak Mahindra Bank</option>
                                 </select>
                               </div>
                             )}
 
                             {/* Option 4: COD details */}
                             {card.id === 'cod' && (
-                              <p className="text-[8px] font-semibold text-center text-white/90 leading-tight">
-                                Handover cash or scan QR code on delivery. Insured package dispatch.
-                              </p>
+                              <div className="py-2 text-center space-y-1">
+                                <div className="inline-block p-2 rounded-full bg-white/20 mb-1">
+                                  <DollarSign className="w-5 h-5 text-white" />
+                                </div>
+                                <p className="text-xs font-medium text-center text-white/95 leading-relaxed">
+                                  Pay with cash or UPI QR upon delivery. Insured package dispatch with tamper-evident seal.
+                                </p>
+                              </div>
                             )}
 
                           </motion.div>
@@ -1040,10 +1160,12 @@ export const CheckoutPage: React.FC = () => {
                       {/* Pay Button Action overlay */}
                       {isSelected ? (
                         <button
+                          type="button"
                           onClick={handlePayNow}
-                          className="w-full py-2 bg-white text-brand-espresso font-extrabold text-[10px] tracking-wider rounded-xl uppercase hover:bg-opacity-90 transition-all shadow-sm"
+                          disabled={orderLoading}
+                          className="w-full py-3 bg-white text-brand-espresso font-extrabold text-xs tracking-wider rounded-xl uppercase hover:bg-opacity-95 transition-all shadow-md mt-2 cursor-pointer active:scale-98 disabled:opacity-50"
                         >
-                          PAY {card.amount} SECURELY
+                          {orderLoading ? 'PROCESSING PAYMENT...' : `PAY ${card.amount} SECURELY`}
                         </button>
                       ) : (
                         /* Mock card footer network label */
@@ -1057,7 +1179,7 @@ export const CheckoutPage: React.FC = () => {
                 })}
 
                 {/* Stitched Wallet Bottom Pocket container */}
-                <div className="absolute bottom-0 left-0 right-0 h-[36px] bg-[#1C1816] rounded-t-2xl border-t border-dashed border-[#F26A2E]/50 shadow-inner flex items-center justify-center z-45 pointer-events-none">
+                <div className={`absolute bottom-0 left-0 right-0 h-[36px] bg-[#1C1816] rounded-t-2xl border-t border-dashed border-[#F26A2E]/50 shadow-inner flex items-center justify-center z-45 pointer-events-none transition-opacity duration-300 ${selectedCard ? 'opacity-0' : 'opacity-100'}`}>
                   <div className="text-[8px] text-[#F26A2E] font-extrabold tracking-[0.25em] uppercase">
                     Aadhya Secure Wallet
                   </div>

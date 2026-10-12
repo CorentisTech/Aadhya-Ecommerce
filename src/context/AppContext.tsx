@@ -32,6 +32,15 @@ export interface UserDetails {
   role?: string;
 }
 
+export interface AppliedOffer {
+  id: string;
+  code: string;
+  title: string;
+  discountPercentage?: number | null;
+  discountAmount?: number | null;
+  minOrderAmount?: number | null;
+}
+
 interface AppContextType {
   activePage: PageType;
   setPage: (page: PageType) => void;
@@ -65,6 +74,11 @@ interface AppContextType {
   deleteUserAccount: () => Promise<void>;
   refreshUserData: () => Promise<void>;
   websiteSettings: any | null;
+
+  // Authoritative Offer & Promo state
+  appliedOffer: AppliedOffer | null;
+  applyOffer: (code: string) => Promise<{ success: boolean; message?: string; offer?: AppliedOffer }>;
+  removeOffer: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -94,6 +108,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Wishlist State
   const [wishlist, setWishlist] = useState<Product[]>([]);
+
+  // Authoritative Offer & Promo State
+  const [appliedOffer, setAppliedOffer] = useState<AppliedOffer | null>(null);
 
   // UI Drawer / Modal States
   const [isCartOpen, setCartOpen] = useState(false);
@@ -234,12 +251,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setIsLoggedIn(true);
           await syncServerData();
         } else {
-          // Read local guest cart/wishlist for non-authenticated guests
+          // Read local guest cart/wishlist/offer for non-authenticated guests
           try {
             const localCart = localStorage.getItem('aadhya_cart');
             if (localCart) setCart(JSON.parse(localCart));
             const localWishlist = localStorage.getItem('aadhya_wishlist');
             if (localWishlist) setWishlist(JSON.parse(localWishlist));
+            const localOffer = localStorage.getItem('aadhya_applied_offer');
+            if (localOffer) setAppliedOffer(JSON.parse(localOffer));
           } catch {
             // ignore JSON error
           }
@@ -250,6 +269,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('Auth session error:', err);
       } finally {
         if (isMounted) {
+          // Always restore applied offer if present
+          try {
+            const localOffer = localStorage.getItem('aadhya_applied_offer');
+            if (localOffer) setAppliedOffer(JSON.parse(localOffer));
+          } catch {}
           setAuthLoading(false);
           setIsLoaded(true);
         }
@@ -272,10 +296,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setUser(null);
         setCart([]);
         setWishlist([]);
+        setAppliedOffer(null);
         try {
           localStorage.removeItem('aadhya_user');
           localStorage.removeItem('aadhya_cart');
           localStorage.removeItem('aadhya_wishlist');
+          localStorage.removeItem('aadhya_applied_offer');
         } catch {
           // ignore
         }
@@ -304,6 +330,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch {}
     }
   }, [wishlist, isLoaded, isLoggedIn]);
+
+  // Persist applied offer to localStorage
+  useEffect(() => {
+    if (isLoaded) {
+      try {
+        if (appliedOffer) {
+          localStorage.setItem('aadhya_applied_offer', JSON.stringify(appliedOffer));
+        } else {
+          localStorage.removeItem('aadhya_applied_offer');
+        }
+      } catch {}
+    }
+  }, [appliedOffer, isLoaded]);
 
   // Synchronize activePage automatically whenever pathname changes
   useEffect(() => {
@@ -439,6 +478,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const clearCart = () => {
     setCart([]);
+    setAppliedOffer(null);
+    try {
+      localStorage.removeItem('aadhya_applied_offer');
+    } catch {}
     if (isLoggedIn) {
       const deviceId = getDeviceId();
       fetch(`/api/cart?clearAll=true&deviceId=${encodeURIComponent(deviceId)}`, {
@@ -446,6 +489,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         headers: { 'x-device-id': deviceId },
       }).catch((err) => console.error('Clear cart API error:', err));
     }
+  };
+
+  const applyOffer = async (code: string) => {
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanCode) {
+      return { success: false, message: 'Please enter a promo code.' };
+    }
+    try {
+      const res = await fetch(`/api/offers?code=${encodeURIComponent(cleanCode)}`);
+      const data = await res.json();
+      if (data.success && data.offer) {
+        const offerObj: AppliedOffer = {
+          id: data.offer.id,
+          code: data.offer.code,
+          title: data.offer.title,
+          discountPercentage: data.offer.discount_percentage ? Number(data.offer.discount_percentage) : null,
+          discountAmount: data.offer.discount_amount ? Number(data.offer.discount_amount) : null,
+          minOrderAmount: data.offer.min_order_amount ? Number(data.offer.min_order_amount) : null,
+        };
+        setAppliedOffer(offerObj);
+        return { success: true, offer: offerObj };
+      } else {
+        return { success: false, message: data.error || 'Invalid or expired promo code.' };
+      }
+    } catch (err: any) {
+      console.error('Error applying offer:', err);
+      return { success: false, message: 'Failed to validate promo code. Please try again.' };
+    }
+  };
+
+  const removeOffer = () => {
+    setAppliedOffer(null);
+    try {
+      localStorage.removeItem('aadhya_applied_offer');
+    } catch {}
   };
 
   // Wishlist Handlers with Backend Sync
@@ -512,10 +590,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsLoggedIn(false);
       setCart([]);
       setWishlist([]);
+      setAppliedOffer(null);
       try {
         localStorage.removeItem('aadhya_user');
         localStorage.removeItem('aadhya_cart');
         localStorage.removeItem('aadhya_wishlist');
+        localStorage.removeItem('aadhya_applied_offer');
       } catch {}
     }
   };
@@ -578,6 +658,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteUserAccount,
         refreshUserData: syncServerData,
         websiteSettings,
+        appliedOffer,
+        applyOffer,
+        removeOffer,
       }}
     >
       {children}

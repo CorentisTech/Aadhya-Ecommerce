@@ -21,16 +21,16 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { department, strip_type, text_content, link_url, bg_color, text_color } = body;
+    const { department, strip_type, text_content, link_url, bg_color, text_color, is_active, sort_order } = body;
 
     if (!department || !strip_type) {
       return NextResponse.json({ success: false, error: 'Department and strip type are required' }, { status: 400 });
     }
 
     await queryDb(
-      `INSERT INTO website_strips (department, strip_type, text_content, link_url, bg_color, text_color)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [department, strip_type, JSON.stringify(text_content || []), link_url || null, bg_color || '#000000', text_color || '#FFFFFF']
+      `INSERT INTO website_strips (department, strip_type, text_content, link_url, bg_color, text_color, is_active, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [department, strip_type, JSON.stringify(text_content || []), link_url || null, bg_color || '#000000', text_color || '#FFFFFF', is_active !== undefined ? Boolean(is_active) : true, Number(sort_order || 0)]
     );
 
     // Invalidate Redis strips and marquee caches immediately
@@ -51,17 +51,44 @@ export async function PUT(request: Request) {
 
     if (!id) return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
 
+    const updateFields: string[] = ['updated_at = NOW()'];
+    const params: any[] = [id];
+    let pIdx = 2;
+
+    if (text_content !== undefined) {
+      updateFields.push(`text_content = $${pIdx}`);
+      params.push(JSON.stringify(text_content));
+      pIdx++;
+    }
+    if (link_url !== undefined) {
+      updateFields.push(`link_url = $${pIdx}`);
+      params.push(link_url);
+      pIdx++;
+    }
+    if (bg_color !== undefined) {
+      updateFields.push(`bg_color = $${pIdx}`);
+      params.push(bg_color);
+      pIdx++;
+    }
+    if (text_color !== undefined) {
+      updateFields.push(`text_color = $${pIdx}`);
+      params.push(text_color);
+      pIdx++;
+    }
+    if (is_active !== undefined) {
+      updateFields.push(`is_active = $${pIdx}`);
+      params.push(Boolean(is_active));
+      pIdx++;
+    }
+    if (sort_order !== undefined) {
+      updateFields.push(`sort_order = $${pIdx}`);
+      params.push(Number(sort_order));
+      pIdx++;
+    }
+
     await queryDb(
-      `UPDATE website_strips SET
-        text_content = COALESCE($2, text_content),
-        link_url = COALESCE($3, link_url),
-        bg_color = COALESCE($4, bg_color),
-        text_color = COALESCE($5, text_color),
-        is_active = COALESCE($6, is_active),
-        sort_order = COALESCE($7, sort_order),
-        updated_at = NOW()
-       WHERE id = $1`,
-      [id, text_content ? JSON.stringify(text_content) : null, link_url, bg_color, text_color, is_active, sort_order]
+      `UPDATE website_strips SET ${updateFields.join(', ')} WHERE id = $1`,
+      params
     );
 
     // Invalidate Redis strips and marquee caches immediately

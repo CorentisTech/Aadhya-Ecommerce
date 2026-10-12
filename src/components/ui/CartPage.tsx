@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { ProductVisual } from './ProductVisual';
 import { Heart, Trash2, ArrowLeft, ChevronRight, ArrowRight } from 'lucide-react';
@@ -11,13 +11,25 @@ import { PRODUCTS } from '../../data/mockData';
 import { NavigationControls } from './NavigationControls';
 
 export const CartPage: React.FC = () => {
-  const { cart, updateQuantity, removeFromCart, toggleWishlist, isInWishlist } = useApp();
+  const { cart, updateQuantity, removeFromCart, toggleWishlist, isInWishlist, appliedOffer, applyOffer, removeOffer } = useApp();
   const router = useRouter();
   
-  // Promo code states
+  // Promo code & available offers state
   const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
-  const [promoError, setPromoError] = useState(false);
+  const [availableOffers, setAvailableOffers] = useState<any[]>([]);
+  const [isApplying, setIsApplying] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/offers?department=fashion')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.offers) {
+          setAvailableOffers(data.offers);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const subtotal = cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
   const totalItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -25,20 +37,30 @@ export const CartPage: React.FC = () => {
   // Insured delivery cost: ₹150 or Free if subtotal >= 5000
   const deliveryCost = subtotal >= 5000 || subtotal === 0 ? 0 : 150;
   
-  // Base 10% discount + additional 10% if promo applied
-  const baseDiscount = Math.round(subtotal * 0.1);
-  const promoDiscount = promoApplied ? Math.round(subtotal * 0.1) : 0;
-  const totalDiscount = baseDiscount + promoDiscount;
+  // Authoritative discount calculation
+  let discountAmount = 0;
+  if (appliedOffer) {
+    if (appliedOffer.discountPercentage && appliedOffer.discountPercentage > 0) {
+      discountAmount = Math.round(subtotal * (appliedOffer.discountPercentage / 100));
+    } else if (appliedOffer.discountAmount && appliedOffer.discountAmount > 0) {
+      discountAmount = Math.min(Number(appliedOffer.discountAmount), subtotal);
+    }
+  }
   
-  const total = subtotal + deliveryCost - totalDiscount;
+  const total = Math.max(0, subtotal + deliveryCost - discountAmount);
 
-  const handleApplyPromo = () => {
-    if (promoCode.toUpperCase() === 'AD10') {
-      setPromoApplied(true);
-      setPromoError(false);
+  const handleApplyPromo = async (codeToApply?: string) => {
+    const code = (codeToApply || promoCode).trim();
+    if (!code) return;
+    setIsApplying(true);
+    setPromoError(null);
+    const res = await applyOffer(code);
+    setIsApplying(false);
+    if (res.success) {
+      setPromoCode('');
+      setPromoError(null);
     } else {
-      setPromoError(true);
-      setPromoApplied(false);
+      setPromoError(res.message || 'Invalid promo code');
     }
   };
 
@@ -215,10 +237,17 @@ export const CartPage: React.FC = () => {
                   <span>PRODUCTS, {totalItemsCount} PCS</span>
                   <span className="text-brand-espresso font-extrabold">₹{subtotal.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between text-brand-success font-extrabold">
-                  <span>DISCOUNT</span>
-                  <span>-₹{totalDiscount.toLocaleString('en-IN')}</span>
-                </div>
+                {appliedOffer && discountAmount > 0 ? (
+                  <div className="flex justify-between text-brand-success font-extrabold">
+                    <span>DISCOUNT ({appliedOffer.code})</span>
+                    <span>-₹{discountAmount.toLocaleString('en-IN')}</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between text-brand-warmGray font-bold">
+                    <span>DISCOUNT</span>
+                    <span>₹0</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>INSURED DELIVERY</span>
                   <span className="text-brand-espresso font-extrabold">
@@ -229,35 +258,78 @@ export const CartPage: React.FC = () => {
 
               {/* Coupon Form */}
               <div className="space-y-2 pt-2 border-t border-brand-border/20 text-left">
-                <span className="text-[9px] font-extrabold text-brand-warmGray tracking-wider block">
-                  Do you have a discount coupon? Enter it to activate
-                </span>
-                
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter promo code (e.g. AD10)"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    className="flex-grow bg-brand-warmWhite border border-brand-border/50 px-3 py-2 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold uppercase"
-                  />
-                  <button
-                    onClick={handleApplyPromo}
-                    className="px-4 py-2 bg-brand-softBeige/40 border border-brand-border/60 hover:bg-[#FFF3EC] hover:text-[#F26A2E] text-xs font-bold rounded-xl transition-all"
-                  >
-                    Apply
-                  </button>
-                </div>
-                
-                {promoApplied && (
-                  <span className="text-[9px] font-bold text-brand-success block">
-                    ✓ Code AD10 Applied! Extra 10% discount added.
-                  </span>
-                )}
-                {promoError && (
-                  <span className="text-[9px] font-bold text-brand-sale block">
-                    ✕ Invalid Code. Try using "AD10" for 10% discount.
-                  </span>
+                {appliedOffer ? (
+                  <div className="bg-[#FFF3EC] border border-[#F26A2E]/30 rounded-2xl p-3 flex items-center justify-between shadow-2xs">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-[#F26A2E] text-white rounded-md tracking-wider">
+                          {appliedOffer.code}
+                        </span>
+                        <span className="text-xs font-bold text-brand-espresso">{appliedOffer.title}</span>
+                      </div>
+                      <span className="text-[9px] text-brand-success font-bold block">
+                        ✓ Savings of ₹{discountAmount.toLocaleString('en-IN')} applied
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => removeOffer()}
+                      className="text-[10px] font-bold text-brand-sale hover:underline px-2 py-1"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-[9px] font-extrabold text-brand-warmGray tracking-wider block">
+                      Do you have a discount coupon? Enter it to activate
+                    </span>
+                    
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Enter promo code (e.g. AD10)"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        className="flex-grow bg-brand-warmWhite border border-brand-border/50 px-3 py-2 rounded-xl text-xs outline-none focus:border-[#F26A2E] font-semibold uppercase"
+                      />
+                      <button
+                        onClick={() => handleApplyPromo()}
+                        disabled={isApplying}
+                        className="px-4 py-2 bg-brand-softBeige/40 border border-brand-border/60 hover:bg-[#FFF3EC] hover:text-[#F26A2E] text-xs font-bold rounded-xl transition-all disabled:opacity-50"
+                      >
+                        {isApplying ? 'Checking...' : 'Apply'}
+                      </button>
+                    </div>
+
+                    {promoError && (
+                      <span className="text-[9px] font-bold text-brand-sale block">
+                        ✕ {promoError}
+                      </span>
+                    )}
+
+                    {availableOffers.length > 0 && (
+                      <div className="pt-2 space-y-1.5">
+                        <span className="text-[8px] font-extrabold text-brand-warmGray uppercase tracking-wider block">
+                          Available Coupons:
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {availableOffers.map((off) => (
+                            <button
+                              key={off.id}
+                              onClick={() => handleApplyPromo(off.code)}
+                              disabled={isApplying}
+                              className="flex items-center gap-1.5 bg-[#FFF3EC] border border-[#F26A2E]/30 text-[#F26A2E] px-2.5 py-1 rounded-lg text-[9px] font-bold hover:bg-[#F26A2E] hover:text-white transition-all shadow-2xs"
+                            >
+                              <span>{off.code}</span>
+                              <span className="text-[8px] opacity-80">
+                                ({off.discount_percentage ? `${off.discount_percentage}% OFF` : `₹${off.discount_amount} OFF`})
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 

@@ -120,10 +120,37 @@ export const NumismaticsHome: React.FC = () => {
   // --------------------------------------------------
   // 2. REVIEWS SLIDER CAROUSEL STATE (Glassmorphic)
   // --------------------------------------------------
-  const numismaticReviews = REVIEWS.filter((r) => r.productName.toLowerCase().includes('rupee') || r.rating === 5);
+  const [numismaticReviews, setNumismaticReviews] = useState<any[]>(() => 
+    REVIEWS.filter((r) => r.productName.toLowerCase().includes('rupee') || r.productName.toLowerCase().includes('coin'))
+  );
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
 
+  // Fetch real Coins reviews from Supabase backend
   useEffect(() => {
+    const fetchCoinReviews = async () => {
+      try {
+        const res = await fetch('/api/reviews?department=coins&featured=true');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.reviews) && data.reviews.length > 0) {
+          setNumismaticReviews(data.reviews.map((r: any) => ({
+            id: r.id,
+            rating: r.rating || 5,
+            text: r.text || '',
+            author: r.author || r.reviewer_name || 'Verified Collector',
+            verified: Boolean(r.is_verified),
+            productName: r.product_name || r.title || 'Numismatic Heritage',
+            date: new Date(r.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+          })));
+        }
+      } catch (err) {
+        console.error('Error fetching coin reviews:', err);
+      }
+    };
+    fetchCoinReviews();
+  }, []);
+
+  useEffect(() => {
+    if (numismaticReviews.length === 0) return;
     const timer = setInterval(() => {
       setActiveReviewIndex((prev) => (prev + 1) % numismaticReviews.length);
     }, 4500);
@@ -225,7 +252,7 @@ export const NumismaticsHome: React.FC = () => {
   // --------------------------------------------------
   // 4. PROMOTIONAL BANNER CAROUSEL STATE (Loop, Swipe & Arrows)
   // --------------------------------------------------
-  const numismaticBanners = [
+  const initialBanners = [
     {
       id: 'heritage-treasures',
       title: 'Indian Heritage. Timeless Treasures.',
@@ -255,6 +282,31 @@ export const NumismaticsHome: React.FC = () => {
       link: '/numismatics/catalog'
     }
   ];
+
+  const [numismaticBanners, setNumismaticBanners] = useState(initialBanners);
+
+  // Fetch real Numismatic banners from Supabase backend
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await fetch('/api/banners?department=numismatics');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.banners) && data.banners.length > 0) {
+          const mapped = data.banners.map((b: any) => ({
+            id: b.id,
+            title: b.title,
+            subtitle: b.subtitle || '',
+            img: b.image_url,
+            link: b.cta_link || '/numismatics/catalog'
+          }));
+          setNumismaticBanners(mapped);
+        }
+      } catch (err) {
+        console.error('Error fetching numismatic banners:', err);
+      }
+    };
+    fetchBanners();
+  }, []);
 
   const [activeBannerIdx, setActiveBannerIdx] = useState(0);
   const [isBannerPaused, setIsBannerPaused] = useState(false);
