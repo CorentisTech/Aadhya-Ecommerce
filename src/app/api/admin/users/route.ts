@@ -10,7 +10,11 @@ export async function GET(request: Request) {
     const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '20', 10)));
     const offset = (page - 1) * limit;
 
-    let whereConditions: string[] = ["(p.role IS NULL OR p.role NOT IN ('super_admin', 'admin', 'editor', 'support'))"];
+    let whereConditions: string[] = [
+      "(p.role IS NULL OR p.role NOT IN ('super_admin', 'admin', 'editor', 'support'))",
+      "p.id NOT IN (SELECT id FROM administrators)",
+      "(au.email IS NULL OR au.email NOT IN (SELECT email FROM administrators))"
+    ];
     let params: any[] = [];
     let paramIdx = 1;
 
@@ -76,97 +80,25 @@ export async function GET(request: Request) {
     `;
 
     params.push(limit, offset);
-    let users = await queryDb(query, params);
-
-    if (!users || users.length === 0) {
-      users = [
-        {
-          id: 'usr-1',
-          first_name: 'Ananya',
-          last_name: 'Sharma',
-          full_name: 'Ananya Sharma',
-          phone: '+91 98201 12345',
-          email: 'ananya.sharma@example.com',
-          avatar: 'female',
-          role: 'customer',
-          total_orders: 3,
-          total_spent: 8498,
-          created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-          latest_order: { order_number: 'OD-1048', status: 'SHIPPED', total_amount: 4499 }
-        },
-        {
-          id: 'usr-2',
-          first_name: 'Vikram',
-          last_name: 'Singhania',
-          full_name: 'Vikram Singhania',
-          phone: '+91 98110 54321',
-          email: 'vikram.s@heritage.in',
-          avatar: 'male',
-          role: 'customer',
-          total_orders: 1,
-          total_spent: 12500,
-          created_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-          latest_order: { order_number: 'OD-1049', status: 'PROCESSING', total_amount: 12500 }
-        },
-        {
-          id: 'usr-3',
-          first_name: 'Rhea',
-          last_name: 'Kapoor',
-          full_name: 'Rhea Kapoor',
-          phone: '+91 99302 98765',
-          email: 'rhea.kapoor@gmail.com',
-          avatar: 'female',
-          role: 'customer',
-          total_orders: 2,
-          total_spent: 6298,
-          created_at: new Date(Date.now() - 86400000 * 7).toISOString(),
-          latest_order: { order_number: 'OD-1050', status: 'PENDING', total_amount: 3649 }
-        },
-        {
-          id: 'usr-4',
-          first_name: 'Aditya',
-          last_name: 'Verma',
-          full_name: 'Aditya Verma',
-          phone: '+91 97112 45678',
-          email: 'aditya.verma@yahoo.com',
-          avatar: 'male',
-          role: 'customer',
-          total_orders: 1,
-          total_spent: 18500,
-          created_at: new Date(Date.now() - 86400000 * 12).toISOString(),
-          latest_order: { order_number: 'OD-1051', status: 'DELIVERED', total_amount: 18500 }
-        }
-      ];
-    }
+    const users = (await queryDb(query, params)) || [];
 
     return NextResponse.json({
       success: true,
       users,
       pagination: {
-        total: total || users.length,
+        total,
         page,
         limit,
-        totalPages: Math.ceil((total || users.length) / limit)
+        totalPages: Math.max(1, Math.ceil(total / limit))
       }
     });
 
   } catch (err: any) {
-    console.error('Error fetching admin users, using fallback:', err);
+    console.error('Error fetching admin users:', err);
     return NextResponse.json({
       success: true,
-      users: [
-        {
-          id: 'usr-1',
-          full_name: 'Ananya Sharma',
-          phone: '+91 98201 12345',
-          email: 'ananya@example.com',
-          role: 'customer',
-          total_orders: 3,
-          total_spent: 8498,
-          created_at: new Date().toISOString()
-        }
-      ],
-      pagination: { total: 1, page: 1, limit: 20, totalPages: 1 }
+      users: [],
+      pagination: { total: 0, page: 1, limit: 20, totalPages: 1 }
     });
   }
 }

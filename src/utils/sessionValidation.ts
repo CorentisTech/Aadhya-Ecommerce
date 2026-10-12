@@ -4,9 +4,27 @@ import { getCache, setCache, CACHE_TTL } from '@/lib/cache';
 
 export async function validateUserSession(request: Request) {
   const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  let user: any = null;
 
-  if (authError || !user) {
+  // 1. Check Bearer token from Authorization header if present
+  const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+  if (authHeader && authHeader.toLowerCase().startsWith('bearer ')) {
+    const token = authHeader.substring(7).trim();
+    if (token) {
+      try {
+        const { data, error } = await supabase.auth.getUser(token);
+        if (data?.user && !error) user = data.user;
+      } catch {}
+    }
+  }
+
+  // 2. Fall back to cookie session
+  if (!user) {
+    const { data: { user: cookieUser }, error: authError } = await supabase.auth.getUser();
+    if (!authError && cookieUser) user = cookieUser;
+  }
+
+  if (!user) {
     return { valid: false, error: 'Unauthorized', status: 401 } as const;
   }
 
@@ -62,7 +80,7 @@ export async function validateUserSession(request: Request) {
 
 const SUPER_ADMIN_EMAILS = ['admin@aadhya.co', 'premkarnawat1716@gmail.com'];
 
-// Admin-specific validation: checks user is authenticated AND has an admin role
+// Admin-specific validation: checks user is authenticated against dedicated administrators table
 export async function validateAdminSession(request?: Request) {
   const supabase = await createClient();
   let user: any = null;
@@ -94,48 +112,54 @@ export async function validateAdminSession(request?: Request) {
   const userEmail = (user.email || '').toLowerCase().trim();
   const isSuperAdminEmail = SUPER_ADMIN_EMAILS.includes(userEmail);
 
-  // Check role from profiles table (Redis accelerated)
+  // Check role from dedicated administrators table (Redis accelerated)
   const adminCacheKey = `aadhya:session:admin:${user.id}`;
   try {
-    let profile = await getCache<{ role: string; status: string }>(adminCacheKey);
+    let adminRecord = await getCache<{ role: string; is_active: boolean; permissions: any }>(adminCacheKey);
 
-    if (!profile) {
+    if (!adminRecord) {
       const rows = await queryDb(
-        'SELECT role, status FROM profiles WHERE id = $1',
-        [user.id]
+        'SELECT id, email, full_name, role, is_active, permissions FROM administrators WHERE id = $1 OR email = $2',
+        [user.id, userEmail]
       );
 
       if ((!rows || rows.length === 0) && isSuperAdminEmail) {
-        profile = { role: 'super_admin', status: 'active' };
+        // Auto-provision primary super admin in dedicated table if missing
+        adminRecord = { role: 'super_admin', is_active: true, permissions: ['all'] };
+        try {
+          await queryDb(`
+            INSERT INTO administrators (id, email, full_name, role, is_active, permissions)
+            VALUES ($1, $2, $3, 'super_admin', true, '["all"]'::jsonb)
+            ON CONFLICT (id) DO UPDATE SET is_active = true, role = 'super_admin'
+          `, [user.id, userEmail, user.user_metadata?.full_name || 'Admin']);
+        } catch (syncErr) {
+          console.warn('Auto-provision administrator error:', syncErr);
+        }
       } else if (!rows || rows.length === 0) {
-        return { valid: false, error: 'No admin profile found', status: 403 } as const;
+        return { valid: false, error: 'No administrator record found', status: 403 } as const;
       } else {
-        profile = rows[0];
-      }
-
-      // If email is primary admin, ensure role is super_admin
-      if (profile && isSuperAdminEmail && profile.role !== 'super_admin') {
-        profile.role = 'super_admin';
-        await queryDb(`UPDATE profiles SET role = 'super_admin' WHERE id = $1`, [user.id]);
+        adminRecord = rows[0];
       }
 
       // Cache admin role for 5 minutes
-      await setCache(adminCacheKey, profile, 300);
+      if (adminRecord) {
+        await setCache(adminCacheKey, adminRecord, 300);
+      }
     }
 
-    if (!profile) {
-      return { valid: false, error: 'No admin profile found', status: 403 } as const;
+    if (!adminRecord) {
+      return { valid: false, error: 'No administrator record found', status: 403 } as const;
     }
 
-    const role = (profile.role || '').toLowerCase().trim();
+    if (adminRecord.is_active === false) {
+      return { valid: false, error: 'Administrator account has been deactivated', status: 403 } as const;
+    }
+
+    const role = (adminRecord.role || '').toLowerCase().trim();
     const validRoles = ['super_admin', 'admin', 'editor', 'support'];
     
     if (!validRoles.includes(role) && !isSuperAdminEmail) {
-      return { valid: false, error: 'Insufficient permissions', status: 403 } as const;
-    }
-
-    if (profile.status === 'disabled' || profile.status === 'removed') {
-      return { valid: false, error: 'Account has been disabled', status: 403 } as const;
+      return { valid: false, error: 'Insufficient admin permissions', status: 403 } as const;
     }
 
     return { valid: true, user, role: isSuperAdminEmail ? 'super_admin' : role } as const;

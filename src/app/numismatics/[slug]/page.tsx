@@ -261,7 +261,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
             <span>BACK TO COLLECTION</span>
           </button>
           <span className="text-[10px] text-[#7A6B5C] font-extrabold tracking-[0.25em] uppercase font-serif">
-            AADHYA
+            Happy Collectables
           </span>
         </div>
 
@@ -405,16 +405,16 @@ export default function NumismaticDetailPage({ params }: PageProps) {
               <span className="text-[10px] text-[#181818] font-extrabold tracking-[0.25em] uppercase block">
                 {product.category}
               </span>
-              <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-brand-espresso leading-tight uppercase">
+              <h1 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-brand-espresso leading-tight uppercase">
                 {product.name}
               </h1>
 
               {/* Price row */}
               <div className="flex items-baseline space-x-3 pt-2">
-                <span className="text-2xl sm:text-3xl font-extrabold text-brand-espresso">
+                <span className="text-3xl sm:text-4xl font-black text-brand-espresso">
                   ₹{product.price.toLocaleString('en-IN')}
                 </span>
-                <span className="text-base text-brand-warmGray line-through font-semibold">
+                <span className="text-lg text-brand-espresso/50 line-through font-semibold">
                   ₹{product.mrp.toLocaleString('en-IN')}
                 </span>
                 <span className="text-[10px] bg-[#181818]/10 text-[#181818] font-extrabold px-2.5 py-0.5 rounded">
@@ -424,7 +424,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
             </div>
 
             {/* Description */}
-            <p className="text-xs text-brand-warmGray leading-relaxed font-semibold tracking-wider">
+            <p className="text-sm text-brand-espresso/70 leading-relaxed font-semibold tracking-wider">
               {product.description}
             </p>
 

@@ -398,13 +398,13 @@ export default function ProductDetailPage({ params }: PageProps) {
             {/* Left Column: Product Information (4 cols) */}
             <div className="lg:col-span-4 flex flex-col justify-between text-left space-y-8 min-h-[400px]">
               <div className="space-y-4">
-                <span className="text-[9px] text-brand-warmGray font-bold tracking-[0.25em] uppercase block">
+                <span className="text-[10px] text-brand-espresso/70 font-bold tracking-[0.25em] uppercase block">
                   {product.category}
                 </span>
-                <h1 className="font-display font-bold text-3xl md:text-4.5xl text-brand-espresso leading-tight">
+                <h1 className="font-display font-black text-3xl md:text-4.5xl text-brand-espresso leading-tight">
                   {product.name}
                 </h1>
-                <p className="text-xs text-brand-warmGray leading-relaxed font-semibold max-w-sm">
+                <p className="text-sm text-brand-espresso/70 leading-relaxed font-semibold max-w-sm">
                   {product.description}
                 </p>
                 <div className="pt-2">
@@ -572,10 +572,10 @@ export default function ProductDetailPage({ params }: PageProps) {
                 {/* Pricing row */}
                 <div className="flex items-baseline justify-between pt-1">
                   <div className="flex items-baseline space-x-2">
-                    <span className="text-2xl font-extrabold text-brand-espresso">
+                    <span className="text-3xl font-black text-brand-espresso">
                       ₹{product.price.toLocaleString('en-IN')}
                     </span>
-                    <span className="text-xs text-brand-warmGray line-through font-semibold">
+                    <span className="text-sm text-brand-espresso/50 line-through font-semibold">
                       ₹{product.mrp.toLocaleString('en-IN')}
                     </span>
                   </div>

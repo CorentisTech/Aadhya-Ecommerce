@@ -388,6 +388,17 @@ export const NumismaticsHome: React.FC = () => {
                   transition={{ duration: 0.35 }}
                   className="space-y-1.5 sm:space-y-2.5 md:space-y-3"
                 >
+                  {/* BRAND & TAGLINE */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 pb-0.5">
+                    <span className="font-serif font-black tracking-[0.25em] text-[#181818] text-sm uppercase">
+                      HAPPY COLLECTABLES
+                    </span>
+                    <span className="hidden sm:inline text-xs text-[#7D736A]">•</span>
+                    <span className="text-[11px] sm:text-xs text-[#7D736A] font-semibold italic">
+                      Invest in history. Invest in future.
+                    </span>
+                  </div>
+
                   {/* BEST SELLERS SHOWCASE BADGE & TITLE */}
                   <div className="flex items-center gap-2">
                     <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black tracking-[0.25em] bg-[#181818] text-white px-2.5 py-0.5 rounded-full uppercase shadow-xs flex items-center gap-1.5">
@@ -970,14 +981,14 @@ export const NumismaticsHome: React.FC = () => {
           {/* TWO SLIDING TRACKS */}
           <div className="space-y-6 sm:space-y-8 md:space-y-10">
 
-            {/* TRACK 1: SLOW LEFT-TO-RIGHT SLIDE (Pauses ONLY Track 1 on hover) */}
-            <div className="relative group/track1 overflow-hidden w-full">
-              <div className="flex w-max animate-marquee-reverse-slow will-change-transform group-hover/track1:[animation-play-state:paused] ease-linear hover:[animation-play-state:paused] touch-pan-x">
-                {[...categoryRow1, ...categoryRow1, ...categoryRow1].map((cat, idx) => (
+            {/* TRACK 1: USER-CONTROLLED HORIZONTAL SCROLL */}
+            <div className="relative w-full">
+              <div className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-0 pb-4 touch-pan-x">
+                {categoryRow1.map((cat, idx) => (
                   <div
                     key={`row1-${cat.id}-${idx}`}
                     onClick={() => router.push(`/numismatics/catalog?category=${cat.id}`)}
-                    className="w-[200px] sm:w-[240px] md:w-[270px] mx-2.5 sm:mx-4 flex-shrink-0 cursor-pointer text-center group/card transition-all duration-300"
+                    className="w-[200px] sm:w-[240px] md:w-[270px] mx-2.5 sm:mx-4 flex-shrink-0 snap-start cursor-pointer text-center group/card transition-all duration-300"
                   >
                     {/* Circular Plate with Glow Background (Matching media_1788422746488.png) */}
                     <div className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full bg-gradient-to-b from-[#FFF5DC] via-[#FFEBC2] to-[#FEDE9A] p-2.5 sm:p-3 mx-auto relative shadow-lg group-hover/card:scale-105 group-hover/card:shadow-xl transition-all duration-300 flex items-center justify-center border-2 border-white/60">
@@ -1013,14 +1024,14 @@ export const NumismaticsHome: React.FC = () => {
               </div>
             </div>
 
-            {/* TRACK 2: SLOW RIGHT-TO-LEFT SLIDE (Pauses ONLY Track 2 on hover) */}
-            <div className="relative group/track2 overflow-hidden w-full">
-              <div className="flex w-max animate-marquee-slow will-change-transform group-hover/track2:[animation-play-state:paused] ease-linear hover:[animation-play-state:paused] touch-pan-x">
-                {[...categoryRow2, ...categoryRow2, ...categoryRow2].map((cat, idx) => (
+            {/* TRACK 2: USER-CONTROLLED HORIZONTAL SCROLL */}
+            <div className="relative w-full">
+              <div className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-0 pb-4 touch-pan-x">
+                {categoryRow2.map((cat, idx) => (
                   <div
                     key={`row2-${cat.id}-${idx}`}
                     onClick={() => router.push(`/numismatics/catalog?category=${cat.id}`)}
-                    className="w-[200px] sm:w-[240px] md:w-[270px] mx-2.5 sm:mx-4 flex-shrink-0 cursor-pointer text-center group/card transition-all duration-300"
+                    className="w-[200px] sm:w-[240px] md:w-[270px] mx-2.5 sm:mx-4 flex-shrink-0 snap-start cursor-pointer text-center group/card transition-all duration-300"
                   >
                     {/* Circular Plate with Glow Background (Matching media_1788422746488.png) */}
                     <div className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full bg-gradient-to-b from-[#FFF5DC] via-[#FFEBC2] to-[#FEDE9A] p-2.5 sm:p-3 mx-auto relative shadow-lg group-hover/card:scale-105 group-hover/card:shadow-xl transition-all duration-300 flex items-center justify-center border-2 border-white/60">

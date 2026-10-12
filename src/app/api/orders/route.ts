@@ -160,6 +160,25 @@ export async function POST(request: Request) {
 
       const serverTotal = Math.max(0, serverSubtotal + shippingCost - discountAmount);
 
+      // Ensure customer profile exists to satisfy foreign key constraint
+      await queryDb(`
+        INSERT INTO profiles (id, first_name, last_name, phone, role, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, 'customer', NOW(), NOW())
+        ON CONFLICT (id) DO UPDATE SET
+          phone = COALESCE(NULLIF($4, ''), profiles.phone),
+          first_name = COALESCE(NULLIF($2, ''), profiles.first_name),
+          last_name = COALESCE(NULLIF($3, ''), profiles.last_name),
+          updated_at = NOW();
+      `, [
+        user.id,
+        addr.firstName || '',
+        addr.lastName || '',
+        addr.phone || user.phone || ''
+      ]);
+
+      // Unset previous default addresses for this user so latest address is primary
+      await queryDb(`UPDATE addresses SET is_default = false WHERE user_id = $1`, [user.id]);
+
       // Create or link shipping address record
       const addressRows = await queryDb(`
         INSERT INTO addresses (

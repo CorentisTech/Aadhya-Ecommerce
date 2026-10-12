@@ -190,7 +190,7 @@ export default function AdminLayout({
     { name: 'Categories', href: '/admin/categories/fashion', icon: Tags },
     { name: 'Revenue Reports', href: '/admin/revenue', icon: TrendingUp },
     { name: 'Website CMS', href: '/admin/website', icon: Globe },
-    { name: 'Support', href: '/admin/support', icon: HelpCircle },
+
     { name: 'Admin Management', href: '/admin/admins', icon: Shield },
     { name: 'Settings', href: '/admin/profile', icon: Settings },
   ];

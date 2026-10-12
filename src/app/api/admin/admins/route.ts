@@ -18,27 +18,25 @@ export async function GET(request: Request) {
 
     const admins = await queryDb(`
       SELECT 
-        p.id,
-        p.first_name,
-        p.last_name,
-        p.phone,
-        p.role,
-        p.status,
-        p.last_login_at,
-        p.created_at,
-        p.updated_at,
-        au.email
-      FROM profiles p
-      JOIN auth.users au ON au.id = p.id
-      WHERE p.role IN ('super_admin', 'admin', 'editor', 'support')
+        a.id,
+        a.full_name,
+        a.email,
+        a.role,
+        CASE WHEN a.is_active THEN 'active' ELSE 'disabled' END AS status,
+        a.is_active,
+        a.permissions,
+        a.created_at,
+        a.updated_at
+      FROM administrators a
       ORDER BY 
-        CASE p.role 
+        CASE a.role 
           WHEN 'super_admin' THEN 1 
           WHEN 'admin' THEN 2 
           WHEN 'editor' THEN 3 
           WHEN 'support' THEN 4 
+          ELSE 5
         END,
-        p.created_at DESC
+        a.created_at DESC
     `);
 
     return NextResponse.json({ success: true, admins });
@@ -77,7 +75,6 @@ export async function POST(request: Request) {
     }
 
     // Use Supabase Admin API via service role to create user
-    // IMPORTANT: This runs server-side only. Service role key never exposed to browser.
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey) {
       return NextResponse.json({ success: false, error: 'Server configuration error: service role key not set' }, { status: 500 });
@@ -98,8 +95,7 @@ export async function POST(request: Request) {
         password,
         email_confirm: true,
         user_metadata: {
-          first_name: fullName.split(' ')[0],
-          last_name: fullName.split(' ').slice(1).join(' ') || '',
+          full_name: fullName.trim(),
         }
       })
     });
@@ -114,19 +110,18 @@ export async function POST(request: Request) {
     }
 
     const newUserId = createData.id;
-    const nameParts = fullName.trim().split(' ');
 
-    // Create profile record with admin role
+    // Create record in dedicated administrators table
     await queryDb(
-      `INSERT INTO profiles (id, first_name, last_name, role, status, created_at, updated_at)
-       VALUES ($1, $2, $3, $4::user_role, 'active', NOW(), NOW())
+      `INSERT INTO administrators (id, email, full_name, role, is_active, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, true, NOW(), NOW())
        ON CONFLICT (id) DO UPDATE SET 
-         role = $4::user_role,
-         status = 'active',
-         first_name = COALESCE($2, profiles.first_name),
-         last_name = COALESCE($3, profiles.last_name),
+         email = $2,
+         full_name = $3,
+         role = $4,
+         is_active = true,
          updated_at = NOW()`,
-      [newUserId, nameParts[0], nameParts.slice(1).join(' ') || '', role]
+      [newUserId, email.trim().toLowerCase(), fullName.trim(), role]
     );
 
     return NextResponse.json({ success: true, adminId: newUserId });
@@ -169,7 +164,7 @@ export async function PUT(request: Request) {
       if (!validRoles.includes(role)) {
         return NextResponse.json({ success: false, error: 'Invalid role' }, { status: 400 });
       }
-      updates.push(`role = $${paramIndex}::user_role`);
+      updates.push(`role = $${paramIndex}`);
       params.push(role);
       paramIndex++;
     }
@@ -179,15 +174,15 @@ export async function PUT(request: Request) {
       if (!validStatuses.includes(status)) {
         return NextResponse.json({ success: false, error: 'Invalid status' }, { status: 400 });
       }
-      updates.push(`status = $${paramIndex}`);
-      params.push(status);
+      updates.push(`is_active = $${paramIndex}`);
+      params.push(status === 'active');
       paramIndex++;
     }
 
     updates.push('updated_at = NOW()');
 
     await queryDb(
-      `UPDATE profiles SET ${updates.join(', ')} WHERE id = $1`,
+      `UPDATE administrators SET ${updates.join(', ')} WHERE id = $1`,
       params
     );
 
@@ -198,7 +193,7 @@ export async function PUT(request: Request) {
   }
 }
 
-// DELETE: Remove admin (set role back to customer)
+// DELETE: Remove admin (deactivate in administrators table)
 export async function DELETE(request: Request) {
   try {
     const session = await validateAdminSession(request);
@@ -223,7 +218,7 @@ export async function DELETE(request: Request) {
     }
 
     await queryDb(
-      `UPDATE profiles SET role = 'customer'::user_role, status = 'removed', updated_at = NOW() WHERE id = $1`,
+      `DELETE FROM administrators WHERE id = $1`,
       [adminId]
     );
 

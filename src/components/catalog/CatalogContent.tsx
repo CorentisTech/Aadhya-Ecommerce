@@ -363,7 +363,7 @@ export default function CatalogContent({ defaultDepartment = 'fashion' }: Catalo
             <div className="w-full bg-white rounded-3xl p-6 sm:p-10 border border-[#EFE8DC] shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="space-y-2 max-w-2xl">
                 <span className="text-[10px] font-extrabold tracking-[0.25em] text-[#E0591D] uppercase block">
-                  AADHYA NUMISMATICS COLLECTION
+                  HAPPY COLLECTABLES NUMISMATICS COLLECTION
                 </span>
                 <h1 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-[#2B231D] tracking-tight">
                   Numismatics & Archival Coins

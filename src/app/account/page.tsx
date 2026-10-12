@@ -231,6 +231,11 @@ export default function AccountPage() {
   // Handle saving basic profile details
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Validate phone number if provided
+    if (profileForm.phone && !/^(\+91[\s-]?)?[6-9]\d{9}$/.test(profileForm.phone.replace(/[\s-]/g, ''))) {
+      showToast('Please enter a valid Indian phone number (e.g. +91 98765 43210)');
+      return;
+    }
     await updateUserDetails({
       firstName: profileForm.firstName,
       lastName: profileForm.lastName,

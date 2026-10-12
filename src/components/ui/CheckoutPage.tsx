@@ -147,12 +147,12 @@ export const CheckoutPage: React.FC = () => {
     firstName: '',
     lastName: '',
     phone: '',
-    address: 'Flat 402, Royal Palms Residency, MG Road',
-    zip: '411001',
-    state: 'Maharashtra',
-    city: 'Pune',
-    landmark: 'Opposite Grand Mall',
-    streetName: 'MG Road',
+    address: '',
+    zip: '',
+    state: '',
+    city: '',
+    landmark: '',
+    streetName: '',
     otherPhone: '',
     avatar: 'male' as 'male' | 'female',
   });
@@ -193,7 +193,9 @@ export const CheckoutPage: React.FC = () => {
       setCheckoutAuthMsg(error.message);
       setCheckoutAuthLoading(false);
     } else {
-      setCheckoutLoginScreen('register');
+      // User is now authenticated via Supabase session - log in and proceed to checkout form
+      loginUser(checkoutEmail.trim());
+      setCheckoutLoginScreen('landing');
       setCheckoutAuthLoading(false);
     }
   };
@@ -316,11 +318,14 @@ export const CheckoutPage: React.FC = () => {
       
       const deviceId = typeof window !== 'undefined' ? localStorage.getItem('aadhya_device_id') || '' : '';
 
+      const supabase = createClient();
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-device-id': deviceId
+          'x-device-id': deviceId,
+          ...(currentSession?.access_token ? { 'Authorization': `Bearer ${currentSession.access_token}` } : {})
         },
         body: JSON.stringify(payload)
       });
@@ -819,6 +824,14 @@ export const CheckoutPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Address Warning Banner */}
+              <div className="bg-red-50 border border-red-300 rounded-2xl p-4 flex items-start gap-3">
+                <span className="text-red-600 text-lg font-bold mt-0.5">⚠</span>
+                <p className="text-xs font-bold text-red-700 leading-relaxed">
+                  IMPORTANT: Please check your delivery address carefully. The address cannot be changed once the order has been placed.
+                </p>
               </div>
 
               {/* Clean Click-to-Pay CTA Button */}

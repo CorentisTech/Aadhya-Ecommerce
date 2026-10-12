@@ -166,54 +166,7 @@ export async function GET(request: Request) {
       console.warn('Recent orders query failed:', err);
     }
 
-    if (!recentOrders || recentOrders.length === 0) {
-      recentOrders = [
-        {
-          id: 'ord-1',
-          order_number: 'OD-1048',
-          status: 'SHIPPED',
-          total_amount: 4999,
-          payment_method: 'UPI',
-          payment_status: 'PAID',
-          created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-          customer_name: 'Ananya Sharma',
-          domain: 'fashion'
-        },
-        {
-          id: 'ord-2',
-          order_number: 'OD-1049',
-          status: 'PROCESSING',
-          total_amount: 12500,
-          payment_method: 'Card',
-          payment_status: 'PAID',
-          created_at: new Date(Date.now() - 3600000 * 8).toISOString(),
-          customer_name: 'Vikram Singhania',
-          domain: 'numismatics'
-        },
-        {
-          id: 'ord-3',
-          order_number: 'OD-1050',
-          status: 'CONFIRMED',
-          total_amount: 2799,
-          payment_method: 'UPI',
-          payment_status: 'PAID',
-          created_at: new Date(Date.now() - 3600000 * 18).toISOString(),
-          customer_name: 'Rhea Kapoor',
-          domain: 'fashion'
-        },
-        {
-          id: 'ord-4',
-          order_number: 'OD-1051',
-          status: 'DELIVERED',
-          total_amount: 18500,
-          payment_method: 'NetBanking',
-          payment_status: 'PAID',
-          created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-          customer_name: 'Aditya Verma',
-          domain: 'numismatics'
-        }
-      ];
-    }
+    recentOrders = recentOrders || [];
 
     // 8. Low Stock Alert Variants
     let lowStockAlerts: any[] = [];
@@ -294,6 +247,8 @@ export async function GET(request: Request) {
           (SELECT COUNT(*)::int FROM orders o WHERE o.user_id = p.id) AS total_orders,
           COALESCE((SELECT SUM(o.total_amount)::numeric FROM orders o WHERE o.user_id = p.id AND o.status NOT IN ('CANCELLED', 'REFUNDED')), 0) AS total_spent
         FROM profiles p
+        WHERE p.id NOT IN (SELECT id FROM administrators)
+          AND (p.role IS NULL OR p.role NOT IN ('super_admin', 'admin', 'editor', 'support'))
         ORDER BY p.created_at DESC
         LIMIT 6
       `);
@@ -301,50 +256,7 @@ export async function GET(request: Request) {
       console.warn('Recent users query failed:', err);
     }
 
-    if (!recentUsers || recentUsers.length === 0) {
-      recentUsers = [
-        {
-          id: 'usr-1',
-          name: 'Ananya Sharma',
-          phone: '+91 98201 12345',
-          avatar: 'female',
-          role: 'customer',
-          total_orders: 3,
-          total_spent: 8498,
-          created_at: new Date(Date.now() - 86400000 * 3).toISOString()
-        },
-        {
-          id: 'usr-2',
-          name: 'Vikram Singhania',
-          phone: '+91 98110 54321',
-          avatar: 'male',
-          role: 'customer',
-          total_orders: 1,
-          total_spent: 12500,
-          created_at: new Date(Date.now() - 86400000 * 5).toISOString()
-        },
-        {
-          id: 'usr-3',
-          name: 'Rhea Kapoor',
-          phone: '+91 99302 98765',
-          avatar: 'female',
-          role: 'customer',
-          total_orders: 2,
-          total_spent: 6298,
-          created_at: new Date(Date.now() - 86400000 * 7).toISOString()
-        },
-        {
-          id: 'usr-4',
-          name: 'Aditya Verma',
-          phone: '+91 97112 45678',
-          avatar: 'male',
-          role: 'customer',
-          total_orders: 1,
-          total_spent: 18500,
-          created_at: new Date(Date.now() - 86400000 * 12).toISOString()
-        }
-      ];
-    }
+    recentUsers = recentUsers || [];
 
     // 10. Time series analytics
     let dailyAnalytics: any[] = [];
@@ -445,76 +357,42 @@ export async function GET(request: Request) {
         avatar: 'male'
       },
       statistics: {
-        totalProducts: 22,
-        fashionProducts: 15,
-        numismaticProducts: 7,
-        activeProducts: 22,
-        totalCategories: 19,
-        fashionCategories: 7,
-        numismaticCategories: 12,
-        totalUsers: 45,
-        newUsers: 12,
-        totalOrders: 38,
-        ordersReceived: 5,
-        ordersApproved: 8,
-        ordersDispatched: 10,
-        ordersDelivered: 15,
-        ordersCancelled: 1,
+        totalProducts: 0,
+        fashionProducts: 0,
+        numismaticProducts: 0,
+        activeProducts: 0,
+        totalCategories: 0,
+        fashionCategories: 0,
+        numismaticCategories: 0,
+        totalUsers: 0,
+        newUsers: 0,
+        totalOrders: 0,
+        ordersReceived: 0,
+        ordersApproved: 0,
+        ordersDispatched: 0,
+        ordersDelivered: 0,
+        ordersCancelled: 0,
         ordersReturned: 0,
-        lowStockCount: 4,
-        outOfStockCount: 1,
+        lowStockCount: 0,
+        outOfStockCount: 0,
       },
       revenue: {
-        total: 145800,
-        today: 12499,
-        weekly: 48900,
-        monthly: 145800,
-        yearly: 145800,
-        pending: 28500,
-        delivered: 117300,
-        averageOrderValue: 3836
+        total: 0,
+        today: 0,
+        weekly: 0,
+        monthly: 0,
+        yearly: 0,
+        pending: 0,
+        delivered: 0,
+        averageOrderValue: 0
       },
       domainComparison: {
-        fashion: { products: 15, units: 24, revenue: 88400 },
-        numismatics: { products: 7, units: 14, revenue: 57400 }
+        fashion: { products: 0, units: 0, revenue: 0 },
+        numismatics: { products: 0, units: 0, revenue: 0 }
       },
-      recentOrders: [
-        {
-          id: 'ord-1',
-          order_number: 'OD-1048',
-          status: 'SHIPPED',
-          total_amount: 4999,
-          created_at: new Date().toISOString(),
-          customer_name: 'Ananya Sharma',
-          domain: 'fashion'
-        },
-        {
-          id: 'ord-2',
-          order_number: 'OD-1049',
-          status: 'PROCESSING',
-          total_amount: 12500,
-          created_at: new Date().toISOString(),
-          customer_name: 'Vikram Singhania',
-          domain: 'numismatics'
-        }
-      ],
-      lowStockAlerts: [
-        {
-          sku: 'FP-105-M',
-          stock_quantity: 2,
-          product_name: 'Emerald Flared Palazzo Pants',
-          product_no: 'FP-105',
-          department: 'fashion'
-        }
-      ],
-      recentUsers: [
-        {
-          name: 'Ananya Sharma',
-          role: 'customer',
-          total_orders: 3,
-          total_spent: 8498
-        }
-      ]
+      recentOrders: [],
+      lowStockAlerts: [],
+      recentUsers: []
     });
   }
 }
