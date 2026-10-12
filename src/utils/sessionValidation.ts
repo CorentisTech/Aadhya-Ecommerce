@@ -60,14 +60,39 @@ export async function validateUserSession(request: Request) {
   return { valid: true, user, deviceId } as const;
 }
 
+const SUPER_ADMIN_EMAILS = ['admin@aadhya.co', 'premkarnawat1716@gmail.com'];
+
 // Admin-specific validation: checks user is authenticated AND has an admin role
 export async function validateAdminSession(request?: Request) {
   const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  let user: any = null;
 
-  if (authError || !user) {
+  // 1. Try Bearer token from request Authorization header if present
+  if (request) {
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+    if (authHeader && authHeader.toLowerCase().startsWith('bearer ')) {
+      const token = authHeader.substring(7).trim();
+      if (token) {
+        try {
+          const { data, error } = await supabase.auth.getUser(token);
+          if (data?.user && !error) user = data.user;
+        } catch {}
+      }
+    }
+  }
+
+  // 2. Fall back to cookie session
+  if (!user) {
+    const { data: { user: cookieUser }, error: authError } = await supabase.auth.getUser();
+    if (!authError && cookieUser) user = cookieUser;
+  }
+
+  if (!user) {
     return { valid: false, error: 'Unauthorized', status: 401 } as const;
   }
+
+  const userEmail = (user.email || '').toLowerCase().trim();
+  const isSuperAdminEmail = SUPER_ADMIN_EMAILS.includes(userEmail);
 
   // Check role from profiles table (Redis accelerated)
   const adminCacheKey = `aadhya:session:admin:${user.id}`;
@@ -80,11 +105,20 @@ export async function validateAdminSession(request?: Request) {
         [user.id]
       );
 
-      if (!rows || rows.length === 0) {
+      if ((!rows || rows.length === 0) && isSuperAdminEmail) {
+        profile = { role: 'super_admin', status: 'active' };
+      } else if (!rows || rows.length === 0) {
         return { valid: false, error: 'No admin profile found', status: 403 } as const;
+      } else {
+        profile = rows[0];
       }
 
-      profile = rows[0];
+      // If email is primary admin, ensure role is super_admin
+      if (profile && isSuperAdminEmail && profile.role !== 'super_admin') {
+        profile.role = 'super_admin';
+        await queryDb(`UPDATE profiles SET role = 'super_admin' WHERE id = $1`, [user.id]);
+      }
+
       // Cache admin role for 5 minutes
       await setCache(adminCacheKey, profile, 300);
     }
@@ -93,9 +127,10 @@ export async function validateAdminSession(request?: Request) {
       return { valid: false, error: 'No admin profile found', status: 403 } as const;
     }
 
+    const role = (profile.role || '').toLowerCase().trim();
     const validRoles = ['super_admin', 'admin', 'editor', 'support'];
     
-    if (!validRoles.includes(profile.role)) {
+    if (!validRoles.includes(role) && !isSuperAdminEmail) {
       return { valid: false, error: 'Insufficient permissions', status: 403 } as const;
     }
 
@@ -103,7 +138,7 @@ export async function validateAdminSession(request?: Request) {
       return { valid: false, error: 'Account has been disabled', status: 403 } as const;
     }
 
-    return { valid: true, user, role: profile.role as string } as const;
+    return { valid: true, user, role: isSuperAdminEmail ? 'super_admin' : role } as const;
   } catch (err) {
     console.error('Admin validation error:', err);
     return { valid: false, error: 'Internal error during validation', status: 500 } as const;

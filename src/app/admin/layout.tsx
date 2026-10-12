@@ -72,8 +72,12 @@ export default function AdminLayout({
           return;
         }
 
-        // Verify admin role via API
-        const res = await fetch('/api/admin/profile');
+        // Verify admin role via API with current session access token
+        const headers: HeadersInit = session.access_token 
+          ? { 'Authorization': `Bearer ${session.access_token}` }
+          : {};
+
+        const res = await fetch('/api/admin/profile', { headers });
         const data = await res.json();
         
         if (!data.success || !data.profile) {
@@ -82,8 +86,12 @@ export default function AdminLayout({
           return;
         }
 
-        const role = data.profile.role;
-        if (role !== 'admin' && role !== 'super_admin') {
+        const role = (data.profile.role || '').toLowerCase().trim();
+        const validRoles = ['super_admin', 'admin', 'editor', 'support'];
+        const userEmail = (session.user?.email || '').toLowerCase().trim();
+        const isSuperAdminEmail = userEmail === 'admin@aadhya.co' || userEmail === 'premkarnawat1716@gmail.com';
+
+        if (!validRoles.includes(role) && !isSuperAdminEmail) {
           setAuthError('Your account does not have admin privileges.');
           await supabase.auth.signOut();
           setTimeout(() => router.replace('/admin/login'), 2000);
@@ -92,10 +100,18 @@ export default function AdminLayout({
 
         const p = data.profile;
         const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.name || 'Admin';
+        const displayRole = role === 'super_admin' || isSuperAdminEmail
+          ? 'Super Admin' 
+          : role === 'editor' 
+          ? 'Editor' 
+          : role === 'support' 
+          ? 'Support' 
+          : 'Admin';
+
         setAdminProfile({
           name: fullName,
-          email: p.email || 'admin@aadhya.co',
-          role: role === 'super_admin' ? 'Super Admin' : 'Admin',
+          email: p.email || userEmail || 'admin@aadhya.co',
+          role: displayRole,
           avatar: p.avatar || 'male'
         });
         setAuthChecked(true);
