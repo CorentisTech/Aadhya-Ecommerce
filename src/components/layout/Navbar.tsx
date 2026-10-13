@@ -267,9 +267,14 @@ export const Navbar: React.FC = () => {
             <div className="absolute w-24 sm:w-28 h-10 sm:h-12 bg-[#E5D7C7]/80 rounded-full blur-xs pointer-events-none -z-0" />
             
             <div className="relative z-10 flex flex-col items-center">
-              <span className="font-serif font-black text-2xl sm:text-3xl md:text-4xl tracking-[0.26em] text-[#181818] group-hover:opacity-90 transition-opacity uppercase leading-none">
-                {websiteSettings?.brand_name || 'AADHYA'}
+              <span className={`font-serif font-black ${isNumis ? 'text-lg sm:text-2xl md:text-3xl tracking-[0.16em]' : 'text-2xl sm:text-3xl md:text-4xl tracking-[0.26em]'} text-[#181818] group-hover:opacity-90 transition-opacity uppercase leading-none`}>
+                {isNumis ? 'Happy Collectables' : (websiteSettings?.brand_name || 'AADHYA')}
               </span>
+              {isNumis && (
+                <span className="font-sans text-[8.5px] sm:text-[10px] md:text-[11px] font-semibold tracking-[0.14em] text-[#6B5A46] mt-1 uppercase text-center whitespace-nowrap">
+                  Invest in history. Invest in future.
+                </span>
+              )}
             </div>
           </button>
         </div>
@@ -371,7 +376,14 @@ export const Navbar: React.FC = () => {
               {/* Header */}
               <div className="flex items-center justify-between border-b border-[#E5DACB] pb-4">
                 <div className="flex flex-col">
-                  <span className="font-serif font-black tracking-[0.2em] text-[#181818] text-base">{websiteSettings?.brand_name || 'AADHYA'}</span>
+                  <span className="font-serif font-black tracking-[0.2em] text-[#181818] text-base">
+                    {isNumis ? 'Happy Collectables' : (websiteSettings?.brand_name || 'AADHYA')}
+                  </span>
+                  {isNumis && (
+                    <span className="font-sans text-[8.5px] font-semibold tracking-wider text-[#6B5A46] mt-0.5">
+                      Invest in history. Invest in future.
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}

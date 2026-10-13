@@ -37,15 +37,18 @@ export default function AdminDashboardPage() {
       if (json.success) {
         setData(json);
       } else {
-        // Even if error is returned, fallback gracefully
+        // Fallback gracefully with genuine empty state
         setData({
           admin: { name: 'Prem Karnawat', email: 'admin@aadhya.co', role: 'Super Admin', avatar: 'male' },
-          statistics: { totalProducts: 22, fashionProducts: 15, numismaticProducts: 7, totalUsers: 45, totalOrders: 38 },
-          revenue: { total: 145800, today: 12499, weekly: 48900, monthly: 145800 },
+          statistics: { totalProducts: 0, fashionProducts: 0, numismaticProducts: 0, totalUsers: 0, totalOrders: 0 },
+          revenue: { total: 0, today: 0, weekly: 0, monthly: 0 },
           domainComparison: {
-            fashion: { products: 15, revenue: 88400 },
-            numismatics: { products: 7, revenue: 57400 }
-          }
+            fashion: { products: 0, revenue: 0 },
+            numismatics: { products: 0, revenue: 0 }
+          },
+          recentOrders: [],
+          lowStockAlerts: [],
+          recentUsers: []
         });
       }
     } catch (err: any) {
@@ -53,12 +56,15 @@ export default function AdminDashboardPage() {
       // Fallback gracefully so UI never crashes
       setData({
         admin: { name: 'Prem Karnawat', email: 'admin@aadhya.co', role: 'Super Admin', avatar: 'male' },
-        statistics: { totalProducts: 22, fashionProducts: 15, numismaticProducts: 7, totalUsers: 45, totalOrders: 38 },
-        revenue: { total: 145800, today: 12499, weekly: 48900, monthly: 145800 },
+        statistics: { totalProducts: 0, fashionProducts: 0, numismaticProducts: 0, totalUsers: 0, totalOrders: 0 },
+        revenue: { total: 0, today: 0, weekly: 0, monthly: 0 },
         domainComparison: {
-          fashion: { products: 15, revenue: 88400 },
-          numismatics: { products: 7, revenue: 57400 }
-        }
+          fashion: { products: 0, revenue: 0 },
+          numismatics: { products: 0, revenue: 0 }
+        },
+        recentOrders: [],
+        lowStockAlerts: [],
+        recentUsers: []
       });
     } finally {
       setLoading(false);
@@ -99,8 +105,8 @@ export default function AdminDashboardPage() {
 
   const {
     admin = { name: 'Prem Karnawat', role: 'Super Admin' },
-    statistics = { totalProducts: 22, fashionProducts: 15, numismaticProducts: 7, totalUsers: 45, totalOrders: 38 },
-    revenue = { total: 145800, today: 12499 },
+    statistics = { totalProducts: 0, fashionProducts: 0, numismaticProducts: 0, totalUsers: 0, totalOrders: 0 },
+    revenue = { total: 0, today: 0 },
     recentOrders = [],
     lowStockAlerts = [],
     recentUsers = []
@@ -185,7 +191,7 @@ export default function AdminDashboardPage() {
                 <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1.5 bg-white/30 backdrop-blur-md shadow-xl">
                   <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-tr from-[#14161f] to-[#2c3246] flex items-center justify-center relative border-2 border-white/60">
                     <img
-                      src="/coin_image_new.png"
+                      src="/coin_image.jpg"
                       alt="Aadhya Heritage"
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -343,59 +349,71 @@ export default function AdminDashboardPage() {
 
               {/* Right Progress Rows (Matches Reference Image Legend Rows) */}
               <div className="md:col-span-7 space-y-4">
-                {/* Row 1: Green dove / Palazzos */}
+                {/* Row 1: Green dove / Fashion Products */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-bold">
                     <div className="flex items-center space-x-2 text-emerald-800">
                       <span className="text-sm">🌿</span>
-                      <span>Flared Palazzos & Pants</span>
+                      <span>Fashion Products</span>
                     </div>
-                    <span className="text-gray-900 font-black">6</span>
+                    <span className="text-gray-900 font-black">{statistics.fashionProducts || 0}</span>
                   </div>
                   <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full w-[45%]" />
+                    <div
+                      className="h-full bg-emerald-500 rounded-full transition-all"
+                      style={{ width: `${statistics.totalProducts ? Math.min(100, Math.round((statistics.fashionProducts / statistics.totalProducts) * 100)) : 0}%` }}
+                    />
                   </div>
                 </div>
 
-                {/* Row 2: Blue owl / Ancient & British Coins */}
+                {/* Row 2: Blue owl / Numismatics Products */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-bold">
                     <div className="flex items-center space-x-2 text-blue-800">
                       <span className="text-sm">🦉</span>
-                      <span>Archival Coins (Republic & British)</span>
+                      <span>Numismatics Products</span>
                     </div>
-                    <span className="text-gray-900 font-black">5</span>
+                    <span className="text-gray-900 font-black">{statistics.numismaticProducts || 0}</span>
                   </div>
                   <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 rounded-full w-[38%]" />
+                    <div
+                      className="h-full bg-blue-500 rounded-full transition-all"
+                      style={{ width: `${statistics.totalProducts ? Math.min(100, Math.round((statistics.numismaticProducts / statistics.totalProducts) * 100)) : 0}%` }}
+                    />
                   </div>
                 </div>
 
-                {/* Row 3: Yellow peacock / Historic Banknotes */}
+                {/* Row 3: Yellow peacock / Fashion Categories */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-bold">
                     <div className="flex items-center space-x-2 text-amber-800">
                       <span className="text-sm">🦚</span>
-                      <span>Historic Currency & Notes</span>
+                      <span>Fashion Categories</span>
                     </div>
-                    <span className="text-gray-900 font-black">2</span>
+                    <span className="text-gray-900 font-black">{statistics.fashionCategories || 0}</span>
                   </div>
                   <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-amber-400 rounded-full w-[20%]" />
+                    <div
+                      className="h-full bg-amber-400 rounded-full transition-all"
+                      style={{ width: `${statistics.totalCategories ? Math.min(100, Math.round((statistics.fashionCategories / statistics.totalCategories) * 100)) : 0}%` }}
+                    />
                   </div>
                 </div>
 
-                {/* Row 4: Red eagle / Blouses & Sarees */}
+                {/* Row 4: Red eagle / Numismatic Categories */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-bold">
                     <div className="flex items-center space-x-2 text-rose-800">
                       <span className="text-sm">🦅</span>
-                      <span>Zari Silk Blouses & Saree Shapers</span>
+                      <span>Numismatic Categories</span>
                     </div>
-                    <span className="text-gray-900 font-black">9</span>
+                    <span className="text-gray-900 font-black">{statistics.numismaticCategories || 0}</span>
                   </div>
                   <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-rose-500 rounded-full w-[65%]" />
+                    <div
+                      className="h-full bg-rose-500 rounded-full transition-all"
+                      style={{ width: `${statistics.totalCategories ? Math.min(100, Math.round((statistics.numismaticCategories / statistics.totalCategories) * 100)) : 0}%` }}
+                    />
                   </div>
                 </div>
               </div>
@@ -458,36 +476,47 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="space-y-2.5">
-              {recentOrders.slice(0, 2).map((ord: any, idx: number) => (
-                <div
-                  key={ord.id || idx}
-                  className="bg-white rounded-2xl p-3.5 border border-[#ece4d5] shadow-xs flex items-center space-x-3 hover:border-amber-300 transition-colors"
-                >
-                  {/* Date badge on left matching reference image */}
-                  <div className="w-12 h-12 rounded-xl bg-[#f8f5ee] border border-[#e6dece] flex flex-col items-center justify-center flex-shrink-0 text-center">
-                    <span className="text-xs font-black text-[#14161f] leading-none">
-                      {idx === 0 ? '13' : '5'}
-                    </span>
-                    <span className="text-[9px] font-bold text-amber-700 uppercase mt-0.5">
-                      {idx === 0 ? 'MAR' : 'APR'}
-                    </span>
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-[#14161f] truncate">
-                        {ord.order_number}
-                      </span>
-                      <span className="text-xs font-bold text-emerald-700">
-                        {formatCurrency(ord.total_amount)}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-gray-500 block truncate mt-0.5 font-medium">
-                      {ord.customer_name} • {ord.status}
-                    </span>
-                  </div>
+              {recentOrders.length === 0 ? (
+                <div className="bg-white rounded-2xl p-4 border border-[#ece4d5] text-center text-xs text-gray-500 font-medium">
+                  No orders placed yet.
                 </div>
-              ))}
+              ) : (
+                recentOrders.slice(0, 3).map((ord: any, idx: number) => {
+                  const ordDate = ord.created_at ? new Date(ord.created_at) : new Date();
+                  const dayStr = String(ordDate.getDate()).padStart(2, '0');
+                  const monthStr = ordDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+                  return (
+                    <div
+                      key={ord.id || idx}
+                      className="bg-white rounded-2xl p-3.5 border border-[#ece4d5] shadow-xs flex items-center space-x-3 hover:border-amber-300 transition-colors"
+                    >
+                      {/* Date badge on left matching reference image */}
+                      <div className="w-12 h-12 rounded-xl bg-[#f8f5ee] border border-[#e6dece] flex flex-col items-center justify-center flex-shrink-0 text-center">
+                        <span className="text-xs font-black text-[#14161f] leading-none">
+                          {dayStr}
+                        </span>
+                        <span className="text-[9px] font-bold text-amber-700 uppercase mt-0.5">
+                          {monthStr}
+                        </span>
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-black text-[#14161f] truncate">
+                            {ord.order_number}
+                          </span>
+                          <span className="text-xs font-bold text-emerald-700">
+                            {formatCurrency(ord.total_amount)}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-gray-500 block truncate mt-0.5 font-medium">
+                          {ord.customer_name} • {ord.status}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -506,33 +535,39 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="space-y-2.5">
-              {lowStockAlerts.slice(0, 2).map((item: any, idx: number) => (
-                <div
-                  key={item.variant_id || item.sku || idx}
-                  className="bg-white rounded-2xl p-3.5 border border-[#ece4d5] shadow-xs flex items-center space-x-3 hover:border-amber-300 transition-colors"
-                >
-                  {/* Date badge on left matching reference image */}
-                  <div className="w-12 h-12 rounded-xl bg-[#f8f5ee] border border-[#e6dece] flex flex-col items-center justify-center flex-shrink-0 text-center">
-                    <span className="text-xs font-black text-[#14161f] leading-none">
-                      {idx === 0 ? '10' : '12'}
-                    </span>
-                    <span className="text-[9px] font-bold text-rose-600 uppercase mt-0.5">
-                      MAR
-                    </span>
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-[#14161f] truncate">
-                        {item.product_name}
+              {lowStockAlerts.length === 0 ? (
+                <div className="bg-white rounded-2xl p-4 border border-[#ece4d5] text-center text-xs text-emerald-700 font-medium flex items-center justify-center space-x-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>All inventory levels are healthy.</span>
+                </div>
+              ) : (
+                lowStockAlerts.slice(0, 3).map((item: any, idx: number) => (
+                  <div
+                    key={item.variant_id || item.sku || idx}
+                    className="bg-white rounded-2xl p-3.5 border border-[#ece4d5] shadow-xs flex items-center space-x-3 hover:border-amber-300 transition-colors"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 flex flex-col items-center justify-center flex-shrink-0 text-center">
+                      <span className="text-xs font-black text-rose-700 leading-none">
+                        {item.stock_quantity}
+                      </span>
+                      <span className="text-[9px] font-bold text-rose-600 uppercase mt-0.5">
+                        LEFT
                       </span>
                     </div>
-                    <span className="text-[11px] text-rose-600 font-bold block truncate mt-0.5">
-                      {item.stock_quantity} left in stock ({item.sku || 'SKU'})
-                    </span>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-[#14161f] truncate">
+                          {item.product_name}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-rose-600 font-bold block truncate mt-0.5">
+                        SKU: {item.sku || 'N/A'} • {item.department || 'store'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -551,29 +586,34 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="space-y-2.5">
-              {recentUsers.slice(0, 3).map((usr: any, idx: number) => (
-                <div
-                  key={usr.id || idx}
-                  className="bg-white rounded-2xl p-3 border border-[#ece4d5] shadow-xs flex items-center space-x-3 hover:border-amber-300 transition-colors"
-                >
-                  {/* Avatar circle with green active indicator */}
-                  <div className="relative flex-shrink-0">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ba8c4d] to-[#d6af6e] text-[#14161f] font-black text-xs flex items-center justify-center shadow-xs">
-                      {usr.name ? usr.name.charAt(0) : 'U'}
-                    </div>
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs font-black text-[#14161f] block truncate">
-                      {usr.name}
-                    </span>
-                    <span className="text-[10px] text-gray-500 font-medium block truncate">
-                      {idx === 0 ? 'purchased Flared Rayon Palazzo' : idx === 1 ? 'explored Numismatics catalog' : 'registered new store account'}
-                    </span>
-                  </div>
+              {recentUsers.length === 0 ? (
+                <div className="bg-white rounded-2xl p-4 border border-[#ece4d5] text-center text-xs text-gray-500 font-medium">
+                  No registered customers yet.
                 </div>
-              ))}
+              ) : (
+                recentUsers.slice(0, 3).map((usr: any, idx: number) => (
+                  <div
+                    key={usr.id || idx}
+                    className="bg-white rounded-2xl p-3 border border-[#ece4d5] shadow-xs flex items-center space-x-3 hover:border-amber-300 transition-colors"
+                  >
+                    <div className="relative flex-shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ba8c4d] to-[#d6af6e] text-[#14161f] font-black text-xs flex items-center justify-center shadow-xs">
+                        {usr.name ? usr.name.charAt(0).toUpperCase() : 'C'}
+                      </div>
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-black text-[#14161f] block truncate">
+                        {usr.name}
+                      </span>
+                      <span className="text-[10px] text-gray-500 font-medium block truncate">
+                        Customer Member
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

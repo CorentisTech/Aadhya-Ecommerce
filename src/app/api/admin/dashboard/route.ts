@@ -17,19 +17,18 @@ export async function GET(request: Request) {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        const profiles = await queryDb(
-          `SELECT id, first_name, last_name, phone, avatar, role FROM profiles WHERE id = $1`,
+        const admins = await queryDb(
+          `SELECT id, full_name, role FROM administrators WHERE id = $1`,
           [user.id]
         );
-        if (profiles && profiles.length > 0) {
-          const p = profiles[0];
-          const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ') || user.email?.split('@')[0] || 'Admin';
+        if (admins && admins.length > 0) {
+          const a = admins[0];
           adminProfile = {
-            id: p.id,
-            name: fullName,
+            id: a.id,
+            name: a.full_name || user.email?.split('@')[0] || 'Admin',
             email: user.email || 'admin@aadhya.co',
-            role: p.role === 'super_admin' ? 'Super Admin' : 'Admin',
-            avatar: p.avatar || 'male'
+            role: a.role === 'super_admin' ? 'Super Admin' : 'Admin',
+            avatar: 'male'
           };
         } else {
           adminProfile.email = user.email || adminProfile.email;
@@ -54,7 +53,7 @@ export async function GET(request: Request) {
       pStats = productStatsRows[0] || {};
     } catch (err) {
       console.warn('Failed to query products stats:', err);
-      pStats = { total_products: 22, fashion_products: 15, numismatic_products: 7, active_products: 22 };
+      pStats = { total_products: 0, fashion_products: 0, numismatic_products: 0, active_products: 0 };
     }
 
     let sStats: any = {};
@@ -67,7 +66,7 @@ export async function GET(request: Request) {
       `);
       sStats = stockStatsRows[0] || {};
     } catch (err) {
-      sStats = { low_stock: 4, out_of_stock: 1 };
+      sStats = { low_stock: 0, out_of_stock: 0 };
     }
 
     // 3. Category Counts (Total, Fashion, Numismatics)
@@ -83,10 +82,10 @@ export async function GET(request: Request) {
       `);
       cStats = categoryStatsRows[0] || {};
     } catch (err) {
-      cStats = { total_categories: 19, fashion_categories: 7, numismatic_categories: 12 };
+      cStats = { total_categories: 0, fashion_categories: 0, numismatic_categories: 0 };
     }
 
-    // 4. User Counts
+    // 4. User Counts (strictly customers, excluding any administrators)
     let uStats: any = {};
     try {
       const userStatsRows = await queryDb(`
@@ -94,10 +93,12 @@ export async function GET(request: Request) {
           COUNT(*)::int AS total_users,
           COUNT(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 END)::int AS new_users
         FROM profiles
+        WHERE id NOT IN (SELECT id FROM administrators)
+          AND (role IS NULL OR role NOT IN ('super_admin', 'admin', 'editor', 'support'))
       `);
       uStats = userStatsRows[0] || {};
     } catch (err) {
-      uStats = { total_users: 45, new_users: 12 };
+      uStats = { total_users: 0, new_users: 0 };
     }
 
     // 5. Order Pipeline Counts
@@ -116,7 +117,7 @@ export async function GET(request: Request) {
       `);
       oStats = orderStatsRows[0] || {};
     } catch (err) {
-      oStats = { total_orders: 38, orders_received: 5, orders_approved: 8, orders_dispatched: 10, orders_delivered: 15, orders_cancelled: 1, orders_returned: 0 };
+      oStats = { total_orders: 0, orders_received: 0, orders_approved: 0, orders_dispatched: 0, orders_delivered: 0, orders_cancelled: 0, orders_returned: 0 };
     }
 
     // 6. Revenue Statistics
@@ -136,7 +137,7 @@ export async function GET(request: Request) {
       `);
       rStats = revenueRows[0] || {};
     } catch (err) {
-      rStats = { total_revenue: 145800, today_revenue: 12499, weekly_revenue: 48900, monthly_revenue: 145800, yearly_revenue: 145800, pending_revenue: 28500, delivered_revenue: 117300, average_order_value: 3836 };
+      rStats = { total_revenue: 0, today_revenue: 0, weekly_revenue: 0, monthly_revenue: 0, yearly_revenue: 0, pending_revenue: 0, delivered_revenue: 0, average_order_value: 0 };
     }
 
     // 7. Recent Orders
@@ -192,46 +193,7 @@ export async function GET(request: Request) {
       console.warn('Low stock query failed:', err);
     }
 
-    if (!lowStockAlerts || lowStockAlerts.length === 0) {
-      lowStockAlerts = [
-        {
-          variant_id: 'var-1',
-          sku: 'FP-105-M',
-          stock_quantity: 2,
-          product_name: 'Emerald Flared Palazzo Pants',
-          product_no: 'FP-105',
-          department: 'fashion',
-          image_url: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=600'
-        },
-        {
-          variant_id: 'var-2',
-          sku: 'NP-201-BOX',
-          stock_quantity: 1,
-          product_name: '1954 REPUBLIC ONE RUPEE COIN',
-          product_no: 'NP-201',
-          department: 'numismatics',
-          image_url: '/coin_image_new.png'
-        },
-        {
-          variant_id: 'var-3',
-          sku: 'FP-104-L',
-          stock_quantity: 3,
-          product_name: 'Handcrafted Zari Silk Blouse',
-          product_no: 'FP-104',
-          department: 'fashion',
-          image_url: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600'
-        },
-        {
-          variant_id: 'var-4',
-          sku: 'NP-203-SLAB',
-          stock_quantity: 2,
-          product_name: 'BRITISH INDIA 100 RUPEE NOTE',
-          product_no: 'NP-203',
-          department: 'numismatics',
-          image_url: '/images/inr-100-note.png'
-        }
-      ];
-    }
+    lowStockAlerts = lowStockAlerts || [];
 
     // 9. Recent Users
     let recentUsers: any[] = [];
@@ -239,7 +201,7 @@ export async function GET(request: Request) {
       recentUsers = await queryDb(`
         SELECT 
           p.id,
-          COALESCE(CONCAT(p.first_name, ' ', p.last_name), 'Aadhya Member') AS name,
+          COALESCE(CONCAT(p.first_name, ' ', p.last_name), 'Customer') AS name,
           p.phone,
           p.avatar,
           p.role,
@@ -284,23 +246,43 @@ export async function GET(request: Request) {
     }
 
     // 11. Domain Comparison
-    const totalProdCount = pStats.total_products || 22;
-    const fashionProdCount = pStats.fashion_products || 15;
-    const numismaticProdCount = pStats.numismatic_products || 7;
+    const totalProdCount = Number(pStats.total_products) || 0;
+    const fashionProdCount = Number(pStats.fashion_products) || 0;
+    const numismaticProdCount = Number(pStats.numismatic_products) || 0;
+
+    let domainRows: any[] = [];
+    try {
+      domainRows = await queryDb(`
+        SELECT 
+          pr.department,
+          COALESCE(SUM(oi.quantity), 0)::int AS units,
+          COALESCE(SUM(oi.unit_price * oi.quantity), 0)::numeric AS revenue
+        FROM order_items oi
+        JOIN products pr ON oi.product_id = pr.id
+        JOIN orders o ON oi.order_id = o.id
+        WHERE o.status NOT IN ('CANCELLED', 'REFUNDED')
+        GROUP BY pr.department
+      `);
+    } catch (err) {
+      console.warn('Domain comparison query error:', err);
+    }
+
+    const fashionDomain = domainRows.find((r) => r.department === 'fashion') || { units: 0, revenue: 0 };
+    const numisDomain = domainRows.find((r) => r.department === 'numismatics') || { units: 0, revenue: 0 };
 
     const fashionMetrics = {
       products: fashionProdCount,
-      units: 24,
-      revenue: Number(rStats.total_revenue) > 0 ? Math.round(Number(rStats.total_revenue) * 0.6) : 88400
+      units: Number(fashionDomain.units) || 0,
+      revenue: Number(fashionDomain.revenue) || 0
     };
 
     const numismaticsMetrics = {
       products: numismaticProdCount,
-      units: 14,
-      revenue: Number(rStats.total_revenue) > 0 ? Math.round(Number(rStats.total_revenue) * 0.4) : 57400
+      units: Number(numisDomain.units) || 0,
+      revenue: Number(numisDomain.revenue) || 0
     };
 
-    const totalRev = Number(rStats.total_revenue) || (fashionMetrics.revenue + numismaticsMetrics.revenue);
+    const totalRev = Number(rStats.total_revenue) || 0;
 
     return NextResponse.json({
       success: true,
@@ -309,40 +291,40 @@ export async function GET(request: Request) {
         totalProducts: totalProdCount,
         fashionProducts: fashionProdCount,
         numismaticProducts: numismaticProdCount,
-        activeProducts: pStats.active_products || totalProdCount,
-        totalCategories: cStats.total_categories || 19,
-        fashionCategories: cStats.fashion_categories || 7,
-        numismaticCategories: cStats.numismatic_categories || 12,
-        totalUsers: uStats.total_users || 45,
-        newUsers: uStats.new_users || 12,
-        totalOrders: oStats.total_orders || 38,
-        ordersReceived: oStats.orders_received || 5,
-        ordersApproved: oStats.orders_approved || 8,
-        ordersDispatched: oStats.orders_dispatched || 10,
-        ordersDelivered: oStats.orders_delivered || 15,
-        ordersCancelled: oStats.orders_cancelled || 1,
-        ordersReturned: oStats.orders_returned || 0,
-        lowStockCount: sStats.low_stock || 4,
-        outOfStockCount: sStats.out_of_stock || 1,
+        activeProducts: Number(pStats.active_products) || 0,
+        totalCategories: Number(cStats.total_categories) || 0,
+        fashionCategories: Number(cStats.fashion_categories) || 0,
+        numismaticCategories: Number(cStats.numismatic_categories) || 0,
+        totalUsers: Number(uStats.total_users) || 0,
+        newUsers: Number(uStats.new_users) || 0,
+        totalOrders: Number(oStats.total_orders) || 0,
+        ordersReceived: Number(oStats.orders_received) || 0,
+        ordersApproved: Number(oStats.orders_approved) || 0,
+        ordersDispatched: Number(oStats.orders_dispatched) || 0,
+        ordersDelivered: Number(oStats.orders_delivered) || 0,
+        ordersCancelled: Number(oStats.orders_cancelled) || 0,
+        ordersReturned: Number(oStats.orders_returned) || 0,
+        lowStockCount: Number(sStats.low_stock) || 0,
+        outOfStockCount: Number(sStats.out_of_stock) || 0,
       },
       revenue: {
         total: totalRev,
-        today: Number(rStats.today_revenue) || 12499,
-        weekly: Number(rStats.weekly_revenue) || 48900,
-        monthly: Number(rStats.monthly_revenue) || totalRev,
-        yearly: Number(rStats.yearly_revenue) || totalRev,
-        pending: Number(rStats.pending_revenue) || 28500,
-        delivered: Number(rStats.delivered_revenue) || 117300,
-        averageOrderValue: Math.round(Number(rStats.average_order_value) || 3836)
+        today: Number(rStats.today_revenue) || 0,
+        weekly: Number(rStats.weekly_revenue) || 0,
+        monthly: Number(rStats.monthly_revenue) || 0,
+        yearly: Number(rStats.yearly_revenue) || 0,
+        pending: Number(rStats.pending_revenue) || 0,
+        delivered: Number(rStats.delivered_revenue) || 0,
+        averageOrderValue: Math.round(Number(rStats.average_order_value) || 0)
       },
-      chartData: dailyAnalytics,
+      chartData: dailyAnalytics || [],
       domainComparison: {
         fashion: fashionMetrics,
         numismatics: numismaticsMetrics
       },
-      recentOrders,
-      lowStockAlerts,
-      recentUsers
+      recentOrders: recentOrders || [],
+      lowStockAlerts: lowStockAlerts || [],
+      recentUsers: recentUsers || []
     });
 
   } catch (err: any) {

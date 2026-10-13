@@ -61,7 +61,7 @@ export const MobileBottomNav: React.FC = () => {
             triggerSectionTransition('fashion');
           }, 150);
         } else {
-          setStatusMessage('AADHYA');
+          setStatusMessage('HAPPY COLLECTABLES');
           setTimeout(() => {
             setPage('numismatics');
             triggerSectionTransition('numismatics');
@@ -90,7 +90,7 @@ export const MobileBottomNav: React.FC = () => {
           onDragEnd={handleDragEnd}
           className="w-10 h-10 rounded-full bg-[#181818] text-[#EFE6DA] flex items-center justify-center cursor-grab active:cursor-grabbing shadow-md z-30 touch-none flex-shrink-0"
         >
-          <span className="font-serif font-black text-[10px] tracking-wider">A</span>
+          <span className="font-serif font-black text-[10px] tracking-wider">{isNumis ? 'H' : 'A'}</span>
         </motion.div>
 
         {/* Center Label Text */}
@@ -98,8 +98,8 @@ export const MobileBottomNav: React.FC = () => {
           style={{ opacity: textOpacity }}
           className="relative z-10 flex flex-col items-center justify-center flex-grow px-2 text-center pointer-events-none"
         >
-          <span className="font-serif font-black text-xs text-[#181818] tracking-[0.24em] uppercase">
-            AADHYA
+          <span className="font-serif font-black text-xs text-[#181818] tracking-[0.2em] uppercase">
+            {isNumis ? 'HAPPY COLLECTABLES' : 'AADHYA'}
           </span>
           <span className="font-sans font-bold text-[8.5px] text-[#7A6B5C] tracking-[0.18em] uppercase">
             {isNumis ? 'SWIPE TO FASHION' : 'SWIPE TO COINS & NOTES'}

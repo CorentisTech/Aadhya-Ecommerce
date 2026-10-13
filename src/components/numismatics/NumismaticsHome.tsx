@@ -566,7 +566,7 @@ export const NumismaticsHome: React.FC = () => {
             {/* 4 Vibrant Rounded Cards: Horizontal Touch-Swipe on Mobile, Grid on Desktop */}
             <div 
               ref={heroCardsScrollRef}
-              className="flex overflow-x-auto gap-3 sm:gap-4 md:grid md:grid-cols-4 md:gap-4 lg:gap-5 pt-8 sm:pt-10 md:pt-11 pb-1 scrollbar-none snap-x snap-mandatory touch-pan-x w-full scroll-smooth"
+              className="flex overflow-x-auto gap-3 sm:gap-4 md:grid md:grid-cols-4 md:gap-4 lg:gap-5 pt-8 sm:pt-10 md:pt-11 pb-1 scrollbar-none snap-x snap-mandatory touch-pan-y overscroll-x-contain w-full scroll-smooth"
             >
               {heroFeaturedCoins.map((item, idx) => {
                 const isSelected = heroActiveIndex === idx;
@@ -708,7 +708,7 @@ export const NumismaticsHome: React.FC = () => {
           {/* Horizontal Scroll Carousel with Touch-Swipe */}
           <div 
             ref={exploreScrollRef}
-            className="flex overflow-x-auto pb-4 gap-3 sm:gap-6 scrollbar-none snap-x snap-mandatory touch-pan-x w-full scroll-smooth pt-2 text-left"
+            className="flex overflow-x-auto pb-4 gap-3 sm:gap-6 scrollbar-none snap-x snap-mandatory touch-pan-y overscroll-x-contain w-full scroll-smooth pt-2 text-left"
           >
             {numProducts.map((product) => {
               const inWishlist = isInWishlist(product.id);
@@ -857,7 +857,7 @@ export const NumismaticsHome: React.FC = () => {
           </div>
 
           {/* 4-Column Grid on Web, Horizontal Touch-Swipe on Mobile */}
-          <div className="flex overflow-x-auto pb-3 gap-3 sm:gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory touch-pan-x w-full scroll-smooth">
+          <div className="flex overflow-x-auto pb-3 gap-3 sm:gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory touch-pan-y overscroll-x-contain w-full scroll-smooth">
             {numProducts.slice(2, 6).map((product) => {
               const inWishlist = isInWishlist(product.id);
               const slug = product.name.toLowerCase().replace(/ /g, '-');
@@ -981,14 +981,14 @@ export const NumismaticsHome: React.FC = () => {
           {/* TWO SLIDING TRACKS */}
           <div className="space-y-6 sm:space-y-8 md:space-y-10">
 
-            {/* TRACK 1: USER-CONTROLLED HORIZONTAL SCROLL */}
+            {/* TRACK 1: USER-CONTROLLED HORIZONTAL SCROLL / DESKTOP GRID */}
             <div className="relative w-full">
-              <div className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-0 pb-4 touch-pan-x">
+              <div className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-0 pb-4 touch-pan-y overscroll-x-contain lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible lg:pb-0">
                 {categoryRow1.map((cat, idx) => (
                   <div
                     key={`row1-${cat.id}-${idx}`}
                     onClick={() => router.push(`/numismatics/catalog?category=${cat.id}`)}
-                    className="w-[200px] sm:w-[240px] md:w-[270px] mx-2.5 sm:mx-4 flex-shrink-0 snap-start cursor-pointer text-center group/card transition-all duration-300"
+                    className="w-[200px] sm:w-[240px] md:w-[270px] lg:w-auto mx-2.5 sm:mx-4 lg:mx-0 flex-shrink-0 snap-start cursor-pointer text-center group/card transition-all duration-300"
                   >
                     {/* Circular Plate with Glow Background (Matching media_1788422746488.png) */}
                     <div className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full bg-gradient-to-b from-[#FFF5DC] via-[#FFEBC2] to-[#FEDE9A] p-2.5 sm:p-3 mx-auto relative shadow-lg group-hover/card:scale-105 group-hover/card:shadow-xl transition-all duration-300 flex items-center justify-center border-2 border-white/60">
@@ -1024,14 +1024,14 @@ export const NumismaticsHome: React.FC = () => {
               </div>
             </div>
 
-            {/* TRACK 2: USER-CONTROLLED HORIZONTAL SCROLL */}
+            {/* TRACK 2: USER-CONTROLLED HORIZONTAL SCROLL / DESKTOP GRID */}
             <div className="relative w-full">
-              <div className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-0 pb-4 touch-pan-x">
+              <div className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-0 pb-4 touch-pan-y overscroll-x-contain lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible lg:pb-0">
                 {categoryRow2.map((cat, idx) => (
                   <div
                     key={`row2-${cat.id}-${idx}`}
                     onClick={() => router.push(`/numismatics/catalog?category=${cat.id}`)}
-                    className="w-[200px] sm:w-[240px] md:w-[270px] mx-2.5 sm:mx-4 flex-shrink-0 snap-start cursor-pointer text-center group/card transition-all duration-300"
+                    className="w-[200px] sm:w-[240px] md:w-[270px] lg:w-auto mx-2.5 sm:mx-4 lg:mx-0 flex-shrink-0 snap-start cursor-pointer text-center group/card transition-all duration-300"
                   >
                     {/* Circular Plate with Glow Background (Matching media_1788422746488.png) */}
                     <div className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full bg-gradient-to-b from-[#FFF5DC] via-[#FFEBC2] to-[#FEDE9A] p-2.5 sm:p-3 mx-auto relative shadow-lg group-hover/card:scale-105 group-hover/card:shadow-xl transition-all duration-300 flex items-center justify-center border-2 border-white/60">

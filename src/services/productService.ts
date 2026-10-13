@@ -1,6 +1,4 @@
-import { Product, PRODUCTS } from '@/data/mockData';
-
-const USE_REAL_BACKEND = process.env.NEXT_PUBLIC_USE_REAL_BACKEND === 'true';
+import { Product } from '@/data/mockData';
 
 // Helper to convert DB product format to mockData format
 function mapDbProductToFrontend(dbProduct: any): Product {
@@ -42,23 +40,6 @@ export async function fetchProducts(params: {
   isBestseller?: boolean;
   limit?: number;
 }): Promise<Product[]> {
-  if (!USE_REAL_BACKEND) {
-    let filtered = [...PRODUCTS];
-    if (params.department) {
-      filtered = filtered.filter(p => p.department === params.department);
-    }
-    if (params.isHero) {
-      filtered = filtered.filter(p => p.isHero);
-    }
-    if (params.isBestseller) {
-      filtered = filtered.filter(p => p.bestseller);
-    }
-    if (params.limit) {
-      filtered = filtered.slice(0, params.limit);
-    }
-    return filtered;
-  }
-
   try {
     const urlParams = new URLSearchParams();
     if (params.department) urlParams.append('department', params.department);
@@ -67,6 +48,10 @@ export async function fetchProducts(params: {
     if (params.limit) urlParams.append('limit', String(params.limit));
 
     const res = await fetch(`/api/products?${urlParams.toString()}`);
+    if (!res.ok) {
+      console.warn('Products API returned non-OK status:', res.status);
+      return [];
+    }
     const data = await res.json();
     
     if (data.data && Array.isArray(data.data)) {
@@ -74,21 +59,7 @@ export async function fetchProducts(params: {
     }
     return [];
   } catch (error) {
-    console.error('Error fetching real products, falling back to mock:', error);
-    // Fallback to mock on error
-    let filtered = [...PRODUCTS];
-    if (params.department) {
-      filtered = filtered.filter(p => p.department === params.department);
-    }
-    if (params.isHero) {
-      filtered = filtered.filter(p => p.isHero);
-    }
-    if (params.isBestseller) {
-      filtered = filtered.filter(p => p.bestseller);
-    }
-    if (params.limit) {
-      filtered = filtered.slice(0, params.limit);
-    }
-    return filtered;
+    console.error('Error fetching real products:', error);
+    return [];
   }
 }

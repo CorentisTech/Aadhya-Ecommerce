@@ -162,16 +162,16 @@ export const CATEGORIES: Category[] = [
 
   // Numismatics Categories (Preserved exact historical categories)
   { id: 'ancient-coins', name: 'ANCIENT COINS', description: 'Punched mark and ancient dynasty coins.', visualType: 'coin', visualColor: '#9A7955', image: '/coin_image.jpg', department: 'numismatics' },
-  { id: 'mughal-coins', name: 'MUGHAL COINS', description: 'Silver & gold coins from Mughal emperors.', visualType: 'coin', visualColor: '#B89A67', image: '/coin_image_new.png', department: 'numismatics' },
+  { id: 'mughal-coins', name: 'MUGHAL COINS', description: 'Silver & gold coins from Mughal emperors.', visualType: 'coin', visualColor: '#B89A67', image: '/images/categories/mughal-zodiac.png', department: 'numismatics' },
   { id: 'british-india', name: 'BRITISH INDIA', description: 'Victoria and George VI coinage issues.', visualType: 'coin', visualColor: '#756E69', image: '/coin_image.jpg', department: 'numismatics' },
-  { id: 'princely-states', name: 'PRINCELY STATES', description: 'Coinage issued by royal Indian princely states.', visualType: 'coin', visualColor: '#9A7955', image: '/coin_image_new.png', department: 'numismatics' },
+  { id: 'princely-states', name: 'PRINCELY STATES', description: 'Coinage issued by royal Indian princely states.', visualType: 'coin', visualColor: '#9A7955', image: '/images/categories/princely-states-awadh.jpg', department: 'numismatics' },
   { id: 'republic-india', name: 'REPUBLIC INDIA', description: 'Post-1950 Indian coinage and proof sets.', visualType: 'coin', visualColor: '#B89A67', image: '/coin_image.jpg', department: 'numismatics' },
-  { id: 'foreign-coins', name: 'FOREIGN COINS', description: 'International historical coins.', visualType: 'coin', visualColor: '#756E69', image: '/coin_image_new.png', department: 'numismatics' },
+  { id: 'foreign-coins', name: 'FOREIGN COINS', description: 'International historical coins.', visualType: 'coin', visualColor: '#756E69', image: '/images/categories/ancient-lakshmi.jpg', department: 'numismatics' },
   { id: 'medals', name: 'MEDALS', description: 'Historical military & commemorative medals.', visualType: 'coin', visualColor: '#9A7955', image: '/coin_image.jpg', department: 'numismatics' },
   { id: 'paper-money', name: 'PAPER MONEY', description: 'Banknotes from British India and RBI.', visualType: 'note', visualColor: '#71836C', image: '/images/inr-100-note.png', department: 'numismatics' },
-  { id: 'tokens-badges', name: 'TOKENS & BADGES', description: 'Trade tokens and heritage badges.', visualType: 'coin', visualColor: '#B89A67', image: '/coin_image_new.png', department: 'numismatics' },
+  { id: 'tokens-badges', name: 'TOKENS & BADGES', description: 'Trade tokens and heritage badges.', visualType: 'coin', visualColor: '#B89A67', image: '/images/categories/east-india-company.jpg', department: 'numismatics' },
   { id: 'east-india-company', name: 'EAST INDIA COMPANY', description: 'Coins struck by EIC mints.', visualType: 'coin', visualColor: '#756E69', image: '/coin_image.jpg', department: 'numismatics' },
-  { id: 'sultanates', name: 'SULTANATES', description: 'Medieval Delhi and regional sultanate coins.', visualType: 'coin', visualColor: '#9A7955', image: '/coin_image_new.png', department: 'numismatics' },
+  { id: 'sultanates', name: 'SULTANATES', description: 'Medieval Delhi and regional sultanate coins.', visualType: 'coin', visualColor: '#9A7955', image: '/images/categories/mughal-square-mohur.jpg', department: 'numismatics' },
   { id: 'independent-kingdoms', name: 'INDEPENDENT KINGDOMS', description: 'Maratha, Sikh, and regional kingdom coinage.', visualType: 'coin', visualColor: '#B89A67', image: '/coin_image.jpg', department: 'numismatics' }
 ];
 
@@ -900,11 +900,10 @@ export const PRODUCTS: Product[] = [
     mrp: 15000,
     discount: 16,
     description: 'A historic Indian silver coin preserved for collectors, featuring an archival-era Ashoka Lion Capital design and distinctive Bombay mint details.',
-    image: '/coin_image_new.png',
+    image: '/coin_image.jpg',
     images: [
-      '/coin_image_new.png',
       '/coin_image.jpg',
-      '/coin_image_new.png'
+      '/coin_image.jpg'
     ],
     visualType: 'coin',
     visualColor: '#B89A67',
@@ -934,8 +933,7 @@ export const PRODUCTS: Product[] = [
     description: 'British India King George VI Silver One Rupee coin. Beautiful original luster, minted in Bombay in 1940. A historic silver collector\'s treasure.',
     image: '/coin_image.jpg',
     images: [
-      '/coin_image.jpg',
-      '/coin_image_new.png'
+      '/coin_image.jpg'
     ],
     visualType: 'coin',
     visualColor: '#9A7955',
@@ -995,8 +993,7 @@ export const PRODUCTS: Product[] = [
     description: 'Queen Victoria Empress silver Two Annas coin dated 1885. Exceedingly sharp details with fine toning. Highly sought after by advanced numismatists.',
     image: '/coin_image.jpg',
     images: [
-      '/coin_image.jpg',
-      '/coin_image_new.png'
+      '/coin_image.jpg'
     ],
     visualType: 'coin',
     visualColor: '#B89A67',
@@ -1024,9 +1021,9 @@ export const PRODUCTS: Product[] = [
     mrp: 18000,
     discount: 21,
     description: 'Mughal Empire Shah Alam II Silver Rupee coin, minted at Murshidabad, RY 19. Complete inscriptions in Persian, high grading status.',
-    image: '/coin_image_new.png',
+    image: '/images/categories/mughal-zodiac.png',
     images: [
-      '/coin_image_new.png',
+      '/images/categories/mughal-zodiac.png',
       '/coin_image.jpg'
     ],
     visualType: 'coin',
@@ -1085,9 +1082,8 @@ export const PRODUCTS: Product[] = [
     mrp: 29000,
     discount: 22,
     description: 'Republic of India 1950 First Coinage Set. Features the iconic Ashoka Lion capital emblem on 7 original coins. Housed in a custom velvet display booklet.',
-    image: '/coin_image_new.png',
+    image: '/coin_image.jpg',
     images: [
-      '/coin_image_new.png',
       '/coin_image.jpg'
     ],
     visualType: 'coin',

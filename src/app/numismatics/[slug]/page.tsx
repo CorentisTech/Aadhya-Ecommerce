@@ -586,7 +586,7 @@ export default function NumismaticDetailPage({ params }: PageProps) {
                         </span>
                       </div>
                       <p className="text-xs text-brand-espresso font-medium leading-relaxed">
-                        Accompanied by an official Aadhya Numismatic Certificate of Authenticity. Inspected and verified using non-destructive XRF metallic spectroscopy and microscopic grading.
+                        Accompanied by an official Happy Collectables Numismatic Certificate of Authenticity. Inspected and verified using non-destructive XRF metallic spectroscopy and microscopic grading.
                       </p>
                     </div>
 

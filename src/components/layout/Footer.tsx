@@ -49,10 +49,12 @@ export const Footer: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           <div className="space-y-4">
             <h2 className="font-display text-2xl md:text-3xl font-bold tracking-[0.25em] text-white">
-              {websiteSettings?.brand_name || 'AADHYA'}
+              {isCoins ? 'Happy Collectables' : (websiteSettings?.brand_name || 'AADHYA')}
             </h2>
             <p className="text-xs md:text-sm text-white/70 leading-relaxed font-light max-w-sm">
-              Inspiring modern luxury through bespoke Indian ethnic silhouettes, refined Western couture, and authenticated historical numismatics.
+              {isCoins
+                ? 'Invest in history. Invest in future. Authenticated rare coins, ancient dynastic coinage, and archival paper currency.'
+                : 'Inspiring modern luxury through bespoke Indian ethnic silhouettes, refined Western couture, and authenticated historical numismatics.'}
             </p>
           </div>
 
@@ -213,10 +215,10 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto border-t border-white/10 pt-8 relative z-20">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] md:text-xs font-bold tracking-widest text-white/50 uppercase">
           <div>
-            © 2026 Aadhya Studios Ltd. All rights reserved.
+            © 2026 {isCoins ? 'Happy Collectables' : 'Aadhya Studios Ltd'}. All rights reserved.
           </div>
           <div>
-            Unified Indian Couture & Numismatic Platform
+            {isCoins ? 'Invest in history. Invest in future.' : 'Unified Indian Couture & Numismatic Platform'}
           </div>
         </div>
       </div>
