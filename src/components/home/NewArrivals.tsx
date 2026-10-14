@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Product } from '../../data/mockData';
 import { fetchProducts } from '../../services/productService';
 import { useApp } from '../../context/AppContext';
-import { Heart, ArrowRight, Sparkles, ShoppingBag } from 'lucide-react';
+import { Heart, ArrowRight, Sparkles, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -69,6 +69,34 @@ export const NewArrivals: React.FC = () => {
 
     touchStartX.current = null;
     touchEndX.current = null;
+  };
+
+  // Desktop mouse drag swipe gesture
+  const mouseStartX = useRef<number | null>(null);
+  const isMouseDown = useRef(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    isMouseDown.current = true;
+    mouseStartX.current = e.clientX;
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isMouseDown.current || mouseStartX.current === null) return;
+    const diff = mouseStartX.current - e.clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        setActiveIndex((prev) => (prev + 1) % newProducts.length);
+      } else {
+        setActiveIndex((prev) => (prev - 1 + newProducts.length) % newProducts.length);
+      }
+    }
+    isMouseDown.current = false;
+    mouseStartX.current = null;
+  };
+
+  const handleMouseLeave = () => {
+    isMouseDown.current = false;
+    mouseStartX.current = null;
   };
 
   // 3D Perspective Coverflow positioning relative to active index
@@ -156,7 +184,7 @@ export const NewArrivals: React.FC = () => {
   return (
     <section 
       id="new-arrivals" 
-      className="w-full max-w-full py-12 md:py-20 px-4 md:px-12 lg:px-24 bg-[#0D0B0A] text-white border-b border-white/10 overflow-hidden select-none relative"
+      className="w-full max-w-full py-12 md:py-20 px-4 md:px-12 lg:px-24 bg-[#0D0B0A] text-white border-b border-white/10 overflow-hidden relative"
     >
       {/* Ambient background glow (optimized with blur-3xl) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-r from-amber-600/15 via-[#C89B5C]/15 to-transparent blur-3xl opacity-30 pointer-events-none" />
@@ -183,11 +211,37 @@ export const NewArrivals: React.FC = () => {
             3D COVERFLOW PERSPECTIVE CAROUSEL STAGE
            ================================================== */}
         <div 
-          className="relative w-full h-[400px] sm:h-[460px] md:h-[520px] flex items-center justify-center [perspective:1200px] [transform-style:preserve-3d] touch-pan-y"
+          className="relative w-full h-[400px] sm:h-[460px] md:h-[520px] flex items-center justify-center [perspective:1200px] [transform-style:preserve-3d] touch-pan-y cursor-grab active:cursor-grabbing select-none"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
         >
+          {/* Desktop Left / Right Swipe Arrow Buttons */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveIndex((prev) => (prev - 1 + newProducts.length) % newProducts.length);
+            }}
+            className="hidden sm:flex absolute left-1 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 z-40 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/60 hover:bg-black/90 border border-white/25 text-white items-center justify-center backdrop-blur-md shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            aria-label="Previous Runway Item"
+          >
+            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveIndex((prev) => (prev + 1) % newProducts.length);
+            }}
+            className="hidden sm:flex absolute right-1 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 z-40 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/60 hover:bg-black/90 border border-white/25 text-white items-center justify-center backdrop-blur-md shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            aria-label="Next Runway Item"
+          >
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
+
           {newProducts.map((product, idx) => {
             const inWishlist = isInWishlist(product.id);
             const slug = product.name.toLowerCase().replace(/ /g, '-');
@@ -225,7 +279,7 @@ export const NewArrivals: React.FC = () => {
                   src={product.image}
                   alt={product.name}
                   draggable={false}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 pointer-events-none select-none"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   loading="lazy"
                 />
 

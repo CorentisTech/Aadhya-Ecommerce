@@ -37,7 +37,7 @@ export const AadhyaEdit: React.FC = () => {
         </div>
 
         {/* Horizontal scroll container for mobile, standard grid for desktop */}
-        <div className="flex overflow-x-auto pb-6 md:pb-0 gap-6 snap-x snap-mandatory touch-pan-x overscroll-x-contain scrollbar-none md:grid md:grid-cols-4 lg:grid-cols-5 select-none">
+        <div className="flex overflow-x-auto pb-6 md:pb-0 gap-6 snap-x snap-mandatory scrollbar-none md:grid md:grid-cols-4 lg:grid-cols-5">
           {editProducts.map((product, index) => {
             const inWishlist = isInWishlist(product.id);
             const isAdded = addedId === product.id;
@@ -49,7 +49,7 @@ export const AadhyaEdit: React.FC = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="flex-shrink-0 w-64 snap-start md:w-auto flex flex-col text-left group cursor-pointer select-none"
+                className="flex-shrink-0 w-64 snap-start md:w-auto flex flex-col text-left group cursor-pointer"
                 onClick={() => setSelectedProduct(product)}
               >
                 
@@ -57,7 +57,7 @@ export const AadhyaEdit: React.FC = () => {
                 <div className="w-full aspect-[4/5] bg-brand-white border border-brand-border/50 rounded-2xl p-5 relative flex items-center justify-center overflow-hidden hover:shadow-md transition-shadow">
                   
                   {/* Silhouette Visual */}
-                  <div className="w-full h-full transform group-hover:scale-103 transition-transform duration-500 pointer-events-none select-none">
+                  <div className="w-full h-full transform group-hover:scale-103 transition-transform duration-500">
                     <ProductVisual
                       type={product.visualType}
                       color={product.visualColor}
