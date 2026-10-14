@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
-import { PRODUCTS, CATEGORIES, Product, REVIEWS } from '@/data/mockData';
+import { Product } from '@/data/mockData';
+import { fetchProducts } from '@/services/productService';
 import { ProductVisual } from '../ui/ProductVisual';
 import { 
   Heart, 
@@ -30,8 +31,12 @@ export const NumismaticsHome: React.FC = () => {
   const exploreScrollRef = useRef<HTMLDivElement>(null);
   const heroCardsScrollRef = useRef<HTMLDivElement>(null);
 
-  // Numismatic Products source of truth
-  const numProducts = PRODUCTS.filter((p) => p.department === 'numismatics');
+  // Real Numismatic Products from database
+  const [numProducts, setNumProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    fetchProducts({ department: 'numismatics' }).then(setNumProducts);
+  }, []);
 
   // --------------------------------------------------
   // 1. HERO BEST SELLER SHOWCASE STATE (Matching Reference Image)
@@ -41,47 +46,63 @@ export const NumismaticsHome: React.FC = () => {
   const [addedHero, setAddedHero] = useState(false);
 
   // 4 Featured Hero Coins (Card Colors matching Reference Image)
-  const heroFeaturedCoins = [
-    {
-      product: numProducts[4] || numProducts[0], // Mughal Shah Alam II Rupee
-      cardGradient: 'from-[#F28B82] to-[#E56B6F]', // Rose / Peach-Red Card
-      categoryLabel: 'Mughal Empire',
-      discountBadge: '20% OFF'
-    },
-    {
-      product: numProducts[0] || numProducts[0], // 1954 Republic One Rupee
-      cardGradient: 'from-[#FBA858] to-[#EF8A24]', // Warm Amber / Orange Card
-      categoryLabel: 'Republic India',
-      discountBadge: '30% OFF'
-    },
-    {
-      product: numProducts[2] || numProducts[1], // British India 100 Rupee Note
-      cardGradient: 'from-[#7CD585] to-[#55B75F]', // Sage / Leaf Green Card
-      categoryLabel: 'Paper Currency',
-      discountBadge: '25% OFF'
-    },
-    {
-      product: numProducts[3] || numProducts[2], // Queen Victoria Two Annas
-      cardGradient: 'from-[#7B73F0] to-[#584FE3]', // Rich Violet / Indigo Card
-      categoryLabel: 'British India',
-      discountBadge: '20% OFF'
-    }
-  ];
+  const heroFeaturedCoins = React.useMemo(() => {
+    const defaultProduct: Product = {
+      id: 'default-hero-coin',
+      productNo: 'HC-NUM-1947',
+      name: '1947 George VI One Rupee Silver Coin',
+      price: 1850,
+      mrp: 2400,
+      discount: 23,
+      description: 'Authentic 1947 British India George VI Half Silver One Rupee coin.',
+      category: 'British India',
+      department: 'numismatics' as const,
+      image: '/coin_image.jpg',
+      era: 'BRITISH INDIA',
+      year: '1947',
+      bestseller: true
+    };
+    const p0 = numProducts[0] || defaultProduct;
+    const p1 = numProducts[4] || p0;
+    const p2 = numProducts[2] || numProducts[1] || p0;
+    const p3 = numProducts[3] || numProducts[2] || p0;
+
+    return [
+      {
+        product: p1,
+        cardGradient: 'from-[#F28B82] to-[#E56B6F]',
+        categoryLabel: 'Mughal Empire',
+        discountBadge: '20% OFF'
+      },
+      {
+        product: p0,
+        cardGradient: 'from-[#FBA858] to-[#EF8A24]',
+        categoryLabel: 'Republic India',
+        discountBadge: '30% OFF'
+      },
+      {
+        product: p2,
+        cardGradient: 'from-[#7CD585] to-[#55B75F]',
+        categoryLabel: 'Paper Currency',
+        discountBadge: '25% OFF'
+      },
+      {
+        product: p3,
+        cardGradient: 'from-[#7B73F0] to-[#584FE3]',
+        categoryLabel: 'British India',
+        discountBadge: '20% OFF'
+      }
+    ];
+  }, [numProducts]);
 
   const currentHeroItem = heroFeaturedCoins[heroActiveIndex] || heroFeaturedCoins[0];
-  const activeHeroProduct = currentHeroItem.product;
-  const isHeroInWish = isInWishlist(activeHeroProduct.id);
+  const activeHeroProduct = currentHeroItem?.product;
+  const isHeroInWish = activeHeroProduct ? isInWishlist(activeHeroProduct.id) : false;
 
-  // Auto rotation every 5.5s
-  useEffect(() => {
-    if (isPaused || heroFeaturedCoins.length === 0) return;
-    const timer = setInterval(() => {
-      setHeroActiveIndex((prev) => (prev + 1) % heroFeaturedCoins.length);
-    }, 5500);
-    return () => clearInterval(timer);
-  }, [isPaused, heroFeaturedCoins.length]);
+  // No auto-rotation (manual touch swiping and selection only)
 
   const handlePrevHero = () => {
+    if (heroFeaturedCoins.length === 0) return;
     setIsPaused(true);
     const newIdx = (heroActiveIndex - 1 + heroFeaturedCoins.length) % heroFeaturedCoins.length;
     setHeroActiveIndex(newIdx);
@@ -93,6 +114,7 @@ export const NumismaticsHome: React.FC = () => {
   };
 
   const handleNextHero = () => {
+    if (heroFeaturedCoins.length === 0) return;
     setIsPaused(true);
     const newIdx = (heroActiveIndex + 1) % heroFeaturedCoins.length;
     setHeroActiveIndex(newIdx);
@@ -104,6 +126,7 @@ export const NumismaticsHome: React.FC = () => {
   };
 
   const handleHeroAddToCart = () => {
+    if (!activeHeroProduct) return;
     addToCart(activeHeroProduct, 1);
     setAddedHero(true);
     setTimeout(() => setAddedHero(false), 1500);
@@ -120,9 +143,7 @@ export const NumismaticsHome: React.FC = () => {
   // --------------------------------------------------
   // 2. REVIEWS SLIDER CAROUSEL STATE (Glassmorphic)
   // --------------------------------------------------
-  const [numismaticReviews, setNumismaticReviews] = useState<any[]>(() => 
-    REVIEWS.filter((r) => r.productName.toLowerCase().includes('rupee') || r.productName.toLowerCase().includes('coin'))
-  );
+  const [numismaticReviews, setNumismaticReviews] = useState<any[]>([]);
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
 
   // Fetch real Coins reviews from Supabase backend
@@ -149,13 +170,7 @@ export const NumismaticsHome: React.FC = () => {
     fetchCoinReviews();
   }, []);
 
-  useEffect(() => {
-    if (numismaticReviews.length === 0) return;
-    const timer = setInterval(() => {
-      setActiveReviewIndex((prev) => (prev + 1) % numismaticReviews.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [numismaticReviews.length]);
+  // No auto-advance loop on reviews (manual control only)
 
   const renderStars = (rating = 5) => (
     <div className="flex items-center space-x-0.5 text-amber-500">
@@ -373,6 +388,13 @@ export const NumismaticsHome: React.FC = () => {
 
         <div className="max-w-7xl mx-auto w-full my-auto space-y-4 sm:space-y-6 md:space-y-7 relative z-10">
           
+          {/* Centered Red Tagline (Invest in history. Invest in future.) */}
+          <div className="w-full text-center py-1 sm:py-2">
+            <p className="font-serif italic font-bold text-red-600 text-xs sm:text-sm md:text-base tracking-[0.14em] sm:tracking-[0.18em] uppercase">
+              Invest in history. Invest in future.
+            </p>
+          </div>
+
           {/* TOP SPLIT: Left Headline, Price, Reviews & Actions + Right Large Hero Coin */}
           <div className="grid grid-cols-12 gap-2 sm:gap-4 md:gap-8 items-center">
             
@@ -388,16 +410,6 @@ export const NumismaticsHome: React.FC = () => {
                   transition={{ duration: 0.35 }}
                   className="space-y-1.5 sm:space-y-2.5 md:space-y-3"
                 >
-                  {/* BRAND & TAGLINE */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 pb-0.5">
-                    <span className="font-serif font-black tracking-[0.25em] text-[#181818] text-sm uppercase">
-                      HAPPY COLLECTABLES
-                    </span>
-                    <span className="hidden sm:inline text-xs text-[#7D736A]">•</span>
-                    <span className="text-[11px] sm:text-xs text-[#7D736A] font-semibold italic">
-                      Invest in history. Invest in future.
-                    </span>
-                  </div>
 
                   {/* BEST SELLERS SHOWCASE BADGE & TITLE */}
                   <div className="flex items-center gap-2">
@@ -516,11 +528,19 @@ export const NumismaticsHome: React.FC = () => {
                     onClick={() => router.push(`/numismatics/${activeHeroProduct.name.toLowerCase().replace(/ /g, '-')}`)}
                     className="w-[150px] sm:w-[210px] md:w-[270px] lg:w-[320px] h-[150px] sm:h-[210px] md:h-[270px] lg:h-[320px] rounded-full bg-[#FFFDFB] border-4 sm:border-6 lg:border-8 border-white p-1.5 sm:p-2.5 md:p-3 shadow-xl sm:shadow-2xl flex items-center justify-center cursor-pointer group relative overflow-hidden"
                   >
-                    {activeHeroProduct.visualType === 'note' ? (
+                    {activeHeroProduct.image ? (
+                      <img 
+                        src={activeHeroProduct.image} 
+                        alt={activeHeroProduct.name} 
+                        className="w-full h-full object-contain rounded-full shadow-md group-hover:scale-105 transition-transform duration-300"
+                        draggable={false}
+                      />
+                    ) : activeHeroProduct.visualType === 'note' ? (
                       <img 
                         src={activeHeroProduct.image} 
                         alt={activeHeroProduct.name} 
                         className="w-full h-full object-contain rounded-lg shadow-md group-hover:scale-105 transition-transform duration-300"
+                        draggable={false}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -546,27 +566,10 @@ export const NumismaticsHome: React.FC = () => {
           <div className="relative max-w-5xl mx-auto bg-white rounded-[22px] sm:rounded-[32px] md:rounded-[40px] p-3 sm:p-5 md:p-6 shadow-xl shadow-black/5 border border-[#F0EAE1]">
             
             {/* Outer Left Circular Navigation Button */}
-            <button
-              onClick={handlePrevHero}
-              className="absolute -left-2.5 sm:-left-4 md:-left-5 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-white border border-[#EAE2D5] shadow-lg flex items-center justify-center text-[#2B231D] hover:bg-[#FAF3E8] transition-all z-30"
-              aria-label="Previous Coin"
-            >
-              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-            </button>
-
-            {/* Outer Right Circular Navigation Button */}
-            <button
-              onClick={handleNextHero}
-              className="absolute -right-2.5 sm:-right-4 md:-right-5 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-white border border-[#EAE2D5] shadow-lg flex items-center justify-center text-[#2B231D] hover:bg-[#FAF3E8] transition-all z-30"
-              aria-label="Next Coin"
-            >
-              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-            </button>
-
             {/* 4 Vibrant Rounded Cards: Horizontal Touch-Swipe on Mobile, Grid on Desktop */}
             <div 
               ref={heroCardsScrollRef}
-              className="flex overflow-x-auto gap-3 sm:gap-4 md:grid md:grid-cols-4 md:gap-4 lg:gap-5 pt-8 sm:pt-10 md:pt-11 pb-1 scrollbar-none snap-x snap-mandatory touch-pan-y overscroll-x-contain w-full scroll-smooth"
+              className="flex overflow-x-auto gap-3 sm:gap-4 md:grid md:grid-cols-4 md:gap-4 lg:gap-5 pt-8 sm:pt-10 md:pt-11 pb-1 scrollbar-none snap-x snap-mandatory touch-pan-x overscroll-x-contain w-full scroll-smooth select-none"
             >
               {heroFeaturedCoins.map((item, idx) => {
                 const isSelected = heroActiveIndex === idx;
@@ -581,17 +584,19 @@ export const NumismaticsHome: React.FC = () => {
                       setHeroActiveIndex(idx);
                       setTimeout(() => setIsPaused(false), 4500);
                     }}
-                    className={`flex-shrink-0 w-[155px] sm:w-[185px] md:w-auto snap-start bg-gradient-to-b ${item.cardGradient} rounded-[20px] sm:rounded-[26px] p-2.5 sm:p-3.5 text-left flex flex-col justify-between cursor-pointer transition-all duration-300 relative ${
+                    className={`flex-shrink-0 w-[155px] sm:w-[185px] md:w-auto snap-start bg-gradient-to-b ${item.cardGradient} rounded-[20px] sm:rounded-[26px] p-2.5 sm:p-3.5 text-left flex flex-col justify-between cursor-pointer transition-all duration-300 relative select-none ${
                       isSelected 
                         ? 'ring-3 sm:ring-4 ring-[#181818]/30 shadow-2xl scale-[1.02] -translate-y-0.5' 
                         : 'shadow-md hover:scale-[1.01] opacity-90 hover:opacity-100'
                     }`}
                   >
                     {/* Floating Circular Coin on Top (ENLARGED & CLEARLY VISIBLE) */}
-                    <div className="w-full flex justify-center -mt-12 sm:-mt-14 md:-mt-16 mb-1 sm:mb-2">
+                    <div className="w-full flex justify-center -mt-12 sm:-mt-14 md:-mt-16 mb-1 sm:mb-2 pointer-events-none">
                       <div className="w-18 h-18 sm:w-22 sm:h-22 md:w-24 md:h-24 rounded-full bg-white p-1 sm:p-1.5 shadow-xl flex items-center justify-center overflow-hidden border-2 sm:border-3 border-white">
-                        {prod.visualType === 'note' ? (
-                          <img src={prod.image} alt={prod.name} className="w-full h-full object-cover rounded-full" />
+                        {prod.image ? (
+                          <img src={prod.image} alt={prod.name} draggable={false} className="w-full h-full object-cover rounded-full pointer-events-none select-none" />
+                        ) : prod.visualType === 'note' ? (
+                          <img src={prod.image} alt={prod.name} draggable={false} className="w-full h-full object-cover rounded-full pointer-events-none select-none" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <ProductVisual 
@@ -682,25 +687,10 @@ export const NumismaticsHome: React.FC = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => router.push('/numismatics/catalog')}
-                className="px-4 py-2 bg-[#181818] text-[#EFE6DA] rounded-full text-xs font-bold hover:bg-[#333333] transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer mr-1"
+                className="px-4 py-2 bg-[#181818] text-[#EFE6DA] rounded-full text-xs font-bold hover:bg-[#333333] transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5 text-[#D4AF37]" />
                 <span>Filters</span>
-              </button>
-
-              <button
-                onClick={() => scrollExplore('left')}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#D5C7B5] bg-white text-[#181818] hover:bg-[#EFE6DA] flex items-center justify-center transition-colors shadow-xs cursor-pointer"
-                aria-label="Scroll left"
-              >
-                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-              <button
-                onClick={() => scrollExplore('right')}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#D5C7B5] bg-white text-[#181818] hover:bg-[#EFE6DA] flex items-center justify-center transition-colors shadow-xs cursor-pointer"
-                aria-label="Scroll right"
-              >
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           </div>
@@ -708,7 +698,7 @@ export const NumismaticsHome: React.FC = () => {
           {/* Horizontal Scroll Carousel with Touch-Swipe */}
           <div 
             ref={exploreScrollRef}
-            className="flex overflow-x-auto pb-4 gap-3 sm:gap-6 scrollbar-none snap-x snap-mandatory touch-pan-y overscroll-x-contain w-full scroll-smooth pt-2 text-left"
+            className="flex overflow-x-auto pb-4 gap-3 sm:gap-6 scrollbar-none snap-x snap-mandatory touch-pan-x overscroll-x-contain w-full scroll-smooth pt-2 text-left select-none"
           >
             {numProducts.map((product) => {
               const inWishlist = isInWishlist(product.id);
@@ -718,7 +708,7 @@ export const NumismaticsHome: React.FC = () => {
                 <div
                   key={product.id}
                   onClick={() => router.push(`/numismatics/${slug}`)}
-                  className="flex flex-col text-left group cursor-pointer bg-white border border-[#E5DACB] rounded-2xl p-3 hover:shadow-lg transition-shadow relative flex-shrink-0 w-[170px] sm:w-[210px] md:w-[240px] snap-start"
+                  className="flex flex-col text-left group cursor-pointer bg-white border border-[#E5DACB] rounded-2xl p-3 hover:shadow-lg transition-shadow relative flex-shrink-0 w-[170px] sm:w-[210px] md:w-[240px] snap-start select-none"
                 >
                   {/* Product Visual Container */}
                   <div className="w-full aspect-[4/5] bg-[#FAF7F2] overflow-hidden relative rounded-xl p-3 flex items-center justify-center">
@@ -726,7 +716,8 @@ export const NumismaticsHome: React.FC = () => {
                       <img 
                         src={product.image} 
                         alt={product.name} 
-                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" 
+                        draggable={false}
+                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 pointer-events-none select-none" 
                         loading="lazy"
                       />
                     ) : (
@@ -857,7 +848,7 @@ export const NumismaticsHome: React.FC = () => {
           </div>
 
           {/* 4-Column Grid on Web, Horizontal Touch-Swipe on Mobile */}
-          <div className="flex overflow-x-auto pb-3 gap-3 sm:gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory touch-pan-y overscroll-x-contain w-full scroll-smooth">
+          <div className="flex overflow-x-auto pb-3 gap-3 sm:gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory touch-pan-x overscroll-x-contain w-full scroll-smooth select-none">
             {numProducts.slice(2, 6).map((product) => {
               const inWishlist = isInWishlist(product.id);
               const slug = product.name.toLowerCase().replace(/ /g, '-');
@@ -866,7 +857,7 @@ export const NumismaticsHome: React.FC = () => {
                 <div
                   key={product.id}
                   onClick={() => router.push(`/numismatics/${slug}`)}
-                  className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 sm:p-3 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start"
+                  className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 sm:p-3 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start select-none"
                 >
                   {/* Product Visual Container */}
                   <div className="w-full aspect-[4/5] bg-brand-softBeige/20 overflow-hidden relative rounded-lg p-3 flex items-center justify-center">
@@ -874,7 +865,8 @@ export const NumismaticsHome: React.FC = () => {
                       <img 
                         src={product.image} 
                         alt={product.name} 
-                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" 
+                        draggable={false}
+                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 pointer-events-none select-none" 
                         loading="lazy"
                       />
                     ) : (
@@ -983,19 +975,20 @@ export const NumismaticsHome: React.FC = () => {
 
             {/* TRACK 1: USER-CONTROLLED HORIZONTAL SCROLL / DESKTOP GRID */}
             <div className="relative w-full">
-              <div className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-0 pb-4 touch-pan-y overscroll-x-contain lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible lg:pb-0">
+              <div className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-0 pb-4 touch-pan-x overscroll-x-contain lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible lg:pb-0 select-none">
                 {categoryRow1.map((cat, idx) => (
                   <div
                     key={`row1-${cat.id}-${idx}`}
                     onClick={() => router.push(`/numismatics/catalog?category=${cat.id}`)}
-                    className="w-[200px] sm:w-[240px] md:w-[270px] lg:w-auto mx-2.5 sm:mx-4 lg:mx-0 flex-shrink-0 snap-start cursor-pointer text-center group/card transition-all duration-300"
+                    className="w-[200px] sm:w-[240px] md:w-[270px] lg:w-auto mx-2.5 sm:mx-4 lg:mx-0 flex-shrink-0 snap-start cursor-pointer text-center group/card transition-all duration-300 select-none"
                   >
                     {/* Circular Plate with Glow Background (Matching media_1788422746488.png) */}
                     <div className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full bg-gradient-to-b from-[#FFF5DC] via-[#FFEBC2] to-[#FEDE9A] p-2.5 sm:p-3 mx-auto relative shadow-lg group-hover/card:scale-105 group-hover/card:shadow-xl transition-all duration-300 flex items-center justify-center border-2 border-white/60">
                       <img
                         src={cat.img}
                         alt={cat.name}
-                        className="w-full h-full object-contain rounded-full drop-shadow-md transition-transform duration-300 group-hover/card:rotate-3"
+                        draggable={false}
+                        className="w-full h-full object-contain rounded-full drop-shadow-md transition-transform duration-300 group-hover/card:rotate-3 pointer-events-none select-none"
                       />
                       {/* Frosted Title Ribbon across middle/lower part (Solid high performance) */}
                       <div className="absolute inset-x-2.5 bottom-5 sm:bottom-7 bg-[#2B231D]/95 text-white py-1 sm:py-1.5 px-2 rounded-lg text-center shadow-lg border border-white/20">
@@ -1026,19 +1019,20 @@ export const NumismaticsHome: React.FC = () => {
 
             {/* TRACK 2: USER-CONTROLLED HORIZONTAL SCROLL / DESKTOP GRID */}
             <div className="relative w-full">
-              <div className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-0 pb-4 touch-pan-y overscroll-x-contain lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible lg:pb-0">
+              <div className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory gap-0 pb-4 touch-pan-x overscroll-x-contain lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible lg:pb-0 select-none">
                 {categoryRow2.map((cat, idx) => (
                   <div
                     key={`row2-${cat.id}-${idx}`}
                     onClick={() => router.push(`/numismatics/catalog?category=${cat.id}`)}
-                    className="w-[200px] sm:w-[240px] md:w-[270px] lg:w-auto mx-2.5 sm:mx-4 lg:mx-0 flex-shrink-0 snap-start cursor-pointer text-center group/card transition-all duration-300"
+                    className="w-[200px] sm:w-[240px] md:w-[270px] lg:w-auto mx-2.5 sm:mx-4 lg:mx-0 flex-shrink-0 snap-start cursor-pointer text-center group/card transition-all duration-300 select-none"
                   >
                     {/* Circular Plate with Glow Background (Matching media_1788422746488.png) */}
                     <div className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full bg-gradient-to-b from-[#FFF5DC] via-[#FFEBC2] to-[#FEDE9A] p-2.5 sm:p-3 mx-auto relative shadow-lg group-hover/card:scale-105 group-hover/card:shadow-xl transition-all duration-300 flex items-center justify-center border-2 border-white/60">
                       <img
                         src={cat.img}
                         alt={cat.name}
-                        className="w-full h-full object-contain rounded-full drop-shadow-md transition-transform duration-300 group-hover/card:rotate-3"
+                        draggable={false}
+                        className="w-full h-full object-contain rounded-full drop-shadow-md transition-transform duration-300 group-hover/card:rotate-3 pointer-events-none select-none"
                       />
                       {/* Frosted Title Ribbon across middle/lower part (Solid high performance) */}
                       <div className="absolute inset-x-2.5 bottom-5 sm:bottom-7 bg-[#2B231D]/95 text-white py-1 sm:py-1.5 px-2 rounded-lg text-center shadow-lg border border-white/20">

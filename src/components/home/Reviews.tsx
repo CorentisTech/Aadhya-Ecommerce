@@ -1,14 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { REVIEWS } from '../../data/mockData';
 import { Star, Quote, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Reviews: React.FC = () => {
-  const [reviewsList, setReviewsList] = useState<any[]>(() => 
-    REVIEWS.filter(r => !r.productName.toLowerCase().includes('rupee') && !r.productName.toLowerCase().includes('coin'))
-  );
+  const [reviewsList, setReviewsList] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -45,14 +42,7 @@ export const Reviews: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Auto-play loop running at exactly 3 seconds (3000ms)
-  useEffect(() => {
-    if (reviewsList.length === 0) return;
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % reviewsList.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [reviewsList.length]);
+  // No auto-play loop (manual swiping and navigation only)
 
   const handleNext = () => {
     if (reviewsList.length === 0) return;

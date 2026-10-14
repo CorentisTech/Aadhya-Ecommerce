@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowUpRight, Sparkles, Heart } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { PRODUCTS } from '../../data/mockData';
 import { motion } from 'framer-motion';
 
 interface HeroCardItem {
@@ -225,7 +224,7 @@ export const Hero: React.FC = () => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const prod = PRODUCTS.find((p) => p.id === card.id) || {
+                    const prod = {
                       id: card.id,
                       name: card.name,
                       productNo: card.productNo,

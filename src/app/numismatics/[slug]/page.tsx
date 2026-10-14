@@ -4,6 +4,7 @@ import React, { use, useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { PRODUCTS, Product } from '@/data/mockData';
+import { fetchProducts } from '@/services/productService';
 import { ProductVisual } from '@/components/ui/ProductVisual';
 import { 
   Heart, 
@@ -46,52 +47,62 @@ export default function NumismaticDetailPage({ params }: PageProps) {
     p.name.toLowerCase() === decodedSlug.toLowerCase()
   );
 
-  const [dbProduct, setDbProduct] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(!staticProduct);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [relatedProductsList, setRelatedProductsList] = useState<Product[]>([]);
 
   useEffect(() => {
-    if (!staticProduct) {
-      setIsLoading(true);
-      fetch(`/api/products/${slug}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.id) {
-            const mapped: Product = {
-              id: data.id,
-              name: data.name,
-              productNo: data.product_no,
-              department: (data.department || 'numismatics') as 'numismatics',
-              price: Number(data.base_price),
-              mrp: Number(data.base_mrp),
-              discount: data.base_discount || 0,
-              description: data.description || '',
-              category: data.category_name || 'Numismatics',
-              image: data.media?.[0]?.media_url || 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?q=80&w=800&auto=format&fit=crop',
-              images: data.media?.map((m: any) => m.media_url) || [],
-              rating: Number(data.avg_rating) || 4.9,
-              reviewsCount: data.reviews_count || 8,
-              isBestseller: data.is_bestseller,
-              returnPolicy: data.return_policy || 'Authenticity Guaranteed • 7 Days Returnable',
-              rarity: data.details?.rarity || 'Scarce',
-              era: data.details?.era || 'Historic',
-              year: data.details?.year || 'Circa 1900',
-              denomination: data.details?.denomination || 'Standard',
-              material: data.details?.material || 'Silver',
-              weight: data.details?.weight || '11.66g',
-              condition: data.details?.condition || 'UNC',
-              mint: data.details?.mint || 'Calcutta Mint',
-              shippingCharges: data.details?.shipping_charges || 'Free Insured Courier',
-              collectionLabel: data.details?.collection_label || 'Numismatic Archive'
-            };
-            setDbProduct(mapped);
-          }
-        })
-        .catch(err => console.error('Failed to fetch numismatics item from DB:', err))
-        .finally(() => setIsLoading(false));
-    }
-  }, [slug, staticProduct]);
+    fetchProducts({ department: 'numismatics', limit: 8 })
+      .then(prods => {
+        if (prods && prods.length > 0) setRelatedProductsList(prods);
+      })
+      .catch(() => {});
+  }, []);
 
-  const product = staticProduct || dbProduct;
+  useEffect(() => {
+    setIsLoading(true);
+    fetch(`/api/products/${encodeURIComponent(slug)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.id) {
+          const mapped: Product = {
+            id: data.id,
+            name: data.name,
+            productNo: data.product_no,
+            department: (data.department || 'numismatics') as 'numismatics',
+            price: Number(data.base_price),
+            mrp: Number(data.base_mrp),
+            discount: data.base_discount || 0,
+            description: data.description || '',
+            category: data.category_name || data.categories?.name || 'Numismatics',
+            image: data.media?.[0]?.media_url || (data.product_media?.[0]?.media_url) || '/coin_image.jpg',
+            images: data.media?.map((m: any) => m.media_url) || data.product_media?.map((m: any) => m.media_url) || [],
+            rating: Number(data.avg_rating) || 4.9,
+            reviewsCount: data.reviews_count || 8,
+            isBestseller: data.is_bestseller,
+            returnPolicy: data.return_policy || 'Authenticity Guaranteed • 7 Days Returnable',
+            rarity: data.details?.rarity || 'Scarce',
+            era: data.details?.era || 'Historic',
+            year: data.details?.year || 'Circa 1900',
+            denomination: data.details?.denomination || 'Standard',
+            material: data.details?.material || 'Silver',
+            weight: data.details?.weight || '11.66g',
+            condition: data.details?.condition || 'UNC',
+            mint: data.details?.mint || 'Calcutta Mint',
+            shippingCharges: data.details?.shipping_charges || 'Free Insured Courier',
+            collectionLabel: data.details?.collection_label || 'Numismatic Archive'
+          };
+          setProduct(mapped);
+        } else if (staticProduct) {
+          setProduct(staticProduct);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch numismatics item from DB:', err);
+        if (staticProduct) setProduct(staticProduct);
+      })
+      .finally(() => setIsLoading(false));
+  }, [slug]);
 
   const handleBackNavigation = () => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -243,8 +254,9 @@ export default function NumismaticDetailPage({ params }: PageProps) {
   };
 
   // Related numismatic collectibles (Numismatics ONLY)
-  const relatedProducts = PRODUCTS.filter(
-    (p) => p.department === 'numismatics' && p.id !== product.id
+  const relatedSource = relatedProductsList.length > 0 ? relatedProductsList : PRODUCTS;
+  const relatedProducts = relatedSource.filter(
+    (p) => p.department === 'numismatics' && p.id !== product?.id
   ).slice(0, 4);
 
   return (
@@ -709,8 +721,13 @@ export default function NumismaticDetailPage({ params }: PageProps) {
                 className="bg-brand-white border border-brand-border/50 rounded-2xl p-3 text-left space-y-3 cursor-pointer group hover:shadow-md transition-shadow flex flex-col justify-between"
               >
                 <div className="w-full aspect-[4/5] bg-[#FAF7F2] rounded-xl p-4 flex items-center justify-center relative overflow-hidden border border-brand-border/30">
-                  {rel.visualType === 'note' ? (
-                    <img src={rel.image} alt={rel.name} className="w-full h-auto object-contain rounded" />
+                  {rel.image || (rel.images && rel.images[0]) ? (
+                    <img 
+                      src={rel.image || (rel.images && rel.images[0])} 
+                      alt={rel.name} 
+                      className="w-full h-full object-contain rounded" 
+                      draggable={false} 
+                    />
                   ) : (
                     <ProductVisual type="coin" color={rel.visualColor || '#B89A67'} pattern={rel.visualPattern || 'antique-metallic'} />
                   )}

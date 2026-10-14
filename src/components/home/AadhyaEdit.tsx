@@ -1,17 +1,21 @@
 "use client";
 
-import React from 'react';
-import { PRODUCTS } from '../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { Product } from '../../data/mockData';
+import { fetchProducts } from '../../services/productService';
 import { ProductVisual } from '../ui/ProductVisual';
 import { useApp } from '../../context/AppContext';
-import { Heart, ShoppingBag } from 'lucide-react';
+import { Heart, ShoppingBag, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const AadhyaEdit: React.FC = () => {
   const { toggleWishlist, isInWishlist, setSelectedProduct, addToCart } = useApp();
+  const [editProducts, setEditProducts] = useState<Product[]>([]);
+  const [addedId, setAddedId] = useState<string | null>(null);
 
-  // Curate 4 specific items for the everyday showcase edit
-  const editProducts = PRODUCTS.filter((p) => p.department === 'fashion').slice(0, 5);
+  useEffect(() => {
+    fetchProducts({ department: 'fashion', limit: 5 }).then(setEditProducts);
+  }, []);
 
   return (
     <section className="w-full py-20 px-6 md:px-12 lg:px-24 bg-brand-warmWhite border-t border-brand-border/40 overflow-hidden">
@@ -33,9 +37,11 @@ export const AadhyaEdit: React.FC = () => {
         </div>
 
         {/* Horizontal scroll container for mobile, standard grid for desktop */}
-        <div className="flex overflow-x-auto pb-6 md:pb-0 gap-6 snap-x snap-mandatory scrollbar-none md:grid md:grid-cols-4 lg:grid-cols-5">
+        <div className="flex overflow-x-auto pb-6 md:pb-0 gap-6 snap-x snap-mandatory touch-pan-x overscroll-x-contain scrollbar-none md:grid md:grid-cols-4 lg:grid-cols-5 select-none">
           {editProducts.map((product, index) => {
             const inWishlist = isInWishlist(product.id);
+            const isAdded = addedId === product.id;
+
             return (
               <motion.div
                 key={product.id}
@@ -43,7 +49,7 @@ export const AadhyaEdit: React.FC = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="flex-shrink-0 w-64 snap-start md:w-auto flex flex-col text-left group cursor-pointer"
+                className="flex-shrink-0 w-64 snap-start md:w-auto flex flex-col text-left group cursor-pointer select-none"
                 onClick={() => setSelectedProduct(product)}
               >
                 
@@ -51,7 +57,7 @@ export const AadhyaEdit: React.FC = () => {
                 <div className="w-full aspect-[4/5] bg-brand-white border border-brand-border/50 rounded-2xl p-5 relative flex items-center justify-center overflow-hidden hover:shadow-md transition-shadow">
                   
                   {/* Silhouette Visual */}
-                  <div className="w-full h-full transform group-hover:scale-103 transition-transform duration-500">
+                  <div className="w-full h-full transform group-hover:scale-103 transition-transform duration-500 pointer-events-none select-none">
                     <ProductVisual
                       type={product.visualType}
                       color={product.visualColor}
@@ -60,7 +66,7 @@ export const AadhyaEdit: React.FC = () => {
                   </div>
 
                   {/* Top Badges */}
-                  <div className="absolute top-3 left-3">
+                  <div className="absolute top-3 left-3 pointer-events-none">
                     <span className="text-[7px] border border-brand-border bg-brand-warmWhite font-extrabold tracking-widest px-2 py-0.5 rounded">
                       EDIT CHOICE
                     </span>
@@ -82,17 +88,21 @@ export const AadhyaEdit: React.FC = () => {
                     <Heart className={`w-3 h-3 ${inWishlist ? 'fill-brand-dustyRose' : ''}`} />
                   </button>
 
-                  {/* Quick Add to bag */}
-                  <div className="absolute bottom-3 right-3 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                  {/* Quick Add to bag (Accessible on both mobile and desktop) */}
+                  <div className="absolute bottom-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        addToCart(product, 1, 'Free Size');
+                        addToCart(product, 1, product.sizes?.[0] || 'Free Size');
+                        setAddedId(product.id);
+                        setTimeout(() => setAddedId(null), 1500);
                       }}
-                      className="p-2.5 bg-brand-espresso text-brand-white rounded-full hover:bg-brand-espresso/90 shadow-md transition-colors"
+                      className={`p-2.5 rounded-full shadow-md transition-colors ${
+                        isAdded ? 'bg-emerald-600 text-white' : 'bg-brand-espresso text-brand-white hover:bg-brand-espresso/90'
+                      }`}
                       aria-label="Quick Add to Bag"
                     >
-                      <ShoppingBag className="w-3.5 h-3.5" />
+                      {isAdded ? <Check className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
                     </button>
                   </div>
 

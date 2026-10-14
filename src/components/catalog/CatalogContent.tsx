@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { PRODUCTS, Product } from '@/data/mockData';
+import { Product } from '@/data/mockData';
+import { fetchProducts } from '@/services/productService';
 import { useApp } from '@/context/AppContext';
-import { Heart, Star, SlidersHorizontal, X, Search, ChevronDown } from 'lucide-react';
+import { Heart, Star, SlidersHorizontal, X, Search, ChevronDown, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavigationControls } from '@/components/ui/NavigationControls';
 import { ProductVisual } from '@/components/ui/ProductVisual';
@@ -91,6 +92,18 @@ export default function CatalogContent({ defaultDepartment = 'fashion' }: Catalo
     priceRange: []
   });
 
+  const [departmentProducts, setDepartmentProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchProducts({ department, limit: 100 })
+      .then((data) => {
+        setDepartmentProducts(data);
+      })
+      .finally(() => setLoading(false));
+  }, [department]);
+
   // Guard against accidental cross-department routing if department=numismatics query hits /catalog
   useEffect(() => {
     if (defaultDepartment === 'fashion' && searchParams.get('department') === 'numismatics') {
@@ -143,7 +156,7 @@ export default function CatalogContent({ defaultDepartment = 'fashion' }: Catalo
   };
 
   // Filter products strictly by department, search, category, and drawer filters
-  const filteredProducts = PRODUCTS.filter(product => {
+  const filteredProducts = departmentProducts.filter(product => {
     // 1. Department match: strictly isolated
     if (product.department !== department) return false;
 
@@ -539,6 +552,17 @@ export default function CatalogContent({ defaultDepartment = 'fashion' }: Catalo
                         </span>
                       )}
                     </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product, 1, product.sizes?.[0] || 'M');
+                      }}
+                      className="w-full mt-2.5 py-1.5 px-3 bg-[#181818] hover:bg-[#333333] text-white rounded-lg text-[10px] sm:text-xs font-bold tracking-wider uppercase transition-colors flex items-center justify-center space-x-1 shadow-2xs cursor-pointer"
+                    >
+                      <ShoppingBag className="w-3 h-3" />
+                      <span>ADD TO CART</span>
+                    </button>
                   </div>
                 </div>
               );

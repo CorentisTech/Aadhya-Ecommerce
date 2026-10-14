@@ -1,15 +1,31 @@
 "use client";
 
-import React from 'react';
-import { CATEGORIES } from '../../data/mockData';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+
+interface CategoryItem {
+  id: string;
+  name: string;
+  slug?: string;
+  image_url?: string;
+  image?: string;
+  department?: string;
+}
 
 export const Categories: React.FC = () => {
   const router = useRouter();
-  
-  // Display strictly the 7 fashion categories
-  const fashionCategories = CATEGORIES.filter((c) => c.department === 'fashion');
+  const [fashionCategories, setFashionCategories] = useState<CategoryItem[]>([]);
+
+  useEffect(() => {
+    fetch('/api/categories?department=fashion')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setFashionCategories(data);
+        }
+      })
+      .catch((err) => console.error('Error fetching fashion categories:', err));
+  }, []);
 
   return (
     <section id="categories" className="w-full max-w-full py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-10 lg:px-12 bg-[#FFFFFF] border-b border-[#EAE3D6] overflow-hidden select-none">
@@ -28,20 +44,21 @@ export const Categories: React.FC = () => {
 
         {/* 7 Arched Editorial Category Cards (Reference 3 Layout) */}
         <div className="w-full">
-          {/* Desktop: Dynamic 7-Column Grid; Mobile/Tablet: Smooth Snap Horizontal Scroll */}
-          <div className="flex lg:grid lg:grid-cols-7 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 gap-4 sm:gap-5 lg:gap-5 xl:gap-6 scrollbar-none snap-x snap-mandatory items-start justify-start lg:justify-between">
+          {/* Desktop: Dynamic Grid; Mobile/Tablet: Smooth Snap Horizontal Scroll */}
+          <div className="flex lg:grid lg:grid-cols-7 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 gap-4 sm:gap-5 lg:gap-5 xl:gap-6 scrollbar-none snap-x snap-mandatory touch-pan-x overscroll-x-contain items-start justify-start lg:justify-between select-none">
             {fashionCategories.map((category) => (
               <div
                 key={category.id}
-                onClick={() => router.push(`/catalog?category=${category.id}`)}
-                className="group flex flex-col text-center cursor-pointer space-y-3.5 focus:outline-none flex-shrink-0 w-[160px] sm:w-[190px] md:w-[210px] lg:w-full snap-start transition-all duration-300"
+                onClick={() => router.push(`/catalog?category=${category.slug || category.id}`)}
+                className="group flex flex-col text-center cursor-pointer space-y-3.5 focus:outline-none flex-shrink-0 w-[160px] sm:w-[190px] md:w-[210px] lg:w-full snap-start transition-all duration-300 select-none"
               >
                 {/* Arched Dome Top Image Frame (Reference 3 Exact Shape) */}
                 <div className="w-full aspect-[3/4.8] rounded-t-full overflow-hidden bg-[#FAF7F2] border border-[#EAE3D6] relative shadow-sm group-hover:shadow-xl transition-all duration-500 transform group-hover:-translate-y-1">
                   <img
-                    src={category.image}
+                    src={category.image_url || category.image}
                     alt={category.name}
-                    className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-106"
+                    draggable={false}
+                    className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-106 pointer-events-none select-none"
                     loading="lazy"
                   />
                   {/* Subtle luxury sheen hover overlay */}

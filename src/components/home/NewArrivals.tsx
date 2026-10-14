@@ -1,36 +1,33 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { PRODUCTS, Product } from '../../data/mockData';
+import { Product } from '../../data/mockData';
+import { fetchProducts } from '../../services/productService';
 import { useApp } from '../../context/AppContext';
-import { Heart, ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
+import { Heart, ArrowRight, Sparkles, ShoppingBag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
 export const NewArrivals: React.FC = () => {
-  const { toggleWishlist, isInWishlist } = useApp();
+  const { toggleWishlist, isInWishlist, addToCart } = useApp();
   const router = useRouter();
 
-  // Curated 7 New Arrivals fashion products
-  const NEW_ARRIVAL_IDS = [
-    'f-new-1',     // Emerald Georgette Maxi Gown
-    'f-new-2',     // Handloom Banarasi Silk Saree
-    'f-new-3',     // Crimson Velvet Embroidered Kaftan
-    'f-prod-cat-2',// Fine Cotton Blazer Dress
-    'f-prod-cat-3',// Chanderi Silk Anarkali Suit
-    'f-prod-cat-1',// Striped Shirt Dress
-    'f-prod-4'     // Oversized Cotton Tee
-  ];
-
-  const newProducts = NEW_ARRIVAL_IDS
-    .map((id) => PRODUCTS.find((p) => p.id === id))
-    .filter(Boolean) as Product[];
-
-  const [activeIndex, setActiveIndex] = useState(1);
-  const [isHovered, setIsHovered] = useState(false);
+  const [newProducts, setNewProducts] = useState<Product[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [addedId, setAddedId] = useState<string | null>(null);
 
-  // Track screen size for mobile gestures vs web autoplay
+  useEffect(() => {
+    fetchProducts({ department: 'fashion', limit: 8 })
+      .then((data) => {
+        setNewProducts(data);
+        if (data.length > 1) {
+          setActiveIndex(Math.floor(data.length / 2));
+        }
+      });
+  }, []);
+
+  // Track screen size for mobile gestures
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -40,25 +37,7 @@ export const NewArrivals: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Web step-by-step loop (every 2.8 seconds, pauses on hover)
-  useEffect(() => {
-    if (isMobile || isHovered || newProducts.length === 0) return;
-
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % newProducts.length);
-    }, 2800);
-
-    return () => clearInterval(interval);
-  }, [isMobile, isHovered, newProducts.length]);
-
-  // Desktop step handlers (infinite stuck loop)
-  const handlePrevWeb = () => {
-    setActiveIndex((prev) => (prev - 1 + newProducts.length) % newProducts.length);
-  };
-
-  const handleNextWeb = () => {
-    setActiveIndex((prev) => (prev + 1) % newProducts.length);
-  };
+  // No auto-rotation (manual swiping and dot selection only)
 
   // Mobile hand swipe gesture (strictly NOT looping, stops at edges)
   const touchStartX = useRef<number | null>(null);
@@ -178,8 +157,6 @@ export const NewArrivals: React.FC = () => {
     <section 
       id="new-arrivals" 
       className="w-full max-w-full py-12 md:py-20 px-4 md:px-12 lg:px-24 bg-[#0D0B0A] text-white border-b border-white/10 overflow-hidden select-none relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Ambient background glow (optimized with blur-3xl) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-r from-amber-600/15 via-[#C89B5C]/15 to-transparent blur-3xl opacity-30 pointer-events-none" />
@@ -247,7 +224,8 @@ export const NewArrivals: React.FC = () => {
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  draggable={false}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 pointer-events-none select-none"
                   loading="lazy"
                 />
 
@@ -284,7 +262,7 @@ export const NewArrivals: React.FC = () => {
                 </button>
 
                 {/* Bottom Overlay Details */}
-                <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 text-center flex flex-col items-center justify-end space-y-1.5">
+                <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 text-center flex flex-col items-center justify-end space-y-1.5 z-20">
                   <span className="text-[8px] sm:text-[9px] font-extrabold text-[#C89B5C] tracking-[0.2em] uppercase">
                     {product.occasion || 'SUMMER RUNWAY'}
                   </span>
@@ -304,24 +282,34 @@ export const NewArrivals: React.FC = () => {
                       {product.discount}% OFF
                     </span>
                   </div>
+
+                  {/* Functional Add to Cart button */}
+                  <div className="pt-2 w-full max-w-[190px]">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product, 1, product.sizes?.[0] || 'M');
+                        setAddedId(product.id);
+                        setTimeout(() => setAddedId(null), 1500);
+                      }}
+                      className={`w-full py-1.5 px-3 rounded-full text-[10px] sm:text-xs font-bold tracking-wider uppercase transition-all duration-200 flex items-center justify-center space-x-1.5 shadow-md ${
+                        addedId === product.id
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-white hover:bg-white/90 text-black'
+                      }`}
+                    >
+                      <ShoppingBag className="w-3 h-3" />
+                      <span>{addedId === product.id ? 'ADDED' : 'ADD TO CART'}</span>
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             );
           })}
         </div>
 
-        {/* CONTROLS */}
-        <div className="flex items-center justify-between pt-2 max-w-xs sm:max-w-md mx-auto">
-          {/* Left Arrow Button */}
-          <button
-            onClick={handlePrevWeb}
-            className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black flex items-center justify-center transition-all shadow-md cursor-pointer backdrop-blur-xs"
-            aria-label="Previous card"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-
-          {/* Dots Indicator */}
+        {/* CONTROLS (Dots only, no arrow buttons) */}
+        <div className="flex items-center justify-center pt-2 max-w-xs mx-auto">
           <div className="flex items-center gap-1.5">
             {newProducts.map((_, i) => (
               <button
@@ -334,15 +322,6 @@ export const NewArrivals: React.FC = () => {
               />
             ))}
           </div>
-
-          {/* Right Arrow Button (Web screen) */}
-          <button
-            onClick={handleNextWeb}
-            className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white text-white hover:text-black flex items-center justify-center transition-all shadow-md cursor-pointer backdrop-blur-xs"
-            aria-label="Next card"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
         </div>
 
         {/* View All Button */}

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 export const Footer: React.FC = () => {
   const pathname = usePathname();
@@ -54,7 +55,7 @@ export const Footer: React.FC = () => {
             <p className="text-xs md:text-sm text-white/70 leading-relaxed font-light max-w-sm">
               {isCoins
                 ? 'Invest in history. Invest in future. Authenticated rare coins, ancient dynastic coinage, and archival paper currency.'
-                : 'Inspiring modern luxury through bespoke Indian ethnic silhouettes, refined Western couture, and authenticated historical numismatics.'}
+                : 'Inspiring modern luxury through bespoke Indian ethnic silhouettes and refined Western couture.'}
             </p>
           </div>
 
@@ -87,43 +88,69 @@ export const Footer: React.FC = () => {
             POLICIES & CARE
           </h4>
           <ul className="space-y-2.5 text-xs text-white/60 font-light tracking-wide">
-            <li><a href={`/privacy-policy${siteQuery}`} className="hover:text-white transition-colors duration-300">Privacy Policy</a></li>
-            <li><a href={`/terms-and-conditions${siteQuery}`} className="hover:text-white transition-colors duration-300">Terms & Conditions</a></li>
-            <li><a href={`/track-order${siteQuery}`} className="hover:text-white transition-colors duration-300">Track Order</a></li>
-            <li><a href={`/cancellation-and-refund${siteQuery}`} className="hover:text-white transition-colors duration-300">Cancellation & Refund</a></li>
-            <li><a href={`/shipping-policy${siteQuery}`} className="hover:text-white transition-colors duration-300">Shipping Policy</a></li>
+            <li><Link href={`/privacy-policy${siteQuery}`} className="hover:text-white transition-colors duration-300">Privacy Policy</Link></li>
+            <li><Link href={`/terms-and-conditions${siteQuery}`} className="hover:text-white transition-colors duration-300">Terms & Conditions</Link></li>
+            <li><Link href={`/track-order${siteQuery}`} className="hover:text-white transition-colors duration-300">Track Order</Link></li>
+            <li><Link href={`/cancellation-and-refund${siteQuery}`} className="hover:text-white transition-colors duration-300">Cancellation & Refund</Link></li>
+            <li><Link href={`/shipping-policy${siteQuery}`} className="hover:text-white transition-colors duration-300">Shipping Policy</Link></li>
           </ul>
         </div>
 
-        {/* Column 3: Categories Links */}
+        {/* Column 3: Site-Specific Categories */}
         <div className="space-y-4">
           <h4 className="text-[10px] md:text-[11px] font-bold tracking-[0.2em] text-[#F26A2E] uppercase">
-            CATEGORIES
+            {isCoins ? 'COINS & NOTES' : 'CATEGORIES'}
           </h4>
           <ul className="space-y-2.5 text-xs text-white/60 font-light tracking-wide">
-            <li><button onClick={() => handleNavClick('categories')} className="hover:text-white transition-colors duration-300 text-left">Western Couture</button></li>
-            <li><button onClick={() => handleNavClick('categories')} className="hover:text-white transition-colors duration-300 text-left">Indian Ethnic</button></li>
-            <li><button onClick={() => handleNavClick('categories')} className="hover:text-white transition-colors duration-300 text-left">Festive Ensembles</button></li>
-            <li><button onClick={() => handleNavClick('categories')} className="hover:text-white transition-colors duration-300 text-left">Handcrafted Blouses</button></li>
+            {isCoins ? (
+              <>
+                <li><Link href="/numismatics/catalog?category=Ancient+Coins" className="hover:text-white transition-colors duration-300">Ancient Coins</Link></li>
+                <li><Link href="/numismatics/catalog?category=British+India" className="hover:text-white transition-colors duration-300">British India</Link></li>
+                <li><Link href="/numismatics/catalog?category=Republic+India" className="hover:text-white transition-colors duration-300">Republic India</Link></li>
+                <li><Link href="/numismatics/catalog?category=Mughal+Coins" className="hover:text-white transition-colors duration-300">Mughal Coins</Link></li>
+                <li><Link href="/numismatics/catalog?category=Paper+Money" className="hover:text-white transition-colors duration-300">Paper Money</Link></li>
+                <li><Link href="/numismatics/catalog?category=Medals" className="hover:text-white transition-colors duration-300">Medals & Tokens</Link></li>
+              </>
+            ) : (
+              <>
+                <li><Link href="/catalog?category=Palazzo" className="hover:text-white transition-colors duration-300">Palazzo</Link></li>
+                <li><Link href="/catalog?category=Pants" className="hover:text-white transition-colors duration-300">Pants & Trousers</Link></li>
+                <li><Link href="/catalog?category=Salwar" className="hover:text-white transition-colors duration-300">Salwar</Link></li>
+                <li><Link href="/catalog?category=Blouse" className="hover:text-white transition-colors duration-300">Handcrafted Blouses</Link></li>
+                <li><Link href="/catalog?category=Kurti+%26+Pants" className="hover:text-white transition-colors duration-300">Kurti & Pants</Link></li>
+                <li><Link href="/catalog?category=Saree+Shaper" className="hover:text-white transition-colors duration-300">Saree Shaper</Link></li>
+              </>
+            )}
           </ul>
         </div>
 
-        {/* Column 4: Numismatics Links */}
+        {/* Column 4: Curated Atelier vs Heritage Vault */}
         <div className="space-y-4">
           <h4 className="text-[10px] md:text-[11px] font-bold tracking-[0.2em] text-[#F26A2E] uppercase">
-            THE HERITAGE VAULT
+            {isCoins ? 'THE HERITAGE VAULT' : 'CURATED ATELIER'}
           </h4>
           <ul className="space-y-2.5 text-xs text-white/60 font-light tracking-wide">
-            <li><button onClick={() => setPage('numismatics')} className="hover:text-white transition-colors duration-300 text-left">Antique British India Coins</button></li>
-            <li><button onClick={() => setPage('numismatics')} className="hover:text-white transition-colors duration-300 text-left">Historical Banknotes</button></li>
-            <li><a href="#" className="hover:text-white transition-colors duration-300">COA Authenticity Guarantee</a></li>
-            <li><a href="#" className="hover:text-white transition-colors duration-300">Insured Courier Dispatch</a></li>
+            {isCoins ? (
+              <>
+                <li><Link href="/numismatics#explore" className="hover:text-white transition-colors duration-300">Rare Vault Highlights</Link></li>
+                <li><Link href="/numismatics/catalog" className="hover:text-white transition-colors duration-300">Certified Catalog</Link></li>
+                <li><Link href="/shipping-policy?site=coins" className="hover:text-white transition-colors duration-300">Insured Courier Dispatch</Link></li>
+                <li><Link href="/terms-and-conditions?site=coins" className="hover:text-white transition-colors duration-300">COA Authenticity Guarantee</Link></li>
+              </>
+            ) : (
+              <>
+                <li><Link href="/catalog?filter=bestseller" className="hover:text-white transition-colors duration-300">Best Sellers</Link></li>
+                <li><Link href="/catalog?filter=new" className="hover:text-white transition-colors duration-300">Runway Arrivals</Link></li>
+                <li><Link href="/catalog" className="hover:text-white transition-colors duration-300">The Aadhya Edit</Link></li>
+                <li><Link href="/size-guide?site=fashion" className="hover:text-white transition-colors duration-300">Size & Fit Guide</Link></li>
+              </>
+            )}
           </ul>
         </div>
 
       </div>
 
-      {/* Middle Card Section: Aadhya Assurance Box Card */}
+      {/* Middle Card Section: Assurance Box Card */}
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -136,15 +163,15 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-brand-border/40 pb-6 mb-8 text-left">
           <div className="flex items-center space-x-2">
             <h3 className="font-display italic text-2xl md:text-3xl text-brand-espresso tracking-tight select-none lowercase" style={{ fontFamily: "'Pacifico', cursive" }}>
-              aadhya™ assurance
+              {isCoins ? 'collector assurance™' : 'aadhya™ assurance'}
             </h3>
           </div>
-          <button 
-            onClick={() => setPage('home')}
-            className="px-6 py-2.5 bg-[#F26A2E] text-white text-[10px] md:text-xs font-bold tracking-widest uppercase rounded-full hover:bg-[#F26A2E]/90 transition-colors shadow-sm"
+          <Link 
+            href={isCoins ? '/numismatics/catalog' : '/catalog'}
+            className="px-6 py-2.5 bg-[#F26A2E] text-white text-[10px] md:text-xs font-bold tracking-widest uppercase rounded-full hover:bg-[#F26A2E]/90 transition-colors shadow-sm inline-block"
           >
             CONTINUE SHOPPING
-          </button>
+          </Link>
         </div>
 
         {/* Assurance Grid (4 Column cards) */}
@@ -218,7 +245,7 @@ export const Footer: React.FC = () => {
             © 2026 {isCoins ? 'Happy Collectables' : 'Aadhya Studios Ltd'}. All rights reserved.
           </div>
           <div>
-            {isCoins ? 'Invest in history. Invest in future.' : 'Unified Indian Couture & Numismatic Platform'}
+            {isCoins ? 'Invest in history. Invest in future.' : 'Bespoke Indian Couture & Modern Silhouettes'}
           </div>
         </div>
       </div>

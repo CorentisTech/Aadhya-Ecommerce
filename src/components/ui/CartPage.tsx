@@ -6,7 +6,8 @@ import { ProductVisual } from './ProductVisual';
 import { Heart, Trash2, ArrowLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { PRODUCTS } from '../../data/mockData';
+import { Product } from '../../data/mockData';
+import { fetchProducts } from '@/services/productService';
 
 import { NavigationControls } from './NavigationControls';
 
@@ -19,6 +20,7 @@ export const CartPage: React.FC = () => {
   const [availableOffers, setAvailableOffers] = useState<any[]>([]);
   const [isApplying, setIsApplying] = useState(false);
   const [promoError, setPromoError] = useState<string | null>(null);
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     fetch('/api/offers?department=fashion')
@@ -26,6 +28,14 @@ export const CartPage: React.FC = () => {
       .then(data => {
         if (data.success && data.offers) {
           setAvailableOffers(data.offers);
+        }
+      })
+      .catch(() => {});
+
+    fetchProducts({ limit: 12 })
+      .then(prods => {
+        if (prods && prods.length > 0) {
+          setRecommendedProducts(prods);
         }
       })
       .catch(() => {});
@@ -65,9 +75,9 @@ export const CartPage: React.FC = () => {
   };
 
   // Filter cross-sell recommendations (See also section)
-  // Get 4 items from database that are not in the current cart
+  // Get items from database that are not in the current cart
   const cartIds = cart.map(item => item.product.id);
-  const crossSellProducts = PRODUCTS.filter(p => !cartIds.includes(p.id)).slice(0, 4);
+  const crossSellProducts = recommendedProducts.filter(p => !cartIds.includes(p.id)).slice(0, 4);
 
   return (
     <div className="w-full max-w-full min-h-screen bg-[#FCFAF7] py-10 px-4 md:px-12 lg:px-24 text-brand-espresso text-left">
@@ -125,9 +135,10 @@ export const CartPage: React.FC = () => {
                         className="w-16 h-20 sm:w-20 sm:h-24 bg-brand-softBeige/15 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-brand-border/20 cursor-pointer hover:opacity-90 transition-opacity"
                       >
                         <img 
-                          src={item.product.image} 
+                          src={item.product.image || (item.product.images && item.product.images[0]) || ''} 
                           alt={item.product.name} 
                           className="w-full h-full object-cover" 
+                          draggable={false}
                         />
                       </div>
 
@@ -351,26 +362,12 @@ export const CartPage: React.FC = () => {
         {crossSellProducts.length > 0 && (
           <div className="space-y-6 pt-10 border-t border-brand-border/30 text-left">
             
-            {/* Header with Slider Buttons */}
+            {/* Header */}
             <div className="flex items-center justify-between">
               <h2 className="font-display font-bold text-2xl text-brand-espresso tracking-tight">
                 See also
               </h2>
-              
-              <div className="flex items-center space-x-2">
-                <button 
-                  onClick={() => alert("Slide left")}
-                  className="p-1.5 border border-brand-border/60 hover:bg-brand-softBeige/30 rounded-full transition-colors"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5 text-brand-warmGray" />
-                </button>
-                <button 
-                  onClick={() => alert("Slide right")}
-                  className="p-1.5 border border-brand-border/60 hover:bg-brand-softBeige/30 rounded-full transition-colors"
-                >
-                  <ArrowRight className="w-3.5 h-3.5 text-brand-warmGray" />
-                </button>
-              </div>
+              <span className="text-xs text-brand-warmGray font-medium">Curated selections</span>
             </div>
 
             {/* Grid layout */}
@@ -390,10 +387,11 @@ export const CartPage: React.FC = () => {
                     {/* Image viewport */}
                     <div className="w-full aspect-[3/4] bg-brand-softBeige/15 rounded-xl overflow-hidden relative flex items-center justify-center">
                       <img 
-                        src={product.image} 
+                        src={product.image || (product.images && product.images[0]) || ''} 
                         alt={product.name} 
                         className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500"
                         loading="lazy"
+                        draggable={false}
                       />
 
                       {/* Top-left Discount badge */}

@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
-import { PRODUCTS, Product } from '../../data/mockData';
+import { Product } from '../../data/mockData';
+import { fetchProducts } from '../../services/productService';
 import { ProductVisual } from '../ui/ProductVisual';
 import { X, Search as SearchIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,8 +18,15 @@ export const SearchOverlay: React.FC = () => {
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'all' | 'fashion' | 'numismatics'>('all');
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      fetchProducts({ limit: 50 }).then(setAllProducts);
+    }
+  }, [isSearchOpen]);
 
   // Focus input on open and handle body scroll freeze
   useEffect(() => {
@@ -46,11 +54,11 @@ export const SearchOverlay: React.FC = () => {
   }, [isSearchOpen, setSearchOpen]);
 
   // Filtering products
-  const filteredProducts = PRODUCTS.filter((product) => {
+  const filteredProducts = allProducts.filter((product) => {
     const matchesQuery =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (product.era && product.era.toLowerCase().includes(searchQuery.toLowerCase()));
 
     if (!matchesQuery) return false;

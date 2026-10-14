@@ -39,6 +39,8 @@ export async function fetchProducts(params: {
   isHero?: boolean;
   isBestseller?: boolean;
   limit?: number;
+  search?: string;
+  category?: string;
 }): Promise<Product[]> {
   try {
     const urlParams = new URLSearchParams();
@@ -46,6 +48,8 @@ export async function fetchProducts(params: {
     if (params.isHero !== undefined) urlParams.append('is_hero', String(params.isHero));
     if (params.isBestseller !== undefined) urlParams.append('is_bestseller', String(params.isBestseller));
     if (params.limit) urlParams.append('limit', String(params.limit));
+    if (params.search) urlParams.append('search', params.search);
+    if (params.category) urlParams.append('category', params.category);
 
     const res = await fetch(`/api/products?${urlParams.toString()}`);
     if (!res.ok) {

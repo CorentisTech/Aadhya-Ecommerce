@@ -69,12 +69,13 @@ export const WishlistPage: React.FC = () => {
           {/* Image / Visual Panel */}
           <div className="w-full max-w-[180px] aspect-[4/5] mt-1 sm:mt-3 rounded-xl sm:rounded-2xl overflow-hidden relative bg-brand-softBeige/5 flex items-center justify-center">
             {isNumis ? (
-              product.visualType === 'note' ? (
+              product.image || (product.images && product.images[0]) ? (
                 <img
-                  src={product.image}
+                  src={product.image || (product.images && product.images[0])}
                   alt={product.name}
                   className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
+                  draggable={false}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center p-2">
@@ -89,10 +90,11 @@ export const WishlistPage: React.FC = () => {
               )
             ) : (
               <img
-                src={product.image}
+                src={product.image || (product.images && product.images[0]) || ''}
                 alt={product.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 loading="lazy"
+                draggable={false}
               />
             )}
           </div>

@@ -4,16 +4,17 @@ import React, { useEffect, useState } from 'react';
 import { fetchProducts } from '../../services/productService';
 import { Product } from '../../data/mockData';
 import { useApp } from '../../context/AppContext';
-import { Heart, Star, ArrowRight } from 'lucide-react';
+import { Heart, Star, ArrowRight, ShoppingBag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { ProductVisual } from '../ui/ProductVisual';
 
 export const Bestsellers: React.FC = () => {
-  const { toggleWishlist, isInWishlist } = useApp();
+  const { toggleWishlist, isInWishlist, addToCart } = useApp();
   const router = useRouter();
   
   const [bestsellerProducts, setBestsellerProducts] = useState<Product[]>([]);
+  const [addedId, setAddedId] = useState<string | null>(null);
   
   useEffect(() => {
     fetchProducts({ department: 'fashion', isBestseller: true, limit: 10 })
@@ -63,7 +64,7 @@ export const Bestsellers: React.FC = () => {
         </div>
 
         {/* Horizontal scroll container */}
-        <div className="flex overflow-x-auto pb-3 gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
+        <div className="flex overflow-x-auto pb-3 gap-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none snap-x snap-mandatory touch-pan-x overscroll-x-contain w-full scroll-smooth select-none">
           {bestsellerProducts.slice(0, 4).map((product) => {
             const inWishlist = isInWishlist(product.id);
             const slug = product.name.toLowerCase().replace(/ /g, '-');
@@ -72,14 +73,15 @@ export const Bestsellers: React.FC = () => {
               <div
                 key={product.id}
                 onClick={() => router.push(`/product/${slug}`)}
-                className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start"
+                className="flex flex-col text-left group cursor-pointer bg-brand-white border border-brand-border/40 rounded-xl p-2.5 hover:shadow-md transition-shadow relative flex-shrink-0 w-[165px] sm:w-[185px] md:w-auto snap-start select-none"
               >
                 {/* Product Visual Container */}
                 <div className="w-full aspect-[4/5] bg-brand-softBeige/20 overflow-hidden relative rounded-lg">
                   <img 
                     src={product.image} 
                     alt={product.name} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                    draggable={false}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 pointer-events-none select-none" 
                     loading="lazy"
                   />
 
@@ -107,32 +109,54 @@ export const Bestsellers: React.FC = () => {
                 </div>
 
                 {/* Details */}
-                <div className="pt-2 space-y-1.5">
-                  <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso tracking-wide leading-snug group-hover:text-brand-dustyRose transition-colors line-clamp-1">
-                    {product.name}
-                  </h3>
+                <div className="pt-2 space-y-1.5 flex flex-col flex-1 justify-between">
+                  <div className="space-y-1">
+                    <h3 className="font-sans font-bold text-xs sm:text-sm text-brand-espresso tracking-wide leading-snug group-hover:text-brand-dustyRose transition-colors line-clamp-1">
+                      {product.name}
+                    </h3>
 
-                  {/* Ratings */}
-                  <div className="flex items-center space-x-1">
-                    {renderStars(product.rating)}
-                    <span className="text-[9px] sm:text-[10px] text-brand-warmGray font-bold">
-                      ({product.reviewsCount || 100})
-                    </span>
-                  </div>
-
-                  {/* Pricing */}
-                  <div className="flex items-baseline justify-between border-t border-brand-border/20 pt-1.5">
-                    <div className="flex items-baseline space-x-1">
-                      <span className="text-xs sm:text-sm font-extrabold text-brand-espresso">
-                        ₹{product.price.toLocaleString('en-IN')}
-                      </span>
-                      <span className="text-[10px] sm:text-xs text-brand-warmGray line-through font-semibold">
-                        ₹{product.mrp.toLocaleString('en-IN')}
+                    {/* Ratings */}
+                    <div className="flex items-center space-x-1">
+                      {renderStars(product.rating)}
+                      <span className="text-[9px] sm:text-[10px] text-brand-warmGray font-bold">
+                        ({product.reviewsCount || 100})
                       </span>
                     </div>
-                    <span className="text-[9px] sm:text-[10px] text-brand-sale font-extrabold tracking-wider bg-brand-sale/10 px-1 py-0.5 rounded">
-                      {product.discount}%
-                    </span>
+
+                    {/* Pricing */}
+                    <div className="flex items-baseline justify-between border-t border-brand-border/20 pt-1.5">
+                      <div className="flex items-baseline space-x-1">
+                        <span className="text-xs sm:text-sm font-extrabold text-brand-espresso">
+                          ₹{product.price.toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-[10px] sm:text-xs text-brand-warmGray line-through font-semibold">
+                          ₹{product.mrp.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <span className="text-[9px] sm:text-[10px] text-brand-sale font-extrabold tracking-wider bg-brand-sale/10 px-1 py-0.5 rounded">
+                        {product.discount}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Functional Add to Cart button */}
+                  <div className="pt-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product, 1, product.sizes?.[0] || 'M');
+                        setAddedId(product.id);
+                        setTimeout(() => setAddedId(null), 1500);
+                      }}
+                      className={`w-full py-1.5 px-3 rounded-lg text-[10px] sm:text-xs font-bold tracking-wider uppercase transition-all duration-200 flex items-center justify-center space-x-1.5 shadow-2xs ${
+                        addedId === product.id
+                          ? 'bg-emerald-700 text-white'
+                          : 'bg-[#181818] hover:bg-[#333333] text-white'
+                      }`}
+                    >
+                      <ShoppingBag className="w-3 h-3" />
+                      <span>{addedId === product.id ? 'ADDED' : 'ADD TO CART'}</span>
+                    </button>
                   </div>
                 </div>
               </div>

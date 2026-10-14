@@ -4,6 +4,7 @@ import React, { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { PRODUCTS, Product, SizeGuideItem } from '@/data/mockData';
+import { fetchProducts } from '@/services/productService';
 import { 
   Heart, 
   ShoppingBag, 
@@ -49,44 +50,54 @@ export default function ProductDetailPage({ params }: PageProps) {
     p.name.toLowerCase() === decodedSlug.toLowerCase()
   );
 
-  const [dbProduct, setDbProduct] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(!staticProduct);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [relatedProductsList, setRelatedProductsList] = useState<Product[]>([]);
 
   useEffect(() => {
-    if (!staticProduct) {
-      setIsLoading(true);
-      fetch(`/api/products/${slug}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.id) {
-            const mapped: Product = {
-              id: data.id,
-              name: data.name,
-              productNo: data.product_no,
-              department: (data.department || 'fashion') as 'fashion',
-              price: Number(data.base_price),
-              mrp: Number(data.base_mrp),
-              discount: data.base_discount || 0,
-              description: data.description || '',
-              category: data.category_name || 'Fashion',
-              image: data.media?.[0]?.media_url || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop',
-              images: data.media?.map((m: any) => m.media_url) || [],
-              rating: Number(data.avg_rating) || 4.8,
-              reviewsCount: data.reviews_count || 12,
-              isBestseller: data.is_bestseller,
-              returnPolicy: data.return_policy || '7 Days Returnable',
-              fabricCare: data.details?.fabric_care || ['Dry clean only', 'Gentle machine wash'],
-              details: data.details?.details || ['Handcrafted with premium materials', 'Artisanal finish', 'Sustainable dyes']
-            };
-            setDbProduct(mapped);
-          }
-        })
-        .catch(err => console.error('Failed to fetch product from DB:', err))
-        .finally(() => setIsLoading(false));
-    }
-  }, [slug, staticProduct]);
+    fetchProducts({ department: 'fashion', limit: 8 })
+      .then(prods => {
+        if (prods && prods.length > 0) setRelatedProductsList(prods);
+      })
+      .catch(() => {});
+  }, []);
 
-  const product = staticProduct || dbProduct;
+  useEffect(() => {
+    setIsLoading(true);
+    fetch(`/api/products/${encodeURIComponent(slug)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.id) {
+          const mapped: Product = {
+            id: data.id,
+            name: data.name,
+            productNo: data.product_no,
+            department: (data.department || 'fashion') as 'fashion',
+            price: Number(data.base_price),
+            mrp: Number(data.base_mrp),
+            discount: data.base_discount || 0,
+            description: data.description || '',
+            category: data.category_name || data.categories?.name || 'Fashion',
+            image: data.media?.[0]?.media_url || (data.product_media?.[0]?.media_url) || '/images/placeholder.jpg',
+            images: data.media?.map((m: any) => m.media_url) || data.product_media?.map((m: any) => m.media_url) || [],
+            rating: Number(data.avg_rating) || 4.8,
+            reviewsCount: data.reviews_count || 12,
+            isBestseller: data.is_bestseller,
+            returnPolicy: data.return_policy || '7 Days Returnable',
+            fabricCare: data.details?.fabric_care || ['Dry clean only', 'Gentle machine wash'],
+            details: data.details?.details || ['Handcrafted with premium materials', 'Artisanal finish', 'Sustainable dyes']
+          };
+          setProduct(mapped);
+        } else if (staticProduct) {
+          setProduct(staticProduct);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch product from DB:', err);
+        if (staticProduct) setProduct(staticProduct);
+      })
+      .finally(() => setIsLoading(false));
+  }, [slug]);
 
   const handleBackNavigation = () => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -200,8 +211,9 @@ export default function ProductDetailPage({ params }: PageProps) {
   };
 
   // Related products from fashion department (excluding current)
-  const relatedProducts = PRODUCTS.filter(
-    (p) => p.department === 'fashion' && p.id !== product.id
+  const relatedSource = relatedProductsList.length > 0 ? relatedProductsList : PRODUCTS;
+  const relatedProducts = relatedSource.filter(
+    (p) => p.department === 'fashion' && p.id !== product?.id
   ).slice(0, 4);
 
   const sizeGuideData: SizeGuideItem[] = product.sizeGuide || [
@@ -910,9 +922,10 @@ export default function ProductDetailPage({ params }: PageProps) {
                 >
                   <div className="w-full aspect-[3/4] bg-[#FAF8F5] rounded-xl overflow-hidden relative">
                     <img
-                      src={rel.image}
+                      src={rel.image || (rel.images && rel.images[0]) || ''}
                       alt={rel.name}
                       className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                      draggable={false}
                     />
                     <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/90 rounded-full text-[8px] font-black uppercase tracking-wider text-brand-espresso">
                       {rel.category}

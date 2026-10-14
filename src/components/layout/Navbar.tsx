@@ -185,23 +185,23 @@ export const Navbar: React.FC = () => {
         </div>
       )}
 
-      {/* 2. Main Luxury Header: Warm Beige #EFE6DA, Centered AADHYA Branding */}
+      {/* 2. Main Luxury Header: Warm Beige #EFE6DA, Centered Branding */}
       <header 
-        className="sticky top-0 z-40 w-full max-w-full transition-colors duration-200 select-none h-[76px] sm:h-[84px] bg-[#EFE6DA] border-b border-[#E5DACB] px-4 sm:px-8 md:px-12 flex items-center justify-between"
+        className="sticky top-0 z-40 w-full max-w-full transition-colors duration-200 select-none h-[64px] sm:h-[76px] md:h-[84px] bg-[#EFE6DA] border-b border-[#E5DACB] px-3 sm:px-6 md:px-8 lg:px-12 flex items-center justify-between"
       >
         {/* LEFT: Hamburger menu + Desktop Navigation Links */}
-        <div className="flex items-center space-x-4 sm:space-x-8 flex-1 justify-start">
+        <div className="flex items-center space-x-2 sm:space-x-4 xl:space-x-6 min-w-0 flex-1 justify-start">
           {/* Hamburger Menu Trigger */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-1.5 -ml-1 text-[#181818] hover:text-[#555555] transition-colors focus:outline-none"
+            className="p-1 sm:p-1.5 -ml-1 text-[#181818] hover:text-[#555555] transition-colors focus:outline-none flex-shrink-0"
             aria-label="Open Navigation Menu"
           >
             <Menu className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
           </button>
 
           {/* Minimal Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-7 text-xs font-semibold tracking-wider text-[#181818]">
+          <nav className="hidden lg:flex items-center space-x-3 xl:space-x-5 2xl:space-x-6 text-[11px] xl:text-xs font-semibold tracking-wider text-[#181818] whitespace-nowrap min-w-0">
             <button
               onClick={() => {
                 if (isNumis) {
@@ -248,8 +248,8 @@ export const Navbar: React.FC = () => {
           </nav>
         </div>
 
-        {/* CENTER: Strong Centered AADHYA Branding */}
-        <div className="flex flex-col items-center justify-center flex-shrink-0 relative">
+        {/* CENTER: Strong Centered Branding */}
+        <div className="flex flex-col items-center justify-center flex-shrink-0 px-2 sm:px-4 text-center">
           <button
             onClick={() => {
               if (isNumis) {
@@ -264,23 +264,18 @@ export const Navbar: React.FC = () => {
             className="group relative flex flex-col items-center justify-center focus:outline-none"
           >
             {/* Soft blush halo */}
-            <div className="absolute w-24 sm:w-28 h-10 sm:h-12 bg-[#E5D7C7]/80 rounded-full blur-xs pointer-events-none -z-0" />
+            <div className="absolute w-20 sm:w-28 h-8 sm:h-12 bg-[#E5D7C7]/80 rounded-full blur-xs pointer-events-none -z-0" />
             
             <div className="relative z-10 flex flex-col items-center">
-              <span className={`font-serif font-black ${isNumis ? 'text-lg sm:text-2xl md:text-3xl tracking-[0.16em]' : 'text-2xl sm:text-3xl md:text-4xl tracking-[0.26em]'} text-[#181818] group-hover:opacity-90 transition-opacity uppercase leading-none`}>
+              <span className={`font-serif font-black ${isNumis ? 'text-sm sm:text-lg md:text-xl lg:text-2xl tracking-[0.12em] sm:tracking-[0.16em]' : 'text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-[0.2em] sm:tracking-[0.26em]'} text-[#181818] group-hover:opacity-90 transition-opacity uppercase leading-none whitespace-nowrap`}>
                 {isNumis ? 'Happy Collectables' : (websiteSettings?.brand_name || 'AADHYA')}
               </span>
-              {isNumis && (
-                <span className="font-sans text-[8.5px] sm:text-[10px] md:text-[11px] font-semibold tracking-[0.14em] text-[#6B5A46] mt-1 uppercase text-center whitespace-nowrap">
-                  Invest in history. Invest in future.
-                </span>
-              )}
             </div>
           </button>
         </div>
 
         {/* RIGHT: Minimal Line Icons (Search, Profile, Wishlist, Bag) */}
-        <div className="flex items-center space-x-3 sm:space-x-5 text-[#181818] flex-1 justify-end">
+        <div className="flex items-center space-x-2 sm:space-x-3.5 md:space-x-4 text-[#181818] min-w-0 flex-1 justify-end">
           {/* Domain Switch Pill: Coins & Notes */}
           <button
             onClick={() => {
@@ -294,8 +289,8 @@ export const Navbar: React.FC = () => {
                 router.push('/numismatics');
               }
             }}
-            className="hidden md:flex items-center space-x-2 px-3 py-1 rounded-full border border-[#D5C7B5] bg-white/40 hover:bg-white text-[10px] font-bold tracking-widest text-[#181818] transition-all shadow-2xs mr-1"
-            title="Switch to Coins & Notes"
+            className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1 rounded-full border border-[#D5C7B5] bg-white/40 hover:bg-white text-[10px] font-bold tracking-widest text-[#181818] transition-all shadow-2xs mr-0.5 whitespace-nowrap flex-shrink-0"
+            title="Switch Domain"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
             <span>{isNumis ? 'FASHION' : 'COINS & NOTES'}</span>
@@ -305,18 +300,18 @@ export const Navbar: React.FC = () => {
           <button
             onClick={() => setSearchOpen(true)}
             aria-label="Search Catalog"
-            className="p-1.5 hover:text-[#555555] transition-colors focus:outline-none"
+            className="p-1 sm:p-1.5 hover:text-[#555555] transition-colors focus:outline-none flex-shrink-0"
           >
-            <Search className="w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[1.6]" />
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.6]" />
           </button>
 
-          {/* Profile / Account */}
+          {/* Profile / Account (Visible on all viewports) */}
           <button
             onClick={() => router.push('/account')}
             aria-label="Customer Profile"
-            className="p-1.5 hover:text-[#555555] transition-colors focus:outline-none hidden sm:block"
+            className="p-1 sm:p-1.5 hover:text-[#555555] transition-colors focus:outline-none flex-shrink-0"
           >
-            <User className="w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[1.6]" />
+            <User className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.6]" />
           </button>
 
           {/* Wishlist */}
@@ -326,11 +321,11 @@ export const Navbar: React.FC = () => {
               router.push('/wishlist');
             }}
             aria-label="Wishlist"
-            className="p-1.5 hover:text-[#555555] transition-colors relative focus:outline-none"
+            className="p-1 sm:p-1.5 hover:text-[#555555] transition-colors relative focus:outline-none flex-shrink-0"
           >
-            <Heart className={`w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[1.6] ${activePage === 'wishlist' ? 'fill-[#181818]' : ''}`} />
+            <Heart className={`w-4 h-4 sm:w-5 sm:h-5 stroke-[1.6] ${activePage === 'wishlist' ? 'fill-[#181818]' : ''}`} />
             {wishlist.length > 0 && (
-              <span className="absolute 0 top-0.5 right-0.5 bg-[#181818] text-[#EFE6DA] text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center leading-none">
+              <span className="absolute top-0 right-0 bg-[#181818] text-[#EFE6DA] text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center leading-none">
                 {wishlist.length}
               </span>
             )}
@@ -340,11 +335,11 @@ export const Navbar: React.FC = () => {
           <button
             onClick={() => router.push('/cart')}
             aria-label="Shopping Cart"
-            className="p-1.5 hover:text-[#555555] transition-colors relative focus:outline-none"
+            className="p-1 sm:p-1.5 hover:text-[#555555] transition-colors relative focus:outline-none flex-shrink-0"
           >
-            <ShoppingBag className="w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[1.6]" />
+            <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.6]" />
             {cartItemsCount > 0 && (
-              <span className="absolute top-0.5 right-0.5 bg-[#181818] text-[#EFE6DA] text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center leading-none">
+              <span className="absolute top-0 right-0 bg-[#181818] text-[#EFE6DA] text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center leading-none">
                 {cartItemsCount}
               </span>
             )}
