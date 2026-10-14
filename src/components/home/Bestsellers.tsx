@@ -18,7 +18,13 @@ export const Bestsellers: React.FC = () => {
   
   useEffect(() => {
     fetchProducts({ department: 'fashion', isBestseller: true, limit: 10 })
-      .then(setBestsellerProducts);
+      .then(prods => {
+        if (prods && prods.length > 0) {
+          setBestsellerProducts(prods);
+        } else {
+          fetchProducts({ department: 'fashion', limit: 8 }).then(setBestsellerProducts);
+        }
+      });
   }, []);
 
   const renderStars = (rating = 4) => {

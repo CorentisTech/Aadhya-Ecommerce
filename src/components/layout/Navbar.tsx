@@ -187,7 +187,7 @@ export const Navbar: React.FC = () => {
 
       {/* 2. Main Luxury Header: Warm Beige #EFE6DA, Centered Branding */}
       <header 
-        className="sticky top-0 z-40 w-full max-w-full transition-colors duration-200 select-none h-[64px] sm:h-[76px] md:h-[84px] bg-[#EFE6DA] border-b border-[#E5DACB] px-3 sm:px-6 md:px-8 lg:px-12 flex items-center justify-between"
+        className="sticky top-0 z-40 w-full max-w-full transition-colors duration-200 select-none h-[64px] sm:h-[76px] md:h-[84px] bg-[#EFE6DA] border-b border-[#E5DACB] px-3 sm:px-6 md:px-8 lg:px-12 flex items-center justify-between relative"
       >
         {/* LEFT: Hamburger menu + Desktop Navigation Links */}
         <div className="flex items-center space-x-2 sm:space-x-4 xl:space-x-6 min-w-0 flex-1 justify-start">
@@ -248,8 +248,8 @@ export const Navbar: React.FC = () => {
           </nav>
         </div>
 
-        {/* CENTER: Strong Centered Branding */}
-        <div className="flex items-center justify-center px-1 sm:px-2 text-center min-w-0 z-10 flex-shrink">
+        {/* CENTER: Strong Centered Branding — absolutely centered on web, flow-positioned on mobile */}
+        <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex items-center justify-center px-1 sm:px-2 text-center min-w-0 z-10 flex-shrink">
           <button
             onClick={() => {
               if (isNumis) {
@@ -268,8 +268,8 @@ export const Navbar: React.FC = () => {
             
             <span className={`relative z-10 font-serif font-black ${
               isNumis 
-                ? 'text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl tracking-[0.08em] sm:tracking-[0.14em]' 
-                : 'text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-[0.18em] sm:tracking-[0.24em]'
+                ? 'text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl tracking-[0.06em] sm:tracking-[0.1em]' 
+                : 'text-[24px] xs:text-[26px] sm:text-2xl md:text-3xl lg:text-4xl tracking-[0.2em] sm:tracking-[0.24em]'
             } text-[#181818] group-hover:opacity-90 transition-opacity uppercase leading-none whitespace-nowrap`}>
               {isNumis ? 'Happy Collectables' : (websiteSettings?.brand_name || 'AADHYA')}
             </span>

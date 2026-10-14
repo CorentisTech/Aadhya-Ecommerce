@@ -27,109 +27,63 @@ export const Hero: React.FC = () => {
   const { toggleWishlist, isInWishlist } = useApp();
   const [isPaused, setIsPaused] = useState(false);
 
-  // Curated initial cards with fallback support
-  const initialCards: HeroCardItem[] = [
-    {
-      id: 'f-prod-1',
-      slug: 'f-prod-1',
-      name: 'Floral Kurti & Pants Set',
-      productNo: 'FP-108',
-      price: 2999,
-      mrp: 4499,
-      editorialTitle: 'EASY LIKE SUNDAY',
-      editorialSubtitle: 'FOREVER IN COMFORT • AV COTTON',
-      editorialAccent: 'SOFT COZY HOURS',
-      image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop',
-      insetPhoto: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=500&auto=format&fit=crop'
-    },
-    {
-      id: 'f-prod-cat-1',
-      slug: 'f-prod-cat-1',
-      name: 'Flared Rayon Palazzo',
-      productNo: 'FP-101',
-      price: 2499,
-      mrp: 3499,
-      editorialTitle: 'SPOTTED IN',
-      editorialScript: 'Style',
-      editorialSubtitle: 'EFFORTLESS DRAPE • PURE RAYON',
-      editorialAccent: 'NEW SILHOUETTES',
-      image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=1200&auto=format&fit=crop'
-    },
-    {
-      id: 'f-prod-4',
-      slug: 'f-prod-4',
-      name: 'Classic Kurti & Pants Ensemble',
-      productNo: 'FP-111',
-      price: 3999,
-      mrp: 5999,
-      editorialTitle: 'CO-ORDS',
-      editorialSubtitle: 'CONTEMPORARY TAILORING • TIMELESS COMFORT',
-      editorialAccent: 'DAY-TO-EVENING EDIT',
-      image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1200&auto=format&fit=crop'
-    },
-    {
-      id: 'f-prod-cat-4',
-      slug: 'f-prod-cat-4',
-      name: 'Handcrafted Zari Silk Blouse',
-      productNo: 'FP-104',
-      price: 2499,
-      mrp: 3299,
-      editorialTitle: 'ROYAL HERITAGE',
-      editorialScript: 'Atelier',
-      editorialSubtitle: 'ARTISANAL GOLD ZARI • PURE SILK',
-      editorialAccent: 'FESTIVE EDIT',
-      image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=1200&auto=format&fit=crop'
-    },
-    {
-      id: 'f-new-1',
-      slug: 'f-new-1',
-      name: 'Emerald Flared Palazzo Pants',
-      productNo: 'FP-105',
-      price: 2799,
-      mrp: 3899,
-      editorialTitle: 'AUTUMN TONES',
-      editorialSubtitle: 'DEEP EMERALD • FLUID RUNWAY MOTION',
-      editorialAccent: 'LIMITED EDITION',
-      image: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=1200&auto=format&fit=crop'
-    }
+  // Editorial overlay presets for card styling variety
+  const editorialPresets = [
+    { editorialTitle: 'TRENDING NOW', editorialSubtitle: 'PREMIUM COLLECTION • HANDCRAFTED', editorialAccent: 'NEW ARRIVAL' },
+    { editorialTitle: 'SPOTTED IN', editorialScript: 'Style', editorialSubtitle: 'EFFORTLESS DRAPE • PURE FABRIC', editorialAccent: 'NEW SILHOUETTES' },
+    { editorialTitle: 'CO-ORDS', editorialSubtitle: 'CONTEMPORARY TAILORING • TIMELESS COMFORT', editorialAccent: 'DAY-TO-EVENING EDIT' },
+    { editorialTitle: 'ROYAL HERITAGE', editorialScript: 'Atelier', editorialSubtitle: 'ARTISANAL CRAFT • PREMIUM SILK', editorialAccent: 'FESTIVE EDIT' },
+    { editorialTitle: 'AUTUMN TONES', editorialSubtitle: 'FLUID MOTION • RUNWAY INSPIRATION', editorialAccent: 'LIMITED EDITION' },
   ];
 
-  const [cards, setCards] = useState<HeroCardItem[]>(initialCards);
+  const [cards, setCards] = useState<HeroCardItem[]>([]);
 
-  // Dynamically load active Hero products from database
+  // Dynamically load products from database — NO static/mock fallback
   useEffect(() => {
-    fetch('/api/products?is_hero=true&department=fashion')
-      .then(res => res.json())
-      .then(result => {
-        const items = result?.data || [];
+    // First try hero products, then fall back to all fashion products
+    const fetchHeroData = async () => {
+      try {
+        // Try hero products first
+        let res = await fetch('/api/products?is_hero=true&department=fashion');
+        let result = await res.json();
+        let items = result?.data || [];
+
+        // If no hero products, fetch all fashion products
+        if (!Array.isArray(items) || items.length === 0) {
+          res = await fetch('/api/products?department=fashion&limit=8');
+          result = await res.json();
+          items = result?.data || [];
+        }
+
         if (Array.isArray(items) && items.length > 0) {
           const dynamicCards: HeroCardItem[] = items.map((p: any, idx: number) => {
-            const fallback = initialCards[idx % initialCards.length];
+            const preset = editorialPresets[idx % editorialPresets.length];
             const primaryMedia = p.product_media?.find((m: any) => m.is_primary)?.media_url 
               || p.product_media?.[0]?.media_url 
-              || fallback.image;
+              || '/images/placeholder.jpg';
+            const categoryName = p.categories?.name || '';
             
             return {
               id: p.id,
               slug: p.slug || p.product_no || p.id,
               name: p.name,
-              productNo: p.product_no || fallback.productNo,
-              price: Number(p.base_price) || fallback.price,
-              mrp: Number(p.base_mrp) || fallback.mrp,
-              editorialTitle: fallback.editorialTitle,
-              editorialScript: fallback.editorialScript,
-              editorialSubtitle: fallback.editorialSubtitle,
-              editorialAccent: fallback.editorialAccent,
-              image: primaryMedia,
-              insetPhoto: fallback.insetPhoto
+              productNo: p.product_no || `FP-${idx + 100}`,
+              price: Number(p.base_price) || 0,
+              mrp: Number(p.base_mrp) || 0,
+              editorialTitle: preset.editorialTitle,
+              editorialScript: preset.editorialScript,
+              editorialSubtitle: categoryName ? `${categoryName.toUpperCase()} • AADHYA COLLECTION` : preset.editorialSubtitle,
+              editorialAccent: preset.editorialAccent,
+              image: primaryMedia
             };
           });
           setCards(dynamicCards);
         }
-      })
-      .catch(err => {
-        console.warn('Hero dynamic fetch notice, using fallback editorial set:', err);
-      });
+      } catch (err) {
+        console.warn('Hero fetch error:', err);
+      }
+    };
+    fetchHeroData();
   }, []);
 
   // Triplicate array to guarantee continuous, infinite, gap-free carousel motion
@@ -142,6 +96,18 @@ export const Hero: React.FC = () => {
       maximumFractionDigits: 0
     }).format(val);
   };
+
+  if (cards.length === 0) {
+    return (
+      <section className="w-full bg-[#FAF7F2] py-8 sm:py-12 border-b border-[#E5DACB]">
+        <div className="flex gap-4 overflow-hidden px-4 justify-center">
+          {[1, 2, 3, 4].map(n => (
+            <div key={n} className="w-[180px] sm:w-[240px] h-[280px] sm:h-[340px] rounded-[24px] bg-[#E8DFD3]/40 animate-pulse flex-shrink-0" />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section 
