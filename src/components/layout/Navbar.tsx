@@ -249,7 +249,7 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* CENTER: Strong Centered Branding */}
-        <div className="flex flex-col items-center justify-center px-1 sm:px-2 text-center min-w-0 z-10 flex-shrink">
+        <div className="flex items-center justify-center px-1 sm:px-2 text-center min-w-0 z-10 flex-shrink">
           <button
             onClick={() => {
               if (isNumis) {
@@ -261,22 +261,24 @@ export const Navbar: React.FC = () => {
                 setPage('home');
               }
             }}
-            className="group relative flex flex-col items-center justify-center focus:outline-none"
+            className="group relative flex items-center justify-center focus:outline-none"
           >
             {/* Soft blush halo */}
-            <div className="absolute w-16 sm:w-24 h-6 sm:h-10 bg-[#E5D7C7]/80 rounded-full blur-xs pointer-events-none -z-0" />
+            <div className="absolute w-20 sm:w-28 h-7 sm:h-9 bg-[#E5D7C7]/80 rounded-full blur-xs pointer-events-none -z-0" />
             
-            <div className="relative z-10 flex flex-col items-center">
-              <span className={`font-serif font-black ${isNumis ? 'text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl tracking-[0.04em] sm:tracking-[0.08em]' : 'text-lg sm:text-2xl md:text-3xl lg:text-4xl tracking-[0.16em] sm:tracking-[0.24em]'} text-[#181818] group-hover:opacity-90 transition-opacity uppercase leading-none whitespace-nowrap`}>
-                {isNumis ? 'Happy Collectables' : (websiteSettings?.brand_name || 'AADHYA')}
-              </span>
-            </div>
+            <span className={`relative z-10 font-serif font-black ${
+              isNumis 
+                ? 'text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl tracking-[0.08em] sm:tracking-[0.14em]' 
+                : 'text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-[0.18em] sm:tracking-[0.24em]'
+            } text-[#181818] group-hover:opacity-90 transition-opacity uppercase leading-none whitespace-nowrap`}>
+              {isNumis ? 'Happy Collectables' : (websiteSettings?.brand_name || 'AADHYA')}
+            </span>
           </button>
         </div>
 
         {/* RIGHT: Minimal Line Icons (Search, Profile, Wishlist, Bag) */}
         <div className="flex items-center space-x-1.5 sm:space-x-3 md:space-x-3.5 text-[#181818] flex-shrink-0 justify-end z-20">
-          {/* Domain Switch Pill: Coins & Notes */}
+          {/* Domain Switch Pill: Coins & Notes (Desktop matching reference image) */}
           <button
             onClick={() => {
               if (isNumis) {
@@ -289,7 +291,7 @@ export const Navbar: React.FC = () => {
                 router.push('/numismatics');
               }
             }}
-            className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-full border border-[#D5C7B5] bg-white/40 hover:bg-white text-[10px] font-bold tracking-widest text-[#181818] transition-all shadow-2xs mr-1 whitespace-nowrap flex-shrink-0"
+            className="hidden lg:flex items-center space-x-1.5 px-3 py-1 rounded-full border border-[#D5C7B5] bg-white/50 hover:bg-white text-[10px] font-bold tracking-widest text-[#181818] transition-all shadow-2xs mr-1 sm:mr-1.5 whitespace-nowrap flex-shrink-0"
             title="Switch Domain"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />

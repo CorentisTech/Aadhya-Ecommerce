@@ -143,6 +143,23 @@ export default function EditProductPage() {
     fetchProduct();
   }, [id]);
 
+  const handleDeleteProduct = async () => {
+    if (!product || !confirm(`Are you sure you want to permanently delete "${product.name}"? This action cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/admin/products/${id}?action=delete`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message || 'Product deleted successfully');
+        router.push(product.department === 'numismatics' ? '/admin/products/numismatics' : '/admin/products/fashion');
+      } else {
+        alert(data.error || 'Failed to delete product');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error deleting product');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -719,8 +736,17 @@ export default function EditProductPage() {
           </div>
         </div>
 
-        {/* Save Button */}
-        <div className="flex justify-end pt-4">
+        {/* Actions Bar */}
+        <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={handleDeleteProduct}
+            className="px-6 py-3.5 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 font-bold text-xs uppercase tracking-wider rounded-full transition-all flex items-center space-x-2 border border-rose-200 cursor-pointer"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Delete Product</span>
+          </button>
+
           <button
             type="submit"
             disabled={saving}

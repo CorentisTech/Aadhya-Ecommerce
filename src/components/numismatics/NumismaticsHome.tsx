@@ -45,7 +45,7 @@ export const NumismaticsHome: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [addedHero, setAddedHero] = useState(false);
 
-  // 4 Featured Hero Coins (Card Colors matching Reference Image)
+  // Featured Hero Coins (Card Colors matching Image 4 Reference)
   const heroFeaturedCoins = React.useMemo(() => {
     const defaultProduct: Product = {
       id: 'default-hero-coin',
@@ -62,53 +62,42 @@ export const NumismaticsHome: React.FC = () => {
       year: '1947',
       bestseller: true
     };
-    const p0 = numProducts[0] || defaultProduct;
-    const p1 = numProducts[4] || p0;
-    const p2 = numProducts[2] || numProducts[1] || p0;
-    const p3 = numProducts[3] || numProducts[2] || p0;
 
-    return [
-      {
-        product: p1,
-        cardGradient: 'from-[#F28B82] to-[#E56B6F]',
-        categoryLabel: 'Mughal Empire',
-        discountBadge: '20% OFF'
-      },
-      {
-        product: p0,
-        cardGradient: 'from-[#FBA858] to-[#EF8A24]',
-        categoryLabel: 'Republic India',
-        discountBadge: '30% OFF'
-      },
-      {
-        product: p2,
-        cardGradient: 'from-[#7CD585] to-[#55B75F]',
-        categoryLabel: 'Paper Currency',
-        discountBadge: '25% OFF'
-      },
-      {
-        product: p3,
-        cardGradient: 'from-[#7B73F0] to-[#584FE3]',
-        categoryLabel: 'British India',
-        discountBadge: '20% OFF'
-      }
+    const gradientPresets = [
+      { cardGradient: 'from-[#F28B82] to-[#E56B6F]', defaultLabel: 'Mughal Empire', discountBadge: '20% OFF' },
+      { cardGradient: 'from-[#FBA858] to-[#EF8A24]', defaultLabel: 'Republic India', discountBadge: '30% OFF' },
+      { cardGradient: 'from-[#7CD585] to-[#55B75F]', defaultLabel: 'Paper Currency', discountBadge: '25% OFF' },
+      { cardGradient: 'from-[#7B73F0] to-[#584FE3]', defaultLabel: 'British India', discountBadge: '20% OFF' },
+      { cardGradient: 'from-[#56CCF2] to-[#2F80ED]', defaultLabel: 'Ancient Dynasties', discountBadge: '15% OFF' },
+      { cardGradient: 'from-[#BB6BD9] to-[#8E44AD]', defaultLabel: 'Princely States', discountBadge: '25% OFF' },
+      { cardGradient: 'from-[#F2994A] to-[#EB5757]', defaultLabel: 'Commemorative Issue', discountBadge: '20% OFF' },
     ];
+
+    const sourceProducts = numProducts.length > 0 ? numProducts : [defaultProduct];
+
+    return sourceProducts.map((prod, idx) => {
+      const preset = gradientPresets[idx % gradientPresets.length];
+      return {
+        product: prod,
+        cardGradient: preset.cardGradient,
+        categoryLabel: prod.category || prod.era || preset.defaultLabel,
+        discountBadge: prod.discount ? `${prod.discount}% OFF` : preset.discountBadge
+      };
+    });
   }, [numProducts]);
 
   const currentHeroItem = heroFeaturedCoins[heroActiveIndex] || heroFeaturedCoins[0];
   const activeHeroProduct = currentHeroItem?.product;
   const isHeroInWish = activeHeroProduct ? isInWishlist(activeHeroProduct.id) : false;
 
-  // No auto-rotation (manual touch swiping and selection only)
-
+  // Manual swipe & arrow navigation
   const handlePrevHero = () => {
     if (heroFeaturedCoins.length === 0) return;
     setIsPaused(true);
     const newIdx = (heroActiveIndex - 1 + heroFeaturedCoins.length) % heroFeaturedCoins.length;
     setHeroActiveIndex(newIdx);
     if (heroCardsScrollRef.current) {
-      const cardWidth = 180;
-      heroCardsScrollRef.current.scrollTo({ left: newIdx * cardWidth, behavior: 'smooth' });
+      heroCardsScrollRef.current.scrollBy({ left: -240, behavior: 'smooth' });
     }
     setTimeout(() => setIsPaused(false), 4500);
   };
@@ -119,8 +108,7 @@ export const NumismaticsHome: React.FC = () => {
     const newIdx = (heroActiveIndex + 1) % heroFeaturedCoins.length;
     setHeroActiveIndex(newIdx);
     if (heroCardsScrollRef.current) {
-      const cardWidth = 180;
-      heroCardsScrollRef.current.scrollTo({ left: newIdx * cardWidth, behavior: 'smooth' });
+      heroCardsScrollRef.current.scrollBy({ left: 240, behavior: 'smooth' });
     }
     setTimeout(() => setIsPaused(false), 4500);
   };
@@ -562,31 +550,31 @@ export const NumismaticsHome: React.FC = () => {
 
           </div>
 
-          {/* LOWER HERO CAROUSEL: Floating White Container with 4 Vibrant Cards (Enlarged Coins) */}
-          <div className="relative max-w-5xl mx-auto bg-white rounded-[22px] sm:rounded-[32px] md:rounded-[40px] p-3 sm:p-5 md:p-6 shadow-xl shadow-black/5 border border-[#F0EAE1]">
+          {/* LOWER HERO CAROUSEL: Floating White Container with Vibrant Cards (Matching Image 4) */}
+          <div className="relative max-w-5xl mx-auto bg-white rounded-[26px] sm:rounded-[34px] md:rounded-[40px] p-3 sm:p-5 md:p-6 shadow-xl shadow-black/5 border border-[#F0EAE1]">
             
-            {/* Outer Left Circular Navigation Button (Desktop) */}
+            {/* Outer Left Circular Navigation Button (Matching Image 4 Reference) */}
             <button
               onClick={handlePrevHero}
-              className="hidden md:flex absolute -left-3.5 lg:-left-5 top-1/2 -translate-y-1/2 w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-white border border-[#EAE2D5] shadow-lg items-center justify-center text-[#2B231D] hover:bg-[#FAF3E8] hover:scale-105 active:scale-95 transition-all z-30 cursor-pointer"
+              className="flex absolute -left-3 sm:-left-4 md:-left-5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full bg-white border border-[#EAE2D5] shadow-xl items-center justify-center text-[#2B231D] hover:bg-[#FAF3E8] hover:scale-105 active:scale-95 transition-all z-30 cursor-pointer"
               aria-label="Previous Coin"
             >
-              <ChevronLeft className="w-4 h-4 lg:w-5 lg:h-5" />
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
             </button>
 
-            {/* Outer Right Circular Navigation Button (Desktop) */}
+            {/* Outer Right Circular Navigation Button (Matching Image 4 Reference) */}
             <button
               onClick={handleNextHero}
-              className="hidden md:flex absolute -right-3.5 lg:-right-5 top-1/2 -translate-y-1/2 w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-white border border-[#EAE2D5] shadow-lg items-center justify-center text-[#2B231D] hover:bg-[#FAF3E8] hover:scale-105 active:scale-95 transition-all z-30 cursor-pointer"
+              className="flex absolute -right-3 sm:-right-4 md:-right-5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full bg-white border border-[#EAE2D5] shadow-xl items-center justify-center text-[#2B231D] hover:bg-[#FAF3E8] hover:scale-105 active:scale-95 transition-all z-30 cursor-pointer"
               aria-label="Next Coin"
             >
-              <ChevronRight className="w-4 h-4 lg:w-5 lg:h-5" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
             </button>
 
-            {/* 4 Vibrant Rounded Cards: Horizontal Touch-Swipe on Mobile, Grid on Desktop */}
+            {/* Vibrant Rounded Cards: Horizontal Swipeable Carousel (NO row-wise static grid!) */}
             <div 
               ref={heroCardsScrollRef}
-              className="flex overflow-x-auto gap-3 sm:gap-4 md:grid md:grid-cols-4 md:gap-4 lg:gap-5 pt-8 sm:pt-10 md:pt-11 pb-1 scrollbar-none snap-x snap-mandatory w-full scroll-smooth"
+              className="flex overflow-x-auto gap-3.5 sm:gap-4 md:gap-5 pt-8 sm:pt-10 md:pt-11 pb-2 scrollbar-none snap-x snap-mandatory w-full scroll-smooth px-1"
             >
               {heroFeaturedCoins.map((item, idx) => {
                 const isSelected = heroActiveIndex === idx;
@@ -595,13 +583,13 @@ export const NumismaticsHome: React.FC = () => {
 
                 return (
                   <div
-                    key={prod.id}
+                    key={`${prod.id}-${idx}`}
                     onClick={() => {
                       setIsPaused(true);
                       setHeroActiveIndex(idx);
                       setTimeout(() => setIsPaused(false), 4500);
                     }}
-                    className={`flex-shrink-0 w-[155px] sm:w-[185px] md:w-auto snap-start bg-gradient-to-b ${item.cardGradient} rounded-[20px] sm:rounded-[26px] p-2.5 sm:p-3.5 text-left flex flex-col justify-between cursor-pointer transition-all duration-300 relative select-none ${
+                    className={`flex-shrink-0 w-[165px] sm:w-[195px] md:w-[215px] lg:w-[225px] snap-start bg-gradient-to-b ${item.cardGradient} rounded-[20px] sm:rounded-[26px] p-2.5 sm:p-3.5 text-left flex flex-col justify-between cursor-pointer transition-all duration-300 relative select-none ${
                       isSelected 
                         ? 'ring-3 sm:ring-4 ring-[#181818]/30 shadow-2xl scale-[1.02] -translate-y-0.5' 
                         : 'shadow-md hover:scale-[1.01] opacity-90 hover:opacity-100'

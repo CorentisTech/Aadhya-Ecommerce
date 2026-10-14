@@ -85,6 +85,23 @@ export default function FashionCategoriesPage() {
     }
   };
 
+  const handleDeleteCategory = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete category "${name}"? This action cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        if (showModal) setShowModal(false);
+        fetchCategories();
+      } else {
+        alert(data.error || 'Failed to delete category');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error deleting category');
+    }
+  };
+
   const openEditModal = (c: any) => {
     setEditingId(c.id);
     setName(c.name);
@@ -167,8 +184,16 @@ export default function FashionCategoriesPage() {
                     <button
                       onClick={() => openEditModal(c)}
                       className="p-1 rounded-md text-gray-400 hover:text-[#cca05b] hover:bg-amber-50"
+                      title="Edit Category"
                     >
                       <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCategory(c.id, c.name)}
+                      className="p-1 rounded-md text-gray-400 hover:text-rose-600 hover:bg-rose-50"
+                      title="Delete Category"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleToggleActive(c.id, c.is_active)}
@@ -256,21 +281,34 @@ export default function FashionCategoriesPage() {
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-6 py-2.5 rounded-xl bg-[#cca05b] text-[#15171c] font-black text-xs hover:bg-[#d8ae69] shadow disabled:opacity-50"
-                >
-                  {submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Category'}
-                </button>
+              <div className="flex items-center justify-between pt-2">
+                {editingId ? (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteCategory(editingId, name)}
+                    className="px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-bold text-xs flex items-center space-x-1"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Category</span>
+                  </button>
+                ) : <div />}
+
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs hover:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="px-6 py-2.5 rounded-xl bg-[#cca05b] text-[#15171c] font-black text-xs hover:bg-[#d8ae69] shadow disabled:opacity-50"
+                  >
+                    {submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Category'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

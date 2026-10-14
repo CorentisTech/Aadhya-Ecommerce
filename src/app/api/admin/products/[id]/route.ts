@@ -263,15 +263,52 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const permanent = searchParams.get('permanent') === 'true' || searchParams.get('action') === 'delete';
 
-    // Soft delete/archive
+    if (permanent) {
+      // Check if product is referenced in customer orders
+      const orderCheck = await queryDb(
+        `SELECT count(*)::int as count FROM order_items WHERE product_id = $1`,
+        [id]
+      );
+      const orderCount = orderCheck[0]?.count || 0;
+
+      if (orderCount > 0) {
+        // Soft delete/archive to preserve financial and customer order history
+        await queryDb(`UPDATE products SET is_active = false, updated_at = NOW() WHERE id = $1`, [id]);
+        await queryDb(`
+          INSERT INTO audit_logs (action, entity, entity_id, details)
+          VALUES ('ARCHIVE_PRODUCT', 'products', $1, '{"reason": "has_order_history"}')
+        `, [id]);
+
+        await invalidateCachePattern('aadhya:cache:*');
+
+        return NextResponse.json({
+          success: true,
+          message: 'Product archived because it is linked to past orders (financial records preserved).'
+        });
+      }
+
+      // Safe permanent deletion (cascades to media, variants, details, cart, wishlist)
+      await queryDb(`DELETE FROM products WHERE id = $1`, [id]);
+      await queryDb(`
+        INSERT INTO audit_logs (action, entity, entity_id, details)
+        VALUES ('DELETE_PRODUCT', 'products', $1, '{"status": "deleted"}')
+      `, [id]);
+
+      await invalidateCachePattern('aadhya:cache:*');
+
+      return NextResponse.json({ success: true, message: 'Product deleted permanently' });
+    }
+
+    // Default: Soft delete/archive
     await queryDb(`UPDATE products SET is_active = false, updated_at = NOW() WHERE id = $1`, [id]);
     await queryDb(`
       INSERT INTO audit_logs (action, entity, entity_id, details)
       VALUES ('ARCHIVE_PRODUCT', 'products', $1, '{"status": "archived"}')
     `, [id]);
 
-    // Invalidate Redis product caches immediately
     await invalidateCache(CacheKeys.productDetail('all', id));
     await invalidateCache(CacheKeys.productDetail('fashion', id));
     await invalidateCache(CacheKeys.productDetail('numismatics', id));
@@ -280,7 +317,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, message: 'Product archived successfully' });
   } catch (err: any) {
-    console.error('Error archiving product:', err);
+    console.error('Error deleting product:', err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

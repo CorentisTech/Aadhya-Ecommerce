@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Plus, Shirt, Coins, RefreshCcw, Edit, Archive, CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Search, Plus, Shirt, Coins, RefreshCcw, Edit, Archive, CheckCircle2, AlertTriangle, ExternalLink, Trash2 } from 'lucide-react';
 
 export default function FashionProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -51,6 +51,22 @@ export default function FashionProductsPage() {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete product "${name}"? This action cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/admin/products/${id}?action=delete`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        fetchProducts();
+      } else {
+        alert(data.error || 'Failed to delete product');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error deleting product');
     }
   };
 
@@ -237,12 +253,19 @@ export default function FashionProductsPage() {
                         {p.is_active && (
                           <button
                             onClick={() => handleArchive(p.id, p.name)}
-                            className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                            className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                             title="Archive product"
                           >
                             <Archive className="w-3.5 h-3.5" />
                           </button>
                         )}
+                        <button
+                          onClick={() => handleDelete(p.id, p.name)}
+                          className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="Delete product"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </td>
                   </tr>

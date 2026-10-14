@@ -48,19 +48,35 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await queryDb(`UPDATE categories SET is_active = false, updated_at = NOW() WHERE id = $1`, [id]);
+    
+    // Check if any products are using this category
+    const prodCheck = await queryDb(
+      `SELECT count(*)::int as count FROM products WHERE category_id = $1`,
+      [id]
+    );
+    const prodCount = prodCheck[0]?.count || 0;
+
+    if (prodCount > 0) {
+      return NextResponse.json({
+        success: false,
+        error: `Cannot delete category: it still contains ${prodCount} product(s). Please reassign or delete them first.`
+      }, { status: 400 });
+    }
+
+    // Safely delete category
+    await queryDb(`DELETE FROM categories WHERE id = $1`, [id]);
     await queryDb(`
       INSERT INTO audit_logs (action, entity, entity_id, details)
-      VALUES ('ARCHIVE_CATEGORY', 'categories', $1, '{"is_active": false}')
+      VALUES ('DELETE_CATEGORY', 'categories', $1, '{"status": "deleted"}')
     `, [id]);
 
     // Invalidate Redis categories and homepage caches
-    await invalidateCachePattern('aadhya:cache:*:categories');
+    await invalidateCachePattern('aadhya:cache:*:categories*');
     await invalidateCachePattern('aadhya:cache:*:homepage*');
 
-    return NextResponse.json({ success: true, message: 'Category archived successfully' });
+    return NextResponse.json({ success: true, message: 'Category deleted successfully' });
   } catch (err: any) {
-    console.error('Error archiving category:', err);
+    console.error('Error deleting category:', err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
